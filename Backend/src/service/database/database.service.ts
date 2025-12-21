@@ -7,6 +7,11 @@ import { createUserCustomerTable } from './models/user-customer.model';
 import { createUserStaffTable } from './models/user-staff.model';
 import { createUserAdminTable } from './models/user-admin.model';
 import { createTrashLogsTable } from './models/trash-logs.model';
+import { createCameraLogsTable } from './models/camera-logs';
+import { createFertilizerAnalyticsTable } from './models/fertilizer-analytics.model';
+import { createMachinesTable } from './models/machines.model';
+import { createModuleAnalyticsTable } from './models/module-analytics.model';
+import { createRepairTable } from './models/repair.module';
 
 dotenv.config();
 
@@ -47,6 +52,11 @@ export class DatabaseService implements OnModuleInit {
     await createUserStaffTable(this.client);
     await createUserAdminTable(this.client);
     await createTrashLogsTable(this.client);
+    await createCameraLogsTable(this.client);
+    await createFertilizerAnalyticsTable(this.client);
+    await createMachinesTable(this.client);
+    await createModuleAnalyticsTable(this.client);
+    await createRepairTable(this.client);
 
     console.log(chalk.bgGreen.black('[SUPABASE] All tables are ready!'));
   }

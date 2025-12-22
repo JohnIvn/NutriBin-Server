@@ -1,0 +1,134 @@
+import {
+  BadRequestException,
+  ConflictException,
+  InternalServerErrorException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
+
+import { DatabaseService } from '../../service/database/database.service';
+import type { StaffSignInDto, StaffSignUpDto } from '../staff/staff-auth.dto';
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+type StaffPublicRow = {
+  staff_id: string;
+  f_name: string;
+  l_name: string;
+  contact_number: string | null;
+  address: string | null;
+  email: string;
+  date_created: string;
+  last_updated: string;
+  status: string;
+};
+
+type StaffDbRow = StaffPublicRow & {
+  password: string;
+};
+
+@Injectable()
+export class StaffAuthService {
+  constructor(private readonly databaseService: DatabaseService) {}
+
+  async signUp(dto: StaffSignUpDto) {
+    const fName = dto?.fName?.trim();
+    const lName = dto?.lName?.trim();
+    const emailRaw = dto?.email;
+    const password = dto?.password;
+
+    if (!fName) throw new BadRequestException('fName is required');
+    if (!lName) throw new BadRequestException('lName is required');
+    if (!emailRaw?.trim()) throw new BadRequestException('email is required');
+    if (!password) throw new BadRequestException('password is required');
+
+    const email = normalizeEmail(emailRaw);
+    const contactNumber = dto?.contactNumber?.trim() || null;
+    const address = dto?.address?.trim() || null;
+
+    const client = this.databaseService.getClient();
+
+    const existing = await client.query<{ staff_id: string }>(
+      'SELECT staff_id FROM user_staff WHERE email = $1 LIMIT 1',
+      [email],
+    );
+
+    if (existing.rowCount && existing.rowCount > 0) {
+      throw new ConflictException(
+        'A staff account with this email already exists',
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const created = await client.query<StaffPublicRow>(
+      `INSERT INTO user_staff (f_name, l_name, contact_number, address, email, password)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING staff_id, f_name, l_name, contact_number, address, email, date_created, last_updated, status`,
+      [fName, lName, contactNumber, address, email, passwordHash],
+    );
+
+    const staff = created.rows[0];
+    if (!staff) {
+      throw new InternalServerErrorException('Failed to create staff account');
+    }
+
+    return {
+      ok: true,
+      staff,
+    };
+  }
+
+  async signIn(dto: StaffSignInDto) {
+    const emailRaw = dto?.email;
+    const password = dto?.password;
+
+    if (!emailRaw?.trim()) throw new BadRequestException('email is required');
+    if (!password) throw new BadRequestException('password is required');
+
+    const email = normalizeEmail(emailRaw);
+    const client = this.databaseService.getClient();
+
+    const result = await client.query<StaffDbRow>(
+      `SELECT staff_id, f_name, l_name, contact_number, address, email, password, date_created, last_updated, status
+       FROM user_staff
+       WHERE email = $1
+       LIMIT 1`,
+      [email],
+    );
+
+    if (!result.rowCount) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const staff = result.rows[0];
+    if (!staff) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const matches = await bcrypt.compare(password, staff.password);
+    if (!matches) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const safeStaff: StaffPublicRow = {
+      staff_id: staff.staff_id,
+      f_name: staff.f_name,
+      l_name: staff.l_name,
+      contact_number: staff.contact_number,
+      address: staff.address,
+      email: staff.email,
+      date_created: staff.date_created,
+      last_updated: staff.last_updated,
+      status: staff.status,
+    };
+
+    return {
+      ok: true,
+      staff: safeStaff,
+    };
+  }
+}

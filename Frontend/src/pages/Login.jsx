@@ -33,11 +33,11 @@ export function Login() {
 
 	return (
 		<section className="flex w-full h-full justify-between">
-			<div className="flex justify-center items-center bg-[url('/LoginImg.png')] bg-cover bg-center relative w-1/3 min-h-full">
+			<div className="hidden md:flex justify-center items-center bg-[url('/LoginImg.png')] bg-cover bg-center relative w-1/3 min-h-full">
 				<img src="/Logo.svg" alt="Logo" className="absolute h-156 w-lg -right-64" />
 			</div>
 
-			<div className="flex flex-col justify-center items-center w-2/3 min-h-screen">
+			<div className="flex flex-col justify-center items-center w-full md:w-2/3 min-h-screen">
 				<Form {...form} >
 					<h1 className="w-auto text-start text-4xl font-medium m-4">Sign In</h1>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-80">
@@ -49,7 +49,7 @@ export function Login() {
 								<FormItem>
 									<FormLabel>Username</FormLabel>
 									<FormControl>
-										<Input placeholder="Username" className={'border-1 border-secondary-foreground'} {...field} />
+										<Input placeholder="Username" className={'border border-secondary-foreground'} {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -80,7 +80,7 @@ export function Login() {
 								<Label htmlFor="showPassword" >Show Password</Label>
 							</div>
 
-							<Button asChild className={"h-full p-0 text-secondary bg-transparent hover:text-secondary-foreground"}>
+							<Button type='button' asChild className={"h-full p-0 text-secondary bg-transparent hover:text-secondary-foreground"}>
 								<Link to={'/password-reset'}>
 									Forgot password?
 								</Link>
@@ -97,7 +97,7 @@ export function Login() {
 							<hr className="w-1/3 border border-secondary" />
 						</div>
 
-						<Button type="submit" className="bg-secondary hover:bg-secondary-foreground w-full cursor-pointer">
+						<Button type='button' className="bg-secondary hover:bg-secondary-foreground w-full cursor-pointer">
 							<svg class="mr-2 h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 								<path
 									fill="currentColor"

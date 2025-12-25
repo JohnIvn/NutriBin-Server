@@ -33,7 +33,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import React, { useState } from "react"
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -41,6 +41,15 @@ import { userFilter } from "@/schema/users"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { MoreHorizontalIcon } from "lucide-react"
+import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination"
 
 function UserManagement() {
 
@@ -108,7 +117,7 @@ function UserManagement() {
 								/>
 							</div>
 							<Button className={'bg-secondary hover:bg-secondary-foreground cursor-pointer'}>
-								+ 
+								+
 								<span className="hidden md:flex">
 									Add User
 								</span>
@@ -156,6 +165,30 @@ function UserManagement() {
 						</TableRow>
 					))}
 				</TableBody>
+				<Pagination>
+					<PaginationContent>
+						<PaginationItem>
+							<PaginationPrevious href="#" />
+						</PaginationItem>
+						<PaginationItem>
+							<PaginationLink href="#">1</PaginationLink>
+						</PaginationItem>
+						<PaginationItem>
+							<PaginationLink href="#" isActive>
+								2
+							</PaginationLink>
+						</PaginationItem>
+						<PaginationItem>
+							<PaginationLink href="#">3</PaginationLink>
+						</PaginationItem>
+						<PaginationItem>
+							<PaginationEllipsis />
+						</PaginationItem>
+						<PaginationItem>
+							<PaginationNext href="#" />
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
 			</Table>
 		</section >
 	)

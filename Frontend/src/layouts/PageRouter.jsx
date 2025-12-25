@@ -1,4 +1,5 @@
 import Login from "@/pages/Login"
+import UserManagement from "@/pages/Users"
 import { Routes, Route, Navigate } from "react-router-dom"
 
 function PageRouter() {
@@ -14,6 +15,10 @@ function PageRouter() {
           <Route
             path='/login'
             element={<Login/>}
+          />
+          <Route
+            path='/users'
+            element={<UserManagement/>}
           />
         </Routes>
   )

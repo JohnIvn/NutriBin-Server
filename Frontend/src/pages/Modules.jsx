@@ -2,9 +2,9 @@ import React from 'react'
 
 function Modules() {
   return (
-	<div>
-	  
-	</div>
+	<section className='flex flex-col min-h-screen h-auto'>
+		
+	</section>
   )
 }
 

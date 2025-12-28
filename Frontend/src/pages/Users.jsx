@@ -70,9 +70,9 @@ function UserManagement() {
 		<section className='flex flex-col min-h-screen h-auto mb-4'>
 			<h1 className='text-3xl md:text-5xl font-medium my-4 text-center'>User Management</h1>
 			<Table className={'flex flex-col h-auto w-auto xl:w-5xl border-2'}>
-				<TableCaption>
+				<TableCaption className={'flex w-full justify-between px-2'}>
 					<Form {...filterForm}>
-						<form onSubmit={filterForm.handleSubmit(filterSubmit)} className="flex justify-between items-center gap-4 px-2">
+						<form onSubmit={filterForm.handleSubmit(filterSubmit)} className="flex justify-between items-center gap-4">
 							<div className="flex items-center justify-center gap-2">
 								<p className="font-medium text-xs md:text-sm">Show</p>
 
@@ -116,14 +116,14 @@ function UserManagement() {
 									)}
 								/>
 							</div>
-							<Button className={'bg-secondary hover:bg-secondary-foreground cursor-pointer'}>
-								+
-								<span className="hidden md:flex">
-									Add User
-								</span>
-							</Button>
 						</form>
 					</Form>
+					<Button className={'bg-secondary hover:bg-secondary-foreground cursor-pointer'}>
+						+
+						<span className="hidden md:flex">
+							Add User
+						</span>
+					</Button>
 				</TableCaption>
 				<TableHeader>
 					<TableRow className={'flex items-center'}>

@@ -1,3 +1,4 @@
+import Account from "@/pages/Account"
 import Login from "@/pages/Login"
 import Machines from "@/pages/Machines"
 import Modules from "@/pages/Modules"
@@ -21,6 +22,10 @@ function PageRouter() {
           <Route
             path='/users'
             element={<UserManagement/>}
+          />
+          <Route
+            path='/account'
+            element={<Account/>}
           />
           <Route
             path='/machines'

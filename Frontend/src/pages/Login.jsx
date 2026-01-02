@@ -12,14 +12,14 @@ import { Button } from "@/components/ui/button";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { adminAccount } from "@/schema/adminAccount";
+import { adminLogin } from "@/schema/adminAccount";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
 
 export function Login() {
 	const form = useForm({
-		resolver: zodResolver(adminAccount),
+		resolver: zodResolver(adminLogin),
 		defaultValues: {
 			username: "",
 			password: "",

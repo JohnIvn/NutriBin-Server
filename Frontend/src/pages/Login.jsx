@@ -32,12 +32,13 @@ export function Login() {
 	}
 
 	return (
-		<section className="flex w-full h-full justify-between">
-			<div className="hidden md:flex justify-center items-center bg-[url('/LoginImg.png')] bg-cover bg-center relative w-1/3 min-h-full">
-				<img src="/Logo.svg" alt="Logo" className="absolute h-156 w-lg -right-64" />
+		<section className="flex w-full h-auto my-auto mx-0 justify-between">
+			<div className="hidden md:flex justify-center items-center bg-center relative w-1/max-h-full border m-0">
+				<img src="/Login.png" alt="Logo" className="h-full w-lg -right-64" />
+				<img src="/Logo.svg" alt="Logo" className="absolute h-128 w-lg -right-64" />
 			</div>
 
-			<div className="flex flex-col justify-center items-center w-full md:w-2/3 min-h-screen">
+			<div className="flex flex-col justify-center items-center w-full md:w-2/3 h-full my-auto">
 				<Form {...form} >
 					<h1 className="w-auto text-start text-4xl font-medium m-4">Sign In</h1>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-80">

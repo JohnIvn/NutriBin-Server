@@ -46,7 +46,6 @@ export default function Header() {
                 className="h-8 px-4"
               />
 
-
             </Link>
             {user ? (
               <nav className="flex gap-2">
@@ -109,11 +108,11 @@ export default function Header() {
                     Guide
                   </Link>
                 </Button>
-                <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+                {/* <Button asChild className={"bg-transparent hover:bg-amber-700"}>
                   <Link to={'/register'}>
                     Register
                   </Link>
-                </Button>
+                </Button> */}
               </nav>
             )}
           </header>

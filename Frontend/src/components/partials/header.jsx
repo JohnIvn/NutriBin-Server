@@ -19,8 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState } from "react";
 
 export default function Header() {
-  // const [user, setUser] = useState(true)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(true)
+  // const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(false) //Temporary
 
   // TODO - Fetch user session
@@ -55,8 +55,8 @@ export default function Header() {
                   </Link>
                 </Button>
                 <Button asChild className={"bg-transparent hover:bg-amber-700"}>
-                  <Link to={'/users'}>
-                    Users
+                  <Link to={'/admins'}>
+                    Admins
                   </Link>
                 </Button>
                 <Button asChild className={"bg-transparent hover:bg-amber-700"}>

@@ -3,8 +3,8 @@ import Analytics from "@/pages/Analytics"
 import Login from "@/pages/Login"
 import Machines from "@/pages/Machines"
 import Modules from "@/pages/Modules"
-import UserManagement from "@/pages/Users"
 import { Routes, Route, Navigate } from "react-router-dom"
+import Admins from "@/pages/Admins"
 
 function PageRouter() {
   return (
@@ -21,8 +21,8 @@ function PageRouter() {
             element={<Login/>}
           />
           <Route
-            path='/users'
-            element={<UserManagement/>}
+            path='/admins'
+            element={<Admins/>}
           />
           <Route
             path='/account'

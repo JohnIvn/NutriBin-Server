@@ -33,7 +33,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import React, { useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -60,6 +60,7 @@ function Admins() {
 	const [confirmType, setConfirmType] = useState('')
 	const [showConfirm, setShowConfirm] = useState(false)
 	const [confirmInformation, setConfirmInformation] = useState({
+		mode: "",
 		title: "",
 		description: ""
 	})
@@ -86,8 +87,8 @@ function Admins() {
 
 	const displayConfirm = (mode, title, description) => {
 		setShowConfirm(true)
-		setConfirmType(mode)
 		setConfirmInformation({
+			mode: mode,
 			title: title,
 			description: description
 		})
@@ -113,7 +114,7 @@ function Admins() {
 				<AdminModal mode={modalMode} cancel={closeModal}/>
 			}
 			{showConfirm &&
-				<ConfirmBox mode={confirmType} cancel={closeConfirm} confirm={onConfirm} description={confirmInformation.description} title={confirmInformation.title} />
+				<ConfirmBox mode={confirmInformation.mode} cancel={closeConfirm} confirm={onConfirm} description={confirmInformation.description} title={confirmInformation.title} />
 			}
 			<section className='relative flex flex-col h-auto my-auto pb-4'>
 				<h1 className='text-3xl md:text-5xl font-medium my-4 text-center'>Admin Management</h1>

@@ -17,7 +17,7 @@ function Modules() {
 	const motors = ["Servo_Lid_A", "Servo_Diverter", "Servo_Lid_B", "Motor_Grinder", "Motor_Mixer", "Exhaust Fan In", "Exhaust Fan Out"]
 
 	return (
-		<section className='flex flex-col h-auto w-3/4 rounded-xl justify-start items-center p-4 m-4 gap-2 bg-secondary'>
+		<section className='flex flex-col h-auto w-3/4 rounded-xl justify-start items-center p-4 my-auto  gap-2 bg-secondary'>
 			<h1 className='text-4xl font-medium text-accent'>User#{id} Machine Modules</h1>
 			<section className='flex justify-between h-auto w-full items-center gap-4'>
 				<h1 className='flex w-1/4 justify-center text-white text-2xl font-medium'>Microcontroller</h1>

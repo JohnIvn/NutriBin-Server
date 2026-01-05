@@ -16,8 +16,9 @@ import { adminLogin } from "@/schema/adminAccount";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
-
+import { useState } from "react";
 export function Login() {
+	const [showPass, setShowPass] = useState(false)
 	const form = useForm({
 		resolver: zodResolver(adminLogin),
 		defaultValues: {
@@ -25,6 +26,8 @@ export function Login() {
 			password: "",
 		},
 	});
+
+
 
 	function onSubmit(values) {
 		//TODO
@@ -38,7 +41,7 @@ export function Login() {
 				<img src="/Logo.svg" alt="Logo" className="absolute h-128 w-lg -right-64" />
 			</div>
 
-			<div className="flex flex-col justify-center items-center w-full md:w-2/3 h-full my-auto">
+			<div className="flex flex-col justify-center items-center w-full md:w-2/3 h-full my-auto ">
 				<Form {...form} >
 					<h1 className="w-auto text-start text-4xl font-medium m-4">Sign In</h1>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-80">
@@ -64,7 +67,7 @@ export function Login() {
 								<FormItem>
 									<FormLabel>Password</FormLabel>
 									<FormControl>
-										<Input type="password" placeholder="Password" className={'border-1 border-secondary-foreground'} {...field} />
+										<Input type={showPass ? 'text' : 'password'} placeholder="Password" className={'border-1 border-secondary-foreground'} {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -75,6 +78,7 @@ export function Login() {
 
 								<Checkbox
 									id="showPassword"
+									onCheckedChange={(checked) => setShowPass(checked)}
 									className="border-secondary-foreground data-[state=checked]:bg-secondary data-[state=checked :text-secondary-foreground  data-[state=checked :border-secondary border-secondary"
 								/>
 

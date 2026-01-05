@@ -19,8 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState } from "react";
 
 export default function Header() {
-  const [user, setUser] = useState(true)
-  // const [user, setUser] = useState(null)
+  // const [user, setUser] = useState(true)
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(false) //Temporary
 
   // TODO - Fetch user session
@@ -32,13 +32,13 @@ export default function Header() {
   return (
     <>
       {loading ? (
-        <header className='flex w-full justify-between items-center h-12 bg-orange-500 text-white px-2 mb-2'>
+        <header className='flex w-full justify-between items-center h-12 bg-orange-500 text-white px-2'>
           <h1>Loading...</h1>
         </header>
       ) :
         (
 
-          <header className='flex w-full justify-between items-center h-12 bg-orange-500 text-white px-2 mb-2'>
+          <header className='flex w-full justify-between items-center h-12 bg-orange-500 text-white px-2'>
             <Link to={"/"} className="text-center h-auto">
               <img
                 src="/NutriBin_Logo.svg"

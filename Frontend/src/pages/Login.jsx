@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import Requests from "@/utils/Requests";
+import axios from "axios";
 export function Login() {
 	const [showPass, setShowPass] = useState(false)
 	const form = useForm({
@@ -32,8 +33,12 @@ export function Login() {
 		try {
 			const formData = values
 			
-			const response = await Requests('')
-
+			const response = await axios.post('http://localhost:3000/staff/signin', formData)
+			if (!response.data.ok) {
+				throw new Error("No Response")
+			}
+			console.log("Success")
+			console.log(response.data.staff)
 		} catch (error) {
 			// ErrorHandler here
 			console.error(error)

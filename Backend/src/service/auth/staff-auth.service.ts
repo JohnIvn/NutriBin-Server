@@ -100,6 +100,8 @@ export class StaffAuthService {
     const emailRaw = dto?.email;
     const password = dto?.password;
 
+    console.log("Logging in");
+    console.log({email: emailRaw, password: password});
     if (!emailRaw?.trim()) throw new BadRequestException('email is required');
     if (!password) throw new BadRequestException('password is required');
 
@@ -114,6 +116,7 @@ export class StaffAuthService {
       [email],
     );
 
+    console.log("Found Email")
     if (!result.rowCount) {
       throw new UnauthorizedException('Invalid email or password');
     }

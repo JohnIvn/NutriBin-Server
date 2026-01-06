@@ -35,6 +35,10 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   const [phoneChecking, setPhoneChecking] = useState(false);
   const [phoneAvailable, setPhoneAvailable] = useState(null);
   const [originalPhone, setOriginalPhone] = useState("");
+  const [sendingCode, setSendingCode] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [codeFormatValid, setCodeFormatValid] = useState(false);
+  const [codeError, setCodeError] = useState("");
 
   const form = useForm({
     resolver: zodResolver(mode === "edit" ? adminAccountEdit : adminAccount),
@@ -49,6 +53,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
       address: "",
       password: "",
       confirmPassword: "",
+      emailVerificationCode: "",
     },
   });
 
@@ -83,6 +88,8 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   const email = form.watch("email");
   const password = form.watch("password");
   const contact = form.watch("contact");
+  const emailVerificationCode = form.watch("emailVerificationCode");
+  const emailChanged = mode === "edit" && email !== originalEmail;
 
   // Password validation checks
   const passwordChecks = {
@@ -99,6 +106,17 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     const age = calculateAge(birthday);
     form.setValue("age", age, { shouldValidate: true });
   }, [birthday]);
+
+  // Validate verification code format in real time
+  useEffect(() => {
+    if (!emailVerificationCode) {
+      setCodeFormatValid(false);
+      return;
+    }
+
+    setCodeFormatValid(/^\d{6}$/.test(emailVerificationCode.trim()));
+    setCodeError("");
+  }, [emailVerificationCode]);
 
   // Check email availability with debounce
   useEffect(() => {
@@ -143,6 +161,13 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
 
     return () => clearTimeout(timeoutId);
   }, [email, mode, originalEmail]);
+
+  useEffect(() => {
+    if (!emailChanged) {
+      setCodeSent(false);
+      form.setValue("emailVerificationCode", "");
+    }
+  }, [emailChanged]);
 
   // Check phone number availability with debounce
   useEffect(() => {
@@ -193,6 +218,24 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     try {
       const formData = values;
 
+      if (emailChanged) {
+        if (!values.emailVerificationCode?.trim()) {
+          toast.error(
+            "Enter the 6-digit verification code sent to the new email"
+          );
+          return;
+        }
+
+        if (!/^\d{6}$/.test(values.emailVerificationCode.trim())) {
+          toast.error("Verification code must be 6 digits");
+          return;
+        }
+
+        formData.emailVerificationCode = values.emailVerificationCode.trim();
+      } else {
+        delete formData.emailVerificationCode;
+      }
+
       if (mode === "edit" && staff) {
         // Update existing staff member
         const response = await Requests({
@@ -203,6 +246,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
         });
 
         if (response.data.ok) {
+          setCodeError("");
           toast.success("Staff member updated successfully");
           if (onSuccess) onSuccess();
           cancel();
@@ -229,11 +273,51 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     } catch (error) {
       // ErrorHandler here
       console.error(error);
-      toast.error(
-        error.response?.data?.message || "Failed to save staff member"
-      );
+      const msg =
+        error.response?.data?.message || "Failed to save staff member";
+      if (msg.toLowerCase().includes("verification code")) {
+        setCodeError(msg);
+      }
+      toast.error(msg);
     }
   }
+
+  const handleSendCode = async () => {
+    if (!emailChanged) {
+      toast.info("Email is unchanged");
+      return;
+    }
+
+    if (!email || !email.includes("@")) {
+      toast.error("Enter a valid email first");
+      return;
+    }
+
+    try {
+      setSendingCode(true);
+      const response = await Requests({
+        url: `/management/staff/${staff.staff_id}/email-verification`,
+        method: "POST",
+        data: { newEmail: email },
+        credentials: true,
+      });
+
+      if (response.data?.ok) {
+        toast.success("Verification code sent to the new email");
+        setCodeSent(true);
+        setCodeError("");
+      } else {
+        toast.error(response.data?.message || "Failed to send code");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || "Failed to send verification code"
+      );
+    } finally {
+      setSendingCode(false);
+    }
+  };
 
   // Load staff data when in edit mode
   useEffect(() => {
@@ -251,6 +335,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
         address: staff.address || "",
         email: staff.email || "",
         contact: staff.contact_number || "",
+        emailVerificationCode: "",
       };
 
       setOriginalEmail(staff.email || "");
@@ -370,6 +455,86 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     )}
                   />
                 </div>
+                {mode === "edit" && (
+                  <div className="flex flex-col gap-2 p-3 border border-dashed border-gray-200 rounded-md bg-gray-50">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <FormLabel className="text-sm font-semibold">
+                          Verify New Email
+                        </FormLabel>
+                        <p className="text-xs text-gray-500">
+                          Send a code to confirm the updated email before
+                          saving.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="shrink-0"
+                        disabled={
+                          !emailChanged ||
+                          sendingCode ||
+                          emailChecking ||
+                          emailAvailable === false ||
+                          !email
+                        }
+                        onClick={handleSendCode}
+                      >
+                        {sendingCode
+                          ? "Sending..."
+                          : codeSent
+                          ? "Resend Code"
+                          : "Send Code"}
+                      </Button>
+                    </div>
+                    {emailChanged && (
+                      <FormField
+                        control={form.control}
+                        name="emailVerificationCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Verification Code</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="6-digit code"
+                                inputMode="numeric"
+                                maxLength={6}
+                                className={"border border-secondary-foreground"}
+                                {...field}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(
+                                    /[^0-9]/g,
+                                    ""
+                                  );
+                                  field.onChange(value);
+                                }}
+                              />
+                            </FormControl>
+                            <div className="flex items-center gap-2 text-xs">
+                              {codeError ? (
+                                <span className="text-red-600">
+                                  {codeError}
+                                </span>
+                              ) : codeFormatValid ? (
+                                <span className="text-green-600">
+                                  Code format looks good
+                                </span>
+                              ) : (
+                                <span className="text-amber-600">
+                                  Enter a 6-digit numeric code
+                                </span>
+                              )}
+                              {!codeError && codeSent && (
+                                <span className="text-gray-500">Code sent</span>
+                              )}
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-2">
                   <FormField
                     control={form.control}

@@ -12,9 +12,11 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import * as bcrypt from 'bcryptjs';
 
 import { DatabaseService } from '../../service/database/database.service';
+import { NodemailerService } from '../../service/email/nodemailer.service';
 
 type StaffPublicRow = {
   staff_id: string;
@@ -32,7 +34,24 @@ type StaffPublicRow = {
 
 @Controller('management/staff')
 export class StaffManagementController {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly mailer: NodemailerService,
+  ) {}
+
+  private async ensureVerificationTable() {
+    const client = this.databaseService.getClient();
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS staff_email_verifications (
+        verification_id SERIAL PRIMARY KEY,
+        staff_id UUID NOT NULL,
+        new_email VARCHAR(255) NOT NULL,
+        code VARCHAR(6) NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+  }
 
   @Get()
   async getAllStaff() {
@@ -185,14 +204,92 @@ export class StaffManagementController {
     const client = this.databaseService.getClient();
 
     try {
-      const { firstname, lastname, email, birthday, age, contact, address } =
-        updateData;
+      const {
+        firstname,
+        lastname,
+        email,
+        birthday,
+        age,
+        contact,
+        address,
+        emailVerificationCode,
+      } = updateData;
 
       // Validate required fields
       if (!firstname || !lastname || !email) {
         throw new BadRequestException(
           'First name, last name, and email are required',
         );
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Verify staff exists and get current email
+      const existingStaff = await client.query<StaffPublicRow>(
+        `SELECT staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status
+         FROM user_staff WHERE staff_id = $1 LIMIT 1`,
+        [staffId],
+      );
+
+      if (!existingStaff.rowCount) {
+        throw new BadRequestException('Staff member not found');
+      }
+
+      const currentStaff = existingStaff.rows[0];
+      const isEmailChanged = currentStaff.email !== normalizedEmail;
+
+      if (isEmailChanged) {
+        // Check email not used by another staff
+        const conflictCheck = await client.query(
+          'SELECT staff_id FROM user_staff WHERE email = $1 AND staff_id <> $2 LIMIT 1',
+          [normalizedEmail, staffId],
+        );
+
+        if (conflictCheck.rowCount) {
+          throw new ConflictException('Email already exists');
+        }
+
+        if (
+          !emailVerificationCode ||
+          typeof emailVerificationCode !== 'string'
+        ) {
+          throw new BadRequestException('Email verification code is required');
+        }
+
+        if (!/^\d{6}$/.test(emailVerificationCode.trim())) {
+          throw new BadRequestException(
+            'Email verification code must be a 6-digit number',
+          );
+        }
+
+        await this.ensureVerificationTable();
+
+        const verification = await client.query(
+          `SELECT code, expires_at
+           FROM staff_email_verifications
+           WHERE staff_id = $1 AND new_email = $2
+           ORDER BY created_at DESC
+           LIMIT 1`,
+          [staffId, normalizedEmail],
+        );
+
+        if (!verification.rowCount) {
+          throw new BadRequestException(
+            'No verification code found for this email',
+          );
+        }
+
+        const record = verification.rows[0];
+        const now = new Date();
+        const expiresAt = new Date(record.expires_at);
+
+        if (expiresAt < now) {
+          throw new BadRequestException('Verification code has expired');
+        }
+
+        if (record.code !== emailVerificationCode.trim()) {
+          throw new BadRequestException('Invalid verification code');
+        }
       }
 
       // Update the staff record
@@ -208,11 +305,27 @@ export class StaffManagementController {
              last_updated = NOW()
          WHERE staff_id = $8
          RETURNING staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status`,
-        [firstname, lastname, email, birthday, age, contact, address, staffId],
+        [
+          firstname,
+          lastname,
+          normalizedEmail,
+          birthday,
+          age,
+          contact,
+          address,
+          staffId,
+        ],
       );
 
       if (result.rows.length === 0) {
         throw new BadRequestException('Staff member not found');
+      }
+
+      if (isEmailChanged) {
+        await client.query(
+          'DELETE FROM staff_email_verifications WHERE staff_id = $1 AND new_email = $2',
+          [staffId, normalizedEmail],
+        );
       }
 
       return {
@@ -224,6 +337,97 @@ export class StaffManagementController {
         throw error;
       }
       throw new InternalServerErrorException('Failed to update staff member');
+    }
+  }
+
+  @Post(':id/email-verification')
+  async sendEmailVerification(
+    @Param('id') staffId: string,
+    @Body('newEmail') newEmail: string,
+  ) {
+    const client = this.databaseService.getClient();
+
+    if (!newEmail?.trim()) {
+      throw new BadRequestException('New email is required');
+    }
+
+    const normalizedEmail = newEmail.trim().toLowerCase();
+
+    try {
+      // Ensure staff exists
+      const staffResult = await client.query<StaffPublicRow>(
+        `SELECT staff_id, email, first_name FROM user_staff WHERE staff_id = $1 LIMIT 1`,
+        [staffId],
+      );
+
+      if (!staffResult.rowCount) {
+        throw new NotFoundException('Staff member not found');
+      }
+
+      const staff = staffResult.rows[0];
+
+      if (staff.email === normalizedEmail) {
+        throw new BadRequestException('Email is unchanged');
+      }
+
+      // Check for conflicts
+      const existingEmail = await client.query(
+        'SELECT staff_id FROM user_staff WHERE email = $1 AND staff_id <> $2 LIMIT 1',
+        [normalizedEmail, staffId],
+      );
+
+      if (existingEmail.rowCount) {
+        throw new ConflictException('Email already exists');
+      }
+
+      await this.ensureVerificationTable();
+
+      const code = String(randomInt(100000, 1000000));
+
+      // Remove previous codes for this staff + email
+      await client.query(
+        'DELETE FROM staff_email_verifications WHERE staff_id = $1 AND new_email = $2',
+        [staffId, normalizedEmail],
+      );
+
+      await client.query(
+        `INSERT INTO staff_email_verifications (staff_id, new_email, code, expires_at)
+         VALUES ($1, $2, $3, NOW() + INTERVAL '10 minutes')`,
+        [staffId, normalizedEmail, code],
+      );
+
+      await this.mailer.sendMail({
+        to: normalizedEmail,
+        subject: 'Verify your new NutriBin staff email',
+        html: `
+          <h2>Email Change Verification</h2>
+          <p>Hello ${staff.first_name},</p>
+          <p>Use the verification code below to confirm your new email address for your staff profile.</p>
+          <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${code}</p>
+          <p>This code expires in 10 minutes.</p>
+          <p>If you did not request this change, please ignore this email.</p>
+          <br />
+          <p>Thanks,</p>
+          <p>NutriBin Team</p>
+        `,
+      });
+
+      return {
+        ok: true,
+        message: 'Verification code sent to the new email address',
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'Failed to send verification code',
+      );
     }
   }
 

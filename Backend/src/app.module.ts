@@ -8,6 +8,7 @@ import { SettingsController } from './controllers/settings/settings.controller';
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
 import { StaffAuthService } from './service/auth/staff-auth.service';
+import { NodemailerService } from './service/email/nodemailer.service';
 
 @Module({
   imports: [],
@@ -18,6 +19,6 @@ import { StaffAuthService } from './service/auth/staff-auth.service';
     RepairManagementController,
     SettingsController,
   ],
-  providers: [AppService, DatabaseService, StaffAuthService],
+  providers: [AppService, DatabaseService, StaffAuthService, NodemailerService],
 })
 export class AppModule {}

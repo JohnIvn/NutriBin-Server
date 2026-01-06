@@ -86,4 +86,13 @@ export const adminAccountEdit = z.object({
     .string()
     .min(10, "Address must be at least 10 characters")
     .max(60, "Address must be less than or equal 60 characters"),
+  emailVerificationCode: z
+    .union([
+      z.literal(""),
+      z
+        .string()
+        .length(6, "Verification code must be 6 digits")
+        .regex(/^\d{6}$/, "Verification code must be numeric"),
+    ])
+    .optional(),
 });

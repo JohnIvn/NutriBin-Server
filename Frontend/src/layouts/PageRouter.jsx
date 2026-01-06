@@ -1,4 +1,4 @@
-import Account from "@/pages/Account";
+import Settings from "@/pages/Settings";
 import Analytics from "@/pages/Analytics";
 import Login from "@/pages/Login";
 import Machines from "@/pages/Machines";
@@ -28,10 +28,10 @@ function PageRouter() {
         }
       />
       <Route
-        path="/account"
+        path="/settings"
         element={
           <ProtectedRoute>
-            <Account />
+            <Settings />
           </ProtectedRoute>
         }
       />

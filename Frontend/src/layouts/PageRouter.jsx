@@ -4,7 +4,7 @@ import Login from "@/pages/Login";
 import Machines from "@/pages/Machines";
 import Modules from "@/pages/Modules";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Admins from "@/pages/Admins";
+import Staff from "@/pages/Staff";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import About from "@/pages/About";
 import Faqs from "@/pages/Faqs";
@@ -17,13 +17,13 @@ function PageRouter() {
     <Routes>
       <Route path="*" element={<h1>404 Not Found</h1>} />
       <Route path="/" element={<Navigate replace to={"/login"} />} />
-      <Route path="/login" element={<Login />} />  
+      <Route path="/login" element={<Login />} />
 
       <Route
-        path="/admins"
+        path="/staff"
         element={
           <ProtectedRoute>
-            <Admins />
+            <Staff />
           </ProtectedRoute>
         }
       />
@@ -67,36 +67,11 @@ function PageRouter() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/about"
-        element={
-            <About />
-        }
-      />
-      <Route
-        path="/faqs"
-        element={
-            <Faqs />
-        }
-      />
-      <Route
-        path="/policies"
-        element={
-            <Tos />
-        }
-      />
-      <Route
-        path="/socials"
-        element={
-            <Socials />
-        }
-      />
-      <Route
-        path="/studies"
-        element={
-            <Studies />
-        }
-      />    
+      <Route path="/about" element={<About />} />
+      <Route path="/faqs" element={<Faqs />} />
+      <Route path="/policies" element={<Tos />} />
+      <Route path="/socials" element={<Socials />} />
+      <Route path="/studies" element={<Studies />} />
     </Routes>
   );
 }

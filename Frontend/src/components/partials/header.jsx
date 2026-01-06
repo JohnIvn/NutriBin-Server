@@ -52,7 +52,7 @@ export default function Header() {
                 <Link to={"/dashboard"}>Dashboard</Link>
               </Button>
               <Button asChild className={"bg-transparent hover:bg-amber-700"}>
-                <Link to={"/admins"}>Admins</Link>
+                <Link to={"/staff"}>Staff</Link>
               </Button>
               <Button asChild className={"bg-transparent hover:bg-amber-700"}>
                 <Link to={"/machines"}>Repairs</Link>

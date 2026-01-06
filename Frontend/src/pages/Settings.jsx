@@ -1,144 +1,53 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import Requests from "@/utils/Requests";
-import { useUser } from "@/contexts/UserContext";
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { adminAccount } from '@/schema/adminAccount'
+import { zodResolver } from '@hookform/resolvers/zod'
+import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
 
-const settingsSchema = z.object({
-  firstname: z.string().min(1, "First name is required"),
-  lastname: z.string().min(1, "Last name is required"),
-  address: z.string().min(1, "Address is required"),
-  age: z.number().min(1, "Age is required"),
-  number: z
-    .string()
-    .optional()
-    .or(z.literal(""))
-    .refine((value) => value === "" || value.length >= 7, {
-      message: "Contact number is too short",
-    }),
-});
-
-function Settings() {
-  const { user, login } = useUser();
-  const [editMode, setEditMode] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const [saving, setSaving] = useState(false);
+function Account() {
+  const [editMode, setEditMode] = useState(false)
 
   const form = useForm({
-    resolver: zodResolver(settingsSchema),
+    resolver: zodResolver(adminAccount),
     defaultValues: {
       firstname: "",
       lastname: "",
       address: "",
       age: 0,
-      number: "",
+      gender: "male",
+      number: 0,
     },
-  });
-
-  useEffect(() => {
-    if (!user?.staff_id) {
-      setLoadingProfile(false);
-      return;
-    }
-
-    loadProfile();
-  }, [user?.staff_id]);
-
-  const loadProfile = async () => {
-    if (!user?.staff_id) return;
-
-    try {
-      setLoadingProfile(true);
-      const response = await Requests({
-        url: `/settings/${user.staff_id}`,
-        method: "GET",
-        credentials: true,
-      });
-
-      if (response.data?.ok && response.data?.staff) {
-        const staff = response.data.staff;
-        form.reset({
-          firstname: staff.first_name || "",
-          lastname: staff.last_name || "",
-          address: staff.address || "",
-          age: staff.age ?? 0,
-          gender: "male",
-          number: staff.contact_number || "",
-        });
-      }
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to load account settings"
-      );
-    } finally {
-      setLoadingProfile(false);
-    }
-  };
-
-  const onSubmit = async (values) => {
-    if (!user?.staff_id) return;
-
-    try {
-      setSaving(true);
-      const response = await Requests({
-        url: `/settings/${user.staff_id}`,
-        method: "PATCH",
-        credentials: true,
-        data: {
-          firstname: values.firstname,
-          lastname: values.lastname,
-          address: values.address,
-          age: Number(values.age),
-          contact: values.number?.toString() || null,
-        },
-      });
-
-      if (response.data?.ok) {
-        toast.success("Settings updated successfully");
-        setEditMode(false);
-
-        if (response.data.staff) {
-          login(response.data.staff);
-        }
-      }
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to update account settings"
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
+  })
+  
+  const handleSubmission = () => {
+    //TODO Edit User Account Details
+    setEditMode(false)
+  }
 
   return (
-    <section className="flex flex-col min-h-full h-auto w-3/4 m-auto rounded-xl justify-start items-center p-4 gap-2">
-      <section className="flex flex-col lg:flex-row w-full h-full py-2 gap-2">
+    <section className='flex flex-col min-h-full h-auto w-full max-w-7xl m-auto justify-start items-center p-4 sm:p-6 gap-6'>
+      <section className='flex flex-col lg:flex-row w-full h-full gap-6 items-start'>
+        
         <Form {...form}>
-          <form
-            className="w-full max-w-3xl space-y-6 text-black shadow shadow-gray-600 p-8"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
-            <h1 className="text-black text-4xl font-medium">
-              Account Settings
-            </h1>
+          <form className="w-full lg:flex-1 space-y-6 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg p-6 sm:p-8">
+            <div className="space-y-1">
+              <h1 className='text-2xl sm:text-3xl font-bold tracking-tight text-black'>Account Settings</h1>
+              <p className="text-sm text-gray-500">Manage your personal information and contact details.</p>
+            </div>
 
-            {loadingProfile && (
-              <p className="text-sm text-gray-600">Loading account...</p>
-            )}
+            <hr className='border-gray-100' />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="firstname"
@@ -146,11 +55,7 @@ function Settings() {
                   <FormItem>
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        disabled={!editMode || loadingProfile}
-                        placeholder="First Name"
-                      />
+                      <Input {...field} disabled={!editMode} placeholder="First Name" className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -164,11 +69,7 @@ function Settings() {
                   <FormItem>
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        disabled={!editMode || loadingProfile}
-                        placeholder="Last Name"
-                      />
+                      <Input {...field} disabled={!editMode} placeholder="Last Name" className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -183,18 +84,14 @@ function Settings() {
                 <FormItem>
                   <FormLabel>Address</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={!editMode || loadingProfile}
-                      placeholder="Complete Address"
-                    />
+                    <Input {...field} disabled={!editMode} placeholder="Complete Address" className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="age"
@@ -202,12 +99,7 @@ function Settings() {
                   <FormItem>
                     <FormLabel>Age</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        disabled={!editMode || loadingProfile}
-                      />
+                      <Input type="number" {...field} disabled={!editMode} className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -221,11 +113,7 @@ function Settings() {
                   <FormItem>
                     <FormLabel>Contact Number</FormLabel>
                     <FormControl>
-                      <Input
-                        type="text"
-                        {...field}
-                        disabled={!editMode || loadingProfile}
-                      />
+                      <Input type="number" {...field} disabled={!editMode} className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -233,35 +121,59 @@ function Settings() {
               />
             </div>
 
-            <div className="flex gap-4 my-4">
-              <Button
-                type={"button"}
-                className={`${
-                  editMode ? "hidden" : "flex"
-                } min-w-48 w-auto h-12 p-2 bg-secondary hover:bg-secondary-foreground cursor-pointer`}
+            <FormField
+              control={form.control}
+              name="gender"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Gender</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="flex gap-6"
+                      disabled={!editMode}
+                    >
+                      {/* radio buttons */}
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="male" className="border-gray-300 data-[state=checked]:border-[#CD5C08] data-[state=checked]:text-[#CD5C08] cursor-pointer" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Male</FormLabel>
+                      </FormItem>
+
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="female" className="border-gray-300 data-[state=checked]:border-[#CD5C08] data-[state=checked]:text-[#CD5C08] cursor-pointer" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Female</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <div className='flex flex-wrap gap-4 pt-4'>
+              <Button 
+                type='button' 
+                className={`${editMode ? 'hidden' : 'inline-flex'} min-w-[140px] h-11 bg-[#CD5C08] hover:bg-[#A34906] text-white cursor-pointer`} 
                 onClick={() => setEditMode(true)}
-                disabled={loadingProfile}
               >
-                Edit
+                Edit Profile
               </Button>
-              <Button
-                type={"submit"}
-                className={`${
-                  editMode ? "flex" : "hidden"
-                } min-w-48 w-auto h-12 p-2 bg-gray-800 hover:bg-gray-600 cursor-pointer`}
-                disabled={saving}
+              <Button 
+                type='submit' 
+                className={`${editMode ? 'inline-flex' : 'hidden'} min-w-[140px] h-11 bg-[#1CE01C] hover:bg-[#13B013] text-white cursor-pointer`}
+                onClick={() => handleSubmission()}
               >
-                Submit
+                Save Changes
               </Button>
-              <Button
-                type={"button"}
-                className={`${
-                  editMode ? "flex" : "hidden"
-                } min-w-48 w-auto h-12 p-2 bg-gray-800 hover:bg-gray-600 cursor-pointer`}
-                onClick={() => {
-                  setEditMode(false);
-                  loadProfile();
-                }}
+              <Button 
+                type='button' 
+                variant="outline"
+                className={`${editMode ? 'inline-flex' : 'hidden'} min-w-[140px] h-11 bg-[#D73E18] text-white hover:bg-[#B62E0B] cursor-pointer hover:text-white`} 
+                onClick={() => setEditMode(false)}
               >
                 Cancel
               </Button>
@@ -269,45 +181,34 @@ function Settings() {
           </form>
         </Form>
 
-        <div className="flex lg:flex-col justify-center items-start h-full w-full lg:w-1/3 gap-2">
-          <div className="flex flex-col justify-center items-center h-64 p-4 gap-4 shadow shadow-gray-600">
-            <h1 className="text-2xl font-medium text-black text-center w-full">
-              Reset Password
-            </h1>
-            <hr className="w-full shadow-2xl" />
-            <p className="text-black text-start text-xl font-light w-full">
-              You can request to change your password by clicking the button
-              below that will be sent through email.
+        {/* right side cards */}
+        <div className='flex flex-col w-full lg:w-80 gap-6'>
+          <div className='flex flex-col justify-center items-center h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg'>
+            <h1 className='text-lg font-bold tracking-tight text-black text-center w-full'>Reset Password</h1>
+            <hr className='w-full border-gray-100' />
+            <p className='text-gray-500 text-center text-sm leading-relaxed w-full'>
+              Request a password change link sent to your registered email address.
             </p>
-            <Button
-              className={
-                "flex w-full h-12 p-2 bg-sky-700 hover:bg-sky-400 cursor-pointer"
-              }
-            >
+            <Button className='w-full h-10 bg-sky-700 hover:bg-sky-800 cursor-pointer'>
               Reset
             </Button>
           </div>
-          <div className="flex flex-col justify-center items-center h-64 p-4 gap-4 shadow shadow-gray-600">
-            <h1 className="text-2xl font-medium text-black text-center w-full">
-              Close Account
-            </h1>
-            <hr className="w-full shadow-2xl" />
-            <p className="text-black text-start text-xl font-light w-full">
-              You can request to change your password by clicking the button
-              below that will be sent through email.
+
+          <div className='flex flex-col justify-center items-center h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg'>
+            <h1 className='text-lg font-bold tracking-tight text-black text-center w-full'>Close Account</h1>
+            <hr className='w-full border-gray-100' />
+            <p className='text-gray-500 text-center text-sm leading-relaxed w-full'>
+              Permanently delete your account. This action cannot be undone.
             </p>
-            <Button
-              className={
-                "flex w-full h-12 p-2 bg-secondary hover:bg-secondary-foreground cursor-pointer"
-              }
-            >
-              Reset
+            <Button variant="destructive" className='w-full h-10 cursor-pointer'>
+              Close
             </Button>
           </div>
         </div>
+        
       </section>
     </section>
-  );
+  )
 }
 
-export default Settings;
+export default Account

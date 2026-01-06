@@ -9,7 +9,11 @@ import { StaffAuthService } from './service/auth/staff-auth.service';
 
 @Module({
   imports: [],
-  controllers: [AppController, StaffAuthController, StaffManagementController],
+  controllers: [
+    AppController,
+    StaffAuthController,
+    StaffManagementController,
+  ],
   providers: [AppService, DatabaseService, StaffAuthService],
 })
 export class AppModule {}

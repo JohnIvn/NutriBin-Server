@@ -76,10 +76,31 @@ function Staff() {
   const [staffList, setStaffList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const onConfirm = () => {
-    // TODO
-    console.log("Confirmed");
+  const onConfirm = async () => {
+    if (!selectedStaff || !confirmInformation.mode) return;
+
+    try {
+      setActionLoading(true);
+      const mode = confirmInformation.mode.toLowerCase();
+
+      if (mode === "disable") {
+        await handleDisableStaff(selectedStaff.staff_id);
+      } else if (mode === "enable") {
+        await handleEnableStaff(selectedStaff.staff_id);
+      } else if (mode === "delete") {
+        await handleDeleteStaff(selectedStaff.staff_id);
+      }
+
+      closeConfirm();
+      setSelectedStaff(null);
+    } catch (error) {
+      console.error("Action failed:", error);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const role = /* Get this from context */ "admin";
@@ -127,12 +148,81 @@ function Staff() {
     }
   };
 
-  const displayModal = (mode) => {
-    setShowModal(true), setModalMode(mode);
+  const handleDisableStaff = async (staffId) => {
+    try {
+      const response = await Requests({
+        url: `/management/staff/${staffId}/disable`,
+        method: "PATCH",
+        credentials: true,
+      });
+
+      if (response.data.ok) {
+        toast.success("Staff member disabled successfully");
+        await fetchStaff(); // Refresh the list
+      } else {
+        toast.error("Failed to disable staff member");
+      }
+    } catch (error) {
+      console.error("Error disabling staff:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to disable staff member"
+      );
+    }
   };
 
-  const displayConfirm = (mode, title, description) => {
+  const handleEnableStaff = async (staffId) => {
+    try {
+      const response = await Requests({
+        url: `/management/staff/${staffId}/enable`,
+        method: "PATCH",
+        credentials: true,
+      });
+
+      if (response.data.ok) {
+        toast.success("Staff member enabled successfully");
+        await fetchStaff(); // Refresh the list
+      } else {
+        toast.error("Failed to enable staff member");
+      }
+    } catch (error) {
+      console.error("Error enabling staff:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to enable staff member"
+      );
+    }
+  };
+
+  const handleDeleteStaff = async (staffId) => {
+    try {
+      const response = await Requests({
+        url: `/management/staff/${staffId}`,
+        method: "DELETE",
+        credentials: true,
+      });
+
+      if (response.data.ok) {
+        toast.success("Staff member deleted successfully");
+        await fetchStaff(); // Refresh the list
+      } else {
+        toast.error("Failed to delete staff member");
+      }
+    } catch (error) {
+      console.error("Error deleting staff:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to delete staff member"
+      );
+    }
+  };
+
+  const displayModal = (mode, staff = null) => {
+    setShowModal(true);
+    setModalMode(mode);
+    setSelectedStaff(staff);
+  };
+
+  const displayConfirm = (mode, title, description, staff) => {
     setShowConfirm(true);
+    setSelectedStaff(staff);
     setConfirmInformation({
       mode: mode,
       title: title,
@@ -196,7 +286,14 @@ function Staff() {
 
   return (
     <>
-      {showModal && <AdminModal mode={modalMode} cancel={closeModal} />}
+      {showModal && (
+        <AdminModal
+          mode={modalMode}
+          cancel={closeModal}
+          staff={selectedStaff}
+          onSuccess={fetchStaff}
+        />
+      )}
       {showConfirm && (
         <ConfirmBox
           mode={confirmInformation.mode}
@@ -204,6 +301,7 @@ function Staff() {
           confirm={onConfirm}
           description={confirmInformation.description}
           title={confirmInformation.title}
+          loading={actionLoading}
         />
       )}
       <section className="relative flex flex-col h-auto my-auto pb-4">
@@ -359,28 +457,45 @@ function Staff() {
                         <DropdownMenuGroup>
                           {role === "admin" && (
                             <DropdownMenuItem
-                              onClick={() => displayModal("edit")}
+                              onClick={() => displayModal("edit", staff)}
                             >
                               Edit
+                            </DropdownMenuItem>
+                          )}
+                          {staff.status === "active" ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                displayConfirm(
+                                  "Disable",
+                                  "Disabling Account",
+                                  "Disabled account won't be able to access any staff privileges! Are you sure you want to disable this account?",
+                                  staff
+                                )
+                              }
+                            >
+                              Disable
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                displayConfirm(
+                                  "Enable",
+                                  "Enabling Account",
+                                  "This will restore staff privileges to this account. Are you sure you want to enable this account?",
+                                  staff
+                                )
+                              }
+                            >
+                              Enable
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem
                             onClick={() =>
                               displayConfirm(
-                                "Disable",
-                                "Disabling Account",
-                                "Disabled account won't be able to access any staff privileges! Are you sure you want to disable this account?"
-                              )
-                            }
-                          >
-                            Disable
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              displayConfirm(
                                 "Delete",
                                 "Account Deletion",
-                                "This will permanently delete the account! Are you sure you want to delete this account?"
+                                "This will permanently delete the account! Are you sure you want to delete this account?",
+                                staff
                               )
                             }
                           >
@@ -394,65 +509,65 @@ function Staff() {
               ))
             )}
           </TableBody>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className={
-                    currentPage === 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-              {[...Array(totalPages)].map((_, i) => {
-                const pageNum = i + 1;
-                if (
-                  pageNum === 1 ||
-                  pageNum === totalPages ||
-                  (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                ) {
-                  return (
-                    <PaginationItem key={pageNum}>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(pageNum)}
-                        isActive={currentPage === pageNum}
-                        className="cursor-pointer"
-                      >
-                        {pageNum}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                } else if (
-                  pageNum === currentPage - 2 ||
-                  pageNum === currentPage + 2
-                ) {
-                  return (
-                    <PaginationItem key={pageNum}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
-                }
-                return null;
-              })}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className={
-                    currentPage === totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
         </Table>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className={
+                  currentPage === 1
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+            {[...Array(totalPages)].map((_, i) => {
+              const pageNum = i + 1;
+              if (
+                pageNum === 1 ||
+                pageNum === totalPages ||
+                (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+              ) {
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(pageNum)}
+                      isActive={currentPage === pageNum}
+                      className="cursor-pointer"
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              } else if (
+                pageNum === currentPage - 2 ||
+                pageNum === currentPage + 2
+              ) {
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                );
+              }
+              return null;
+            })}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </section>
     </>
   );

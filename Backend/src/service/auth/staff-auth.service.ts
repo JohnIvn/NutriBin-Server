@@ -41,13 +41,16 @@ export class StaffAuthService {
     const lastname = dto?.lastname?.trim();
     const emailRaw = dto?.email;
     const password = dto?.password;
-    const birthday = dto?.birthday;
+    const birthday = dto?.birthday?.trim();
     const age = dto?.age;
 
     if (!firstname) throw new BadRequestException('firstname is required');
     if (!lastname) throw new BadRequestException('lastname is required');
     if (!emailRaw?.trim()) throw new BadRequestException('email is required');
     if (!password) throw new BadRequestException('password is required');
+    if (!birthday) throw new BadRequestException('birthday is required');
+    if (age === undefined || age === null)
+      throw new BadRequestException('age is required');
 
     const email = normalizeEmail(emailRaw);
     const contactNumber = dto?.contact?.trim() || null;

@@ -535,6 +535,81 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     )}
                   </div>
                 )}
+                {mode !== "edit" && (
+                  <div className="flex flex-col gap-2 p-3 border border-dashed border-gray-200 rounded-md bg-gray-50">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <FormLabel className="text-sm font-semibold">
+                          Verify Email Address
+                        </FormLabel>
+                        <p className="text-xs text-gray-500">
+                          Send a code to verify the email before creating
+                          account.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="shrink-0"
+                        disabled={
+                          sendingCode ||
+                          emailChecking ||
+                          emailAvailable === false ||
+                          !email
+                        }
+                        onClick={handleSendCode}
+                      >
+                        {sendingCode
+                          ? "Sending..."
+                          : codeSent
+                          ? "Resend Code"
+                          : "Send Code"}
+                      </Button>
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="emailVerificationCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Verification Code</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="6-digit code"
+                              inputMode="numeric"
+                              maxLength={6}
+                              className={"border border-secondary-foreground"}
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  ""
+                                );
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <div className="flex items-center gap-2 text-xs">
+                            {codeError ? (
+                              <span className="text-red-600">{codeError}</span>
+                            ) : codeFormatValid ? (
+                              <span className="text-green-600">
+                                Code format looks good
+                              </span>
+                            ) : (
+                              <span className="text-amber-600">
+                                Enter a 6-digit numeric code
+                              </span>
+                            )}
+                            {!codeError && codeSent && (
+                              <span className="text-gray-500">Code sent</span>
+                            )}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-2">
                   <FormField
                     control={form.control}

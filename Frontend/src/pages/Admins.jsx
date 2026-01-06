@@ -192,7 +192,7 @@ function Admins() {
               </form>
             </Form>
             <Button
-              onClick={() => displayModal("default")}
+              onClick={() => displayModal("create")}
               className={
                 "bg-secondary hover:bg-secondary-foreground cursor-pointer"
               }

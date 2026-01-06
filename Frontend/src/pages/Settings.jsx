@@ -347,7 +347,8 @@ function Account() {
             </h1>
             <hr className="w-full border-gray-100" />
             <p className="text-gray-500 text-center text-sm leading-relaxed w-full">
-              Request a 6-digit code sent to your registered email, then enter it below to reset your password.
+              Request a 6-digit code sent to your registered email, then enter
+              it below to reset your password.
             </p>
             <Button
               className="w-full h-10 bg-sky-700 hover:bg-sky-800 cursor-pointer"
@@ -366,14 +367,19 @@ function Account() {
               <DialogHeader>
                 <DialogTitle>Reset Password</DialogTitle>
                 <DialogDescription>
-                  Send a 6-digit code to your email, then enter it below with your new password.
+                  Send a 6-digit code to your email, then enter it below with
+                  your new password.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 p-3 border border-dashed border-gray-200 rounded-md bg-gray-50">
-                    <div className="text-sm text-gray-600">Registered email</div>
-                    <div className="font-semibold">{emailShown || user?.email || "(unknown)"}</div>
+                    <div className="text-sm text-gray-600">
+                      Registered email
+                    </div>
+                    <div className="font-semibold">
+                      {emailShown || user?.email || "(unknown)"}
+                    </div>
                   </div>
                   <Button
                     type="button"
@@ -392,7 +398,9 @@ function Account() {
                           setCodeError("");
                           toast.success("Verification code sent to your email");
                         } else {
-                          toast.error(res.data?.message || "Failed to send code");
+                          toast.error(
+                            res.data?.message || "Failed to send code"
+                          );
                         }
                       } catch (error) {
                         console.error(error);
@@ -404,13 +412,19 @@ function Account() {
                       }
                     }}
                   >
-                    {sendingReset ? "Sending..." : resetSent ? "Resend Code" : "Send Code"}
+                    {sendingReset
+                      ? "Sending..."
+                      : resetSent
+                      ? "Resend Code"
+                      : "Send Code"}
                   </Button>
                 </div>
 
                 <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <label className="text-sm font-medium">Verification Code</label>
+                    <label className="text-sm font-medium">
+                      Verification Code
+                    </label>
                     <Input
                       placeholder="6-digit code"
                       inputMode="numeric"
@@ -426,9 +440,13 @@ function Account() {
                       {codeError ? (
                         <span className="text-red-600">{codeError}</span>
                       ) : codeFormatValid ? (
-                        <span className="text-green-600">Code format looks good</span>
+                        <span className="text-green-600">
+                          Code format looks good
+                        </span>
                       ) : (
-                        <span className="text-amber-600">Enter a 6-digit numeric code</span>
+                        <span className="text-amber-600">
+                          Enter a 6-digit numeric code
+                        </span>
                       )}
                       {!codeError && resetSent && (
                         <span className="text-gray-500">Code sent</span>
@@ -445,16 +463,48 @@ function Account() {
                       onChange={(e) => setNewPassword(e.target.value)}
                     />
                     <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-600 mt-1">
-                      <span className={passwordChecks.minLength ? "text-green-600" : ""}>• 8+ characters</span>
-                      <span className={passwordChecks.hasUppercase ? "text-green-600" : ""}>• Uppercase</span>
-                      <span className={passwordChecks.hasLowercase ? "text-green-600" : ""}>• Lowercase</span>
-                      <span className={passwordChecks.hasNumber ? "text-green-600" : ""}>• Number</span>
-                      <span className={passwordChecks.hasSpecial ? "text-green-600" : ""}>• Symbol</span>
+                      <span
+                        className={
+                          passwordChecks.minLength ? "text-green-600" : ""
+                        }
+                      >
+                        • 8+ characters
+                      </span>
+                      <span
+                        className={
+                          passwordChecks.hasUppercase ? "text-green-600" : ""
+                        }
+                      >
+                        • Uppercase
+                      </span>
+                      <span
+                        className={
+                          passwordChecks.hasLowercase ? "text-green-600" : ""
+                        }
+                      >
+                        • Lowercase
+                      </span>
+                      <span
+                        className={
+                          passwordChecks.hasNumber ? "text-green-600" : ""
+                        }
+                      >
+                        • Number
+                      </span>
+                      <span
+                        className={
+                          passwordChecks.hasSpecial ? "text-green-600" : ""
+                        }
+                      >
+                        • Symbol
+                      </span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium">Confirm Password</label>
+                    <label className="text-sm font-medium">
+                      Confirm Password
+                    </label>
                     <Input
                       type="password"
                       className="mt-1"
@@ -463,8 +513,16 @@ function Account() {
                     />
                     <div className="text-[11px] mt-1">
                       {newPassword && confirmPassword && (
-                        <span className={passwordChecks.match ? "text-green-600" : "text-red-600"}>
-                          {passwordChecks.match ? "Passwords match" : "Passwords do not match"}
+                        <span
+                          className={
+                            passwordChecks.match
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }
+                        >
+                          {passwordChecks.match
+                            ? "Passwords match"
+                            : "Passwords do not match"}
                         </span>
                       )}
                     </div>
@@ -503,10 +561,14 @@ function Account() {
                         setNewPassword("");
                         setConfirmPassword("");
                       } else {
-                        toast.error(res.data?.message || "Failed to reset password");
+                        toast.error(
+                          res.data?.message || "Failed to reset password"
+                        );
                       }
                     } catch (error) {
-                      const msg = error.response?.data?.message || "Failed to reset password";
+                      const msg =
+                        error.response?.data?.message ||
+                        "Failed to reset password";
                       if (msg.toLowerCase().includes("code")) setCodeError(msg);
                       toast.error(msg);
                     } finally {

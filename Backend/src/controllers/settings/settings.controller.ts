@@ -236,7 +236,9 @@ export class SettingsController {
       ) {
         throw error;
       }
-      throw new InternalServerErrorException('Failed to request password reset');
+      throw new InternalServerErrorException(
+        'Failed to request password reset',
+      );
     }
   }
 
@@ -250,10 +252,14 @@ export class SettingsController {
     const newPassword = body?.newPassword;
 
     if (!code || !/^\d{6}$/.test(code)) {
-      throw new BadRequestException('Verification code must be a 6-digit number');
+      throw new BadRequestException(
+        'Verification code must be a 6-digit number',
+      );
     }
     if (!newPassword || newPassword.length < 8) {
-      throw new BadRequestException('New password must be at least 8 characters long');
+      throw new BadRequestException(
+        'New password must be at least 8 characters long',
+      );
     }
 
     const client = this.databaseService.getClient();
@@ -296,8 +302,14 @@ export class SettingsController {
       return await (async () => {
         const bcrypt = await import('bcryptjs');
         const passwordHash = await bcrypt.hash(newPassword, 10);
-        await client.query('UPDATE user_staff SET password = $1, last_updated = NOW() WHERE staff_id = $2', [passwordHash, staffId]);
-        await client.query('DELETE FROM staff_password_resets WHERE staff_id = $1', [staffId]);
+        await client.query(
+          'UPDATE user_staff SET password = $1, last_updated = NOW() WHERE staff_id = $2',
+          [passwordHash, staffId],
+        );
+        await client.query(
+          'DELETE FROM staff_password_resets WHERE staff_id = $1',
+          [staffId],
+        );
         return { ok: true, message: 'Password has been reset successfully' };
       })();
     } catch (error) {

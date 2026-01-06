@@ -38,16 +38,16 @@ export default function Header() {
           <h1>Loading...</h1>
         </header>
       ) : (
-        <header className="flex w-full justify-between items-center h-15 bg-orange-500 text-white px-2">
-          <Link to={"/"} className="text-center h-auto">
+        <header className="flex flex-wrap w-full justify-between items-center bg-[#CD5C08] text-white px-2 py-2">
+          <Link to={"/"} className="flex items-center">
             <img
               src="/NutriBin_Logo.svg"
               alt="NutriBin Logo"
-              className="h-8 px-4"
+              className="h-8 sm:h-10 md:h-12 w-auto"
             />
           </Link>
           {user ? (
-            <nav className="flex gap-2">
+            <nav className="flex flex-wrap gap-2 sm:gap-4 items-center">
               <Button asChild className={"bg-transparent hover:bg-amber-700"}>
                 <Link to={"/dashboard"}>Dashboard</Link>
               </Button>
@@ -61,7 +61,7 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     className={
-                      "bg-transparent border-none outline-none cursor-pointer"
+                      "bg-transparent border-none outline-none cursor-pointer truncate max-w-xs sm:max-w-sm"
                     }
                     variant="outline"
                   >
@@ -73,8 +73,8 @@ export default function Header() {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="start">
-                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                <DropdownMenuContent className="w-full max-w-xs sm:max-w-sm" align="start">
+                  <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
                   <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
                       <Link to="/settings">Settings</Link>
@@ -88,7 +88,7 @@ export default function Header() {
               </DropdownMenu>
             </nav>
           ) : (
-            <nav className="flex w-auto px-2 gap-4">
+            <nav className="flex flex-wrap gap-2 sm:gap-4 items-center">
               <Button asChild className={"bg-transparent hover:bg-amber-700"}>
                 <Link to={"/login"}>Home</Link>
               </Button>

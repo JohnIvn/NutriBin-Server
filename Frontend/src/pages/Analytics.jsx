@@ -1,111 +1,210 @@
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Pie, PieChart, Cell, Legend, ReferenceLine, LabelList } from "recharts"
 import {
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
 } from "@/components/ui/chart"
-import { TrendingUp } from "lucide-react"
-import { Pie, PieChart } from "recharts"
+import { TrendingUp, Activity, Package, Trash2, Gauge, Zap, CheckCircle2, AlertTriangle } from "lucide-react"
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 
 function Analytics() {
-	const barChartData = [
-		{ month: "NB3123", nitrogen: 24, phosporus: 32, potassium: 35 },
-		{ month: "NB2123", nitrogen: 27, phosporus: 37, potassium: 49 },
-		{ month: "NB1123", nitrogen: 31, phosporus: 24, potassium: 42 },
-		{ month: "NB4123", nitrogen: 43, phosporus: 21, potassium: 32 },
-		{ month: "NB5123", nitrogen: 35, phosporus: 30, potassium: 27 },
-	]
-	const pieChartData = [
-		{ browser: "nitrogen", visitors: 275, fill: "var(--color-nitrogen)" },
-		{ browser: "phosporus", visitors: 200, fill: "var(--color-phosporus)" },
-		{ browser: "potassium", visitors: 187, fill: "var(--color-potassium)" },
-	]
+  const barChartData = [
+    { batch: "NB3123", nitrogen: 24, phosporus: 32, potassium: 35 },
+    { batch: "NB2123", nitrogen: 27, phosporus: 37, potassium: 49 },
+    { batch: "NB1123", nitrogen: 31, phosporus: 24, potassium: 42 },
+    { batch: "NB4123", nitrogen: 43, phosporus: 21, potassium: 32 },
+    { batch: "NB5123", nitrogen: 35, phosporus: 30, potassium: 27 },
+  ]
+  
+  const pieChartData = [
+    { name: "Nitrogen", value: 275, fill: "#624DE3" },
+    { name: "Phosporus", value: 200, fill: "#00A7E1" },
+    { name: "Potassium", value: 187, fill: "#CD5C08" },
+  ]
 
-	const chartConfig = {
-		nitrogen: {
-			label: "nitrogen",
-			color: "#624DE3",
-		},
-		phosporus: {
-			label: "phosporus",
-			color: "#00A7E1",
-		},
-		potassium: {
-			label: "potassium",
-			color: "#CD5C08",
-		},
-	}
-	return (
-		<section className='flex flex-col min-h-full h-auto w-3/4 m-auto rounded-xl justify-start items-center p-4 gap-2 text-black'>
-			<h1 className='text-5xl font-bold'>Fertilizer Analytics</h1>
-			<section className='flex flex-col justify-center lg:flex-row w-full h-full py-2 gap-2'>
-				<div className="flex flex-col justify-start w-1/2">
+  const chartConfig = {
+    nitrogen: { label: "Nitrogen", color: "#624DE3" },
+    phosporus: { label: "Phosporus", color: "#00A7E1" },
+    potassium: { label: "Potassium", color: "#CD5C08" },
+  }
 
-					<h1 className="text-center text-2xl font-medium my-2 mx-auto">NPK Ratio Overview</h1>
-					<h1 className="font-medium">Per Nutribin:</h1>
-					<ChartContainer config={chartConfig} className="h-48 w-lg">
-						<BarChart accessibilityLayer data={barChartData}>
-							<CartesianGrid vertical={false} />
-							<XAxis
-								dataKey="month"
-								tickLine={false}
-								tickMargin={10}
-								axisLine={false}
-								tickFormatter={(value) => value.slice(0, 3)}
-							/>
-							<ChartTooltip content={<ChartTooltipContent />} />
-							<Bar dataKey="nitrogen" fill="var(--color-nitrogen)" radius={4} />
-							<Bar dataKey="phosporus" fill="var(--color-phosporus)" radius={4} />
-							<Bar dataKey="potassium" fill="var(--color-potassium)" radius={4} />
-						</BarChart>
-					</ChartContainer>
-					<Card className="flex flex-col text-black">
-						<CardHeader className="items-center pb-0">
-							<CardTitle>Pie Chart - Total NPK Nutrients</CardTitle>
-							<CardDescription>January - June 2024</CardDescription>
-						</CardHeader>
-						<CardContent className="flex-1 pb-0">
-							<ChartContainer
-								config={chartConfig}
-								className="[&_.recharts-pie-label-text]:fill-black mx-auto aspect-square h-64 pb-0"
-							>
-								<PieChart>
-									<ChartTooltip content={<ChartTooltipContent hideLabel />} />
-									<Pie data={pieChartData} dataKey="visitors" label nameKey="browser" />
-								</PieChart>
-							</ChartContainer>
-						</CardContent>
-						<CardFooter className="flex-col gap-2 text-sm">
-							<div className="flex items-center gap-2 leading-none font-medium">
-								Nitrogen being the most 5.3% more common<TrendingUp className="h-4 w-4" />
-							</div>
-							<div className="text-black leading-none">
-								Showing total visitors for the last 6 months
-							</div>
-						</CardFooter>
-					</Card>
-				</div>
-				<div className='flex lg:flex-col justify-center items-start h-full w-full lg:w-1/3 gap-2'>
-					<h1 className="mx-auto text-2xl font-medium mb-4">Summary</h1>
-					<h1 className="flex justify-center items-center rounded-full bg-secondary w-40 h-40 text-4xl font-medium text-white p-4 mx-auto">5</h1>
-					<h1 className="mx-auto text-2xl font-medium">Machines</h1>
-					<h1 className="flex justify-center items-center rounded-full bg-[#624DE3] w-40 h-40 text-4xl font-medium text-white p-4 mx-auto">15kg</h1>
-					<h1 className="mx-auto text-2xl font-medium">Waste</h1>
-					<h1 className="flex justify-center items-center rounded-full bg-secondary w-40 h-40 text-4xl font-medium text-white p-4 mx-auto">12.32kg</h1>
-					<h1 className="mx-auto text-2xl font-medium">Fertilizer</h1>
-				</div>
-			</section>
-		</section>
-	)
+  return (
+    <div className="w-full bg-[#FDF8F1] min-h-screen p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
+      
+      {/* header */}
+      <div className="flex flex-col gap-1 border-l-4 border-[#CD5C08] pl-6">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
+          Fertilizer Analytics
+        </h1>
+        <p className="text-sm text-muted-foreground italic">
+          Real-time nutrient distribution and production efficiency.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        
+        {/* charts */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="shadow-xl border-gray-100 bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-[#CD5C08]" />
+                  <CardTitle>NPK Ratio Overview</CardTitle>
+                </div>
+                <CardDescription>Nutrient percentage per Nutribin batch ID</CardDescription>
+              </div>
+              <div className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-500">
+                Target: 30%
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                <BarChart data={barChartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis dataKey="batch" tickLine={false} tickMargin={10} axisLine={false} className="text-xs font-medium" />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={10} className="text-xs font-medium" unit="%" />
+                  <ChartTooltip cursor={{fill: '#f8f9fa'}} content={<ChartTooltipContent />} />
+                  <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{paddingBottom: '20px'}} />
+                  <ReferenceLine y={30} stroke="#e2e8f0" strokeDasharray="5 5" label={{ position: 'right', value: 'Goal', fill: '#94a3b8', fontSize: 10 }} />
+                  <Bar dataKey="nitrogen" fill="var(--color-nitrogen)" radius={[4, 4, 0, 0]}>
+                    <LabelList dataKey="nitrogen" position="top" className="fill-gray-400 text-[10px]" />
+                  </Bar>
+                  <Bar dataKey="phosporus" fill="var(--color-phosporus)" radius={[4, 4, 0, 0]}>
+                    <LabelList dataKey="phosporus" position="top" className="fill-gray-400 text-[10px]" />
+                  </Bar>
+                  <Bar dataKey="potassium" fill="var(--color-potassium)" radius={[4, 4, 0, 0]}>
+                    <LabelList dataKey="potassium" position="top" className="fill-gray-400 text-[10px]" />
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-xl border-gray-100 bg-white">
+            <CardHeader className="items-center pb-2">
+              <CardTitle>Total Nutrient Composition</CardTitle>
+              <CardDescription>Cumulative distribution across all batches</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0">
+              <ChartContainer config={chartConfig} className="mx-auto aspect-square h-80">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                  <Pie data={pieChartData} dataKey="value" nameKey="name" innerRadius={70} outerRadius={100} paddingAngle={5} cornerRadius={6} stroke="white" strokeWidth={2} label={({ name, value }) => `${name}: ${value}`}>
+                    {pieChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                  </Pie>
+                  <Legend verticalAlign="bottom" height={36}/>
+                </PieChart>
+              </ChartContainer>
+            </CardContent>
+            <CardFooter className="flex-col gap-2 text-sm mt-4">
+              <div className="flex items-center gap-2 leading-none font-bold text-gray-800">
+                Nitrogen is 5.3% more common this period <TrendingUp className="h-4 w-4 text-green-500" />
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+
+        {/* summary */}
+        <div className="flex flex-col gap-4">
+          <div className="px-2">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Zap className="h-5 w-5 text-[#CD5C08] fill-[#CD5C08]/20" />
+              Operational Summary
+            </h2>
+            <p className="text-xs text-gray-500 mb-2 italic">Performance tracking and status updates.</p>
+          </div>
+          
+          <div className="flex-grow grid grid-cols-1 gap-4">
+            {/* active machines */}
+            <Card className="bg-white border-none shadow-lg hover:shadow-[#CD5C08]/20 transition-all group overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Gauge className="h-16 w-16 text-gray-900" />
+              </div>
+              <CardContent className="p-6 relative z-10">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status Check</p>
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-4xl font-black text-gray-900">05</h3>
+                  <span className="text-xs font-bold text-gray-500 uppercase">Active Machines</span>
+                </div>
+                <div className="mt-4 w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                   <div className="bg-[#CD5C08] h-full w-[85%] rounded-full" />
+                </div>
+                <p className="text-[10px] text-gray-500 mt-2 font-medium">System healthy and operational.</p>
+              </CardContent>
+            </Card>
+
+            {/* processed waste */}
+            <Card className="bg-white border-none shadow-lg hover:shadow-[#624DE3]/20 transition-all group overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Trash2 className="h-16 w-16 text-gray-900" />
+              </div>
+              <CardContent className="p-6 relative z-10">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Resource Input</p>
+                <div className="flex flex-col">
+                  <h3 className="text-4xl font-black text-gray-900">15.0<span className="text-lg ml-1 text-gray-400">kg</span></h3>
+                  <span className="text-xs font-bold text-gray-500 uppercase mt-1">Processed Waste</span>
+                </div>
+                <p className="text-[10px] text-gray-500 mt-4 font-medium italic border-l-2 border-[#624DE3] pl-2">
+                  Daily intake processed via bio-digesters.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* fertilizer yield */}
+            <Card className="bg-white border-none shadow-lg hover:shadow-[#CD5C08]/20 transition-all group overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Package className="h-16 w-16 text-gray-900" />
+              </div>
+              <CardContent className="p-6 relative z-10">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Production Result</p>
+                <div className="flex flex-col">
+                  <h3 className="text-4xl font-black text-[#CD5C08]">12.32<span className="text-lg ml-1 opacity-60">kg</span></h3>
+                  <span className="text-xs font-bold text-gray-500 uppercase mt-1">Fertilizer Yield</span>
+                </div>
+                <div className="mt-4 flex gap-1">
+                  {[1,2,3,4,5,6,7,8].map(i => (
+                    <div key={i} className={`h-1 flex-1 rounded-full ${i < 7 ? 'bg-[#CD5C08]' : 'bg-gray-100'}`} />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* system status */}
+            <Card className="bg-[#1a1a1a] border-none shadow-2xl text-white">
+               <CardHeader className="pb-2 pt-4 px-4">
+                 <CardTitle className="text-[11px] uppercase tracking-tighter text-gray-400 font-bold flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                   Machine Status List
+                 </CardTitle>
+               </CardHeader>
+               <CardContent className="px-4 pb-4 space-y-3">
+                 <div className="flex items-center justify-between text-[11px] border-b border-white/10 pb-2 font-medium">
+                    <span className="text-gray-400">#01 Digester</span>
+                    <span className="text-green-400">Online</span>
+                 </div>
+                 <div className="flex items-center justify-between text-[11px] border-b border-white/10 pb-2 font-medium">
+                    <span className="text-gray-400">#02 Mixer</span>
+                    <span className="text-green-400">Online</span>
+                 </div>
+                 <div className="flex items-center justify-between text-[11px] font-medium">
+                    <span className="text-gray-400">#04 Calibrator</span>
+                    <span className="text-amber-400">Maintenance</span>
+                 </div>
+               </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
-export default Analytics
+export default Analytics;

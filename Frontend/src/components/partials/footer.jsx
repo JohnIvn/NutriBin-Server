@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 
 export default function Footer() {
   return (
-    <header className='flex w-full justify-between items-center h-20 bg-orange-500 text-white'>
+    <header className='flex w-full justify-between items-center h-15 bg-orange-500 text-white'>
       <nav className="flex w-auto px-2">
         <div>
           <Button asChild className={"bg-transparent hover:bg-amber-700"}>

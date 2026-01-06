@@ -38,7 +38,7 @@ export default function Header() {
           <h1>Loading...</h1>
         </header>
       ) : (
-        <header className="flex w-full justify-between items-center h-12 bg-orange-500 text-white px-2">
+        <header className="flex w-full justify-between items-center h-15 bg-orange-500 text-white px-2">
           <Link to={"/"} className="text-center h-auto">
             <img
               src="/NutriBin_Logo.svg"

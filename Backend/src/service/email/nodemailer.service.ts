@@ -154,6 +154,26 @@ export class NodemailerService {
   }
 
   /**
+   * Send a password reset code email (6-digit code)
+   * @param to Recipient email address
+   * @param code 6-digit reset code
+   */
+  async sendPasswordResetCodeEmail(to: string, code: string) {
+    const subject = 'Your NutriBin Password Reset Code';
+    const html = `
+      <h2>Password Reset Code</h2>
+      <p>Use the verification code below to reset your NutriBin account password.</p>
+      <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${code}</p>
+      <p>This code will expire in 15 minutes.</p>
+      <p>If you did not request a password reset, you can safely ignore this email.</p>
+      <br/>
+      <p>Best regards,</p>
+      <p>The NutriBin Team</p>
+    `;
+    return this.sendHtmlEmail(to, subject, html);
+  }
+
+  /**
    * Send a repair notification email
    * @param to Recipient email address
    * @param repairDetails Details about the repair

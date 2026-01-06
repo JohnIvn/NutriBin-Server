@@ -16,12 +16,30 @@ import { useForm } from "react-hook-form";
 import { useUser } from "@/contexts/UserContext";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function Account() {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
   const { user } = useUser();
+  const [resetOpen, setResetOpen] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [emailShown, setEmailShown] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [codeError, setCodeError] = useState("");
+  const [codeFormatValid, setCodeFormatValid] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetSubmitting, setResetSubmitting] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(adminAccount),
@@ -60,6 +78,7 @@ function Account() {
           number: staff.contact_number || "",
           gender: "male", // Default since gender is not in the backend
         });
+        setEmailShown(staff.email || user?.email || "");
       }
     } catch (error) {
       toast.error("Failed to load profile data");
@@ -67,6 +86,24 @@ function Account() {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (!resetCode) {
+      setCodeFormatValid(false);
+      setCodeError("");
+      return;
+    }
+    setCodeFormatValid(/^\d{6}$/.test(resetCode.trim()));
+  }, [resetCode]);
+
+  const passwordChecks = {
+    minLength: newPassword && newPassword.length >= 8,
+    hasUppercase: newPassword && /[A-Z]/.test(newPassword),
+    hasLowercase: newPassword && /[a-z]/.test(newPassword),
+    hasNumber: newPassword && /\d/.test(newPassword),
+    hasSpecial: newPassword && /[^A-Za-z0-9]/.test(newPassword),
+    match: newPassword && confirmPassword && newPassword === confirmPassword,
   };
 
   const handleSubmission = async () => {
@@ -310,13 +347,178 @@ function Account() {
             </h1>
             <hr className="w-full border-gray-100" />
             <p className="text-gray-500 text-center text-sm leading-relaxed w-full">
-              Request a password change link sent to your registered email
-              address.
+              Request a 6-digit code sent to your registered email, then enter it below to reset your password.
             </p>
-            <Button className="w-full h-10 bg-sky-700 hover:bg-sky-800 cursor-pointer">
+            <Button
+              className="w-full h-10 bg-sky-700 hover:bg-sky-800 cursor-pointer"
+              type="button"
+              onClick={() => {
+                setResetSent(false);
+                setResetOpen(true);
+              }}
+            >
               Reset
             </Button>
           </div>
+
+          <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+            <DialogContent className="bg-white">
+              <DialogHeader>
+                <DialogTitle>Reset Password</DialogTitle>
+                <DialogDescription>
+                  Send a 6-digit code to your email, then enter it below with your new password.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 p-3 border border-dashed border-gray-200 rounded-md bg-gray-50">
+                    <div className="text-sm text-gray-600">Registered email</div>
+                    <div className="font-semibold">{emailShown || user?.email || "(unknown)"}</div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={sendingReset}
+                    onClick={async () => {
+                      try {
+                        setSendingReset(true);
+                        const res = await Requests({
+                          url: `/settings/${user.staff_id}/password-reset`,
+                          method: "POST",
+                          credentials: true,
+                        });
+                        if (res.data?.ok) {
+                          setResetSent(true);
+                          setCodeError("");
+                          toast.success("Verification code sent to your email");
+                        } else {
+                          toast.error(res.data?.message || "Failed to send code");
+                        }
+                      } catch (error) {
+                        console.error(error);
+                        toast.error(
+                          error.response?.data?.message || "Failed to send code"
+                        );
+                      } finally {
+                        setSendingReset(false);
+                      }
+                    }}
+                  >
+                    {sendingReset ? "Sending..." : resetSent ? "Resend Code" : "Send Code"}
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label className="text-sm font-medium">Verification Code</label>
+                    <Input
+                      placeholder="6-digit code"
+                      inputMode="numeric"
+                      maxLength={6}
+                      className="mt-1"
+                      value={resetCode}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^0-9]/g, "");
+                        setResetCode(v);
+                      }}
+                    />
+                    <div className="flex items-center gap-2 text-xs mt-1">
+                      {codeError ? (
+                        <span className="text-red-600">{codeError}</span>
+                      ) : codeFormatValid ? (
+                        <span className="text-green-600">Code format looks good</span>
+                      ) : (
+                        <span className="text-amber-600">Enter a 6-digit numeric code</span>
+                      )}
+                      {!codeError && resetSent && (
+                        <span className="text-gray-500">Code sent</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">New Password</label>
+                    <Input
+                      type="password"
+                      className="mt-1"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-600 mt-1">
+                      <span className={passwordChecks.minLength ? "text-green-600" : ""}>• 8+ characters</span>
+                      <span className={passwordChecks.hasUppercase ? "text-green-600" : ""}>• Uppercase</span>
+                      <span className={passwordChecks.hasLowercase ? "text-green-600" : ""}>• Lowercase</span>
+                      <span className={passwordChecks.hasNumber ? "text-green-600" : ""}>• Number</span>
+                      <span className={passwordChecks.hasSpecial ? "text-green-600" : ""}>• Symbol</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">Confirm Password</label>
+                    <Input
+                      type="password"
+                      className="mt-1"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <div className="text-[11px] mt-1">
+                      {newPassword && confirmPassword && (
+                        <span className={passwordChecks.match ? "text-green-600" : "text-red-600"}>
+                          {passwordChecks.match ? "Passwords match" : "Passwords do not match"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  className="bg-sky-700 hover:bg-sky-800"
+                  disabled={
+                    resetSubmitting ||
+                    !codeFormatValid ||
+                    !passwordChecks.minLength ||
+                    !passwordChecks.hasUppercase ||
+                    !passwordChecks.hasLowercase ||
+                    !passwordChecks.hasNumber ||
+                    !passwordChecks.hasSpecial ||
+                    !passwordChecks.match
+                  }
+                  onClick={async () => {
+                    try {
+                      setResetSubmitting(true);
+                      const res = await Requests({
+                        url: `/settings/${user.staff_id}/password-reset/verify`,
+                        method: "POST",
+                        data: { code: resetCode, newPassword },
+                        credentials: true,
+                      });
+                      if (res.data?.ok) {
+                        toast.success("Password has been reset successfully");
+                        setCodeError("");
+                        setResetOpen(false);
+                        setResetCode("");
+                        setNewPassword("");
+                        setConfirmPassword("");
+                      } else {
+                        toast.error(res.data?.message || "Failed to reset password");
+                      }
+                    } catch (error) {
+                      const msg = error.response?.data?.message || "Failed to reset password";
+                      if (msg.toLowerCase().includes("code")) setCodeError(msg);
+                      toast.error(msg);
+                    } finally {
+                      setResetSubmitting(false);
+                    }
+                  }}
+                >
+                  {resetSubmitting ? "Resetting..." : "Reset Password"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           <div className="flex flex-col justify-center items-center h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
             <h1 className="text-lg font-bold tracking-tight text-black text-center w-full">

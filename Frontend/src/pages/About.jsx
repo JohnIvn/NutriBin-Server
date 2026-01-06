@@ -40,16 +40,16 @@ export default function About() {
 
       {/* hero */}
 
-      <section className="max-w-8xl mx-auto px-16 py-16 grid md:grid-cols-2 gap-2 items-center bg-[#FFF5E4]">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 py-8 sm:py-12 lg:py-16 grid md:grid-cols-2 gap-4 sm:gap-6 items-center bg-[#FFF5E4]">
         <div className="flex items-center gap-6">
           <div className="h-28 w-28 rounded-xl flex items-center justify-center">
             <img src="/Logo.svg" alt="logo" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
             NutriBin: Excess Food Composting and Fertilizer Monitoring System
           </h1>
         </div>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
           NutriBin is an intelligent IoT ecosystem that bridges the gap between
           household waste and sustainable agriculture. It transforms organic food
           scraps into nutrient-rich fertilizer using high‑performance mechanical
@@ -59,9 +59,9 @@ export default function About() {
 
       {/* features */}
 
-      <section className="max-w-6xl mx-auto px-6 py-14">
-        <h2 className="text-2xl font-bold mb-10">What’s the Key Features?</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
+        <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-10">What's the Key Features?</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <FeatureCard
             icon={<Cpu />}
             title="Automated Thermal Processing"
@@ -91,9 +91,9 @@ export default function About() {
       </section>
 
       {/* flow */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
-        <h2 className="text-2xl font-bold mb-10">Input, Process & Output</h2>
-        <div className="grid md:grid-cols-3 gap-6 text-center">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
+        <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-10">Input, Process & Output</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 text-center">
           <ProcessStep
             icon={<Leaf />}
             title="Input"

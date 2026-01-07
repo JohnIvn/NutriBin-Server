@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './controllers/app.controller';
 import { StaffAuthController } from './controllers/staff/staff-auth.controller';
 import { StaffManagementController } from './controllers/management/staff-management.controller';
+import { UserManagementController } from './controllers/management/user-management.controller';
 import { RepairManagementController } from './controllers/management/repair-management.controller';
 import { SettingsController } from './controllers/settings/settings.controller';
 
@@ -16,6 +17,7 @@ import { NodemailerService } from './service/email/nodemailer.service';
     AppController,
     StaffAuthController,
     StaffManagementController,
+    UserManagementController,
     RepairManagementController,
     SettingsController,
   ],

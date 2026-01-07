@@ -55,6 +55,9 @@ export default function Header() {
                 <Link to={"/staff"}>Staff</Link>
               </Button>
               <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+                <Link to={"/users"}>Users</Link>
+              </Button>
+              <Button asChild className={"bg-transparent hover:bg-amber-700"}>
                 <Link to={"/machines"}>Repairs</Link>
               </Button>
               <DropdownMenu>
@@ -73,8 +76,13 @@ export default function Header() {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full max-w-xs sm:max-w-sm" align="start">
-                  <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
+                <DropdownMenuContent
+                  className="w-full max-w-xs sm:max-w-sm"
+                  align="start"
+                >
+                  <DropdownMenuLabel className="truncate">
+                    {user.email}
+                  </DropdownMenuLabel>
                   <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
                       <Link to="/settings">Settings</Link>

@@ -5,6 +5,7 @@ import Machines from "@/pages/Machines";
 import Modules from "@/pages/Modules";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Staff from "@/pages/Staff";
+import Users from "@/pages/Users";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import About from "@/pages/About";
 import Faqs from "@/pages/Faqs";
@@ -25,6 +26,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Staff />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute>
+            <Users />
           </ProtectedRoute>
         }
       />

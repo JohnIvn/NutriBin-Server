@@ -108,7 +108,47 @@ export class StaffAuthService {
     const email = normalizeEmail(emailRaw);
     const client = this.databaseService.getClient();
 
-    const result = await client.query<StaffDbRow>(
+    // First check user_admin table
+    const adminResult = await client.query<any>(
+      `SELECT admin_id as id, first_name, last_name, contact_number, address, email, password, date_created, last_updated, status
+       FROM user_admin
+       WHERE email = $1
+       LIMIT 1`,
+      [email],
+    );
+
+    if (adminResult.rowCount) {
+      const admin = adminResult.rows[0];
+      const matches = await bcrypt.compare(password, admin.password);
+
+      if (!matches) {
+        return {
+          ok: false,
+          error: 'Wrong password',
+        };
+      }
+
+      const safeAdmin = {
+        admin_id: admin.id,
+        first_name: admin.first_name,
+        last_name: admin.last_name,
+        contact_number: admin.contact_number,
+        address: admin.address,
+        email: admin.email,
+        date_created: admin.date_created,
+        last_updated: admin.last_updated,
+        status: admin.status,
+        role: 'admin',
+      };
+
+      return {
+        ok: true,
+        staff: safeAdmin,
+      };
+    }
+
+    // If not found in admin, check user_staff table
+    const staffResult = await client.query<StaffDbRow>(
       `SELECT staff_id, first_name, last_name, contact_number, address, email, password, date_created, last_updated, status
        FROM user_staff
        WHERE email = $1
@@ -116,14 +156,14 @@ export class StaffAuthService {
       [email],
     );
 
-    if (!result.rowCount) {
+    if (!staffResult.rowCount) {
       return {
         ok: false,
         error: 'Account not found',
       };
     }
 
-    const staff = result.rows[0];
+    const staff = staffResult.rows[0];
 
     const matches = await bcrypt.compare(password, staff.password);
     if (!matches) {
@@ -133,7 +173,7 @@ export class StaffAuthService {
       };
     }
 
-    const safeStaff: StaffPublicRow = {
+    const safeStaff: any = {
       staff_id: staff.staff_id,
       first_name: staff.first_name,
       last_name: staff.last_name,
@@ -143,6 +183,7 @@ export class StaffAuthService {
       date_created: staff.date_created,
       last_updated: staff.last_updated,
       status: staff.status,
+      role: 'staff',
     };
 
     return {

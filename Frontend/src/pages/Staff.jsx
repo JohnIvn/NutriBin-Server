@@ -47,8 +47,12 @@ import AdminModal from "@/components/partials/adminModal";
 import ConfirmBox from "@/components/partials/confirmBox";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
+import { useUser } from "@/contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 
 function Staff() {
+  const { user } = useUser();
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
@@ -63,7 +67,15 @@ function Staff() {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const role = "admin";
+  // Redirect if not admin
+  useEffect(() => {
+    if (user && user.role !== "admin") {
+      toast.error("Access denied. Admin privileges required.");
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
+  const role = user?.role || "staff";
 
   const filterForm = useForm({
     resolver: zodResolver(userFilter),

@@ -19,7 +19,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/e2e/jest-e2e.json",
-    "test:email": "ts-node scripts/test-email.ts"
+    "test:email": "ts-node scripts/test-email.ts",
+    "seed:admin": "ts-node scripts/seed-admin.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

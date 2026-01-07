@@ -325,45 +325,11 @@ export class StaffAuthService {
         };
       }
 
-      // If user doesn't exist, create a new staff account
-      const newStaff = await client.query<StaffPublicRow>(
-        `INSERT INTO user_staff (first_name, last_name, email, password, birthday, age)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING staff_id, first_name, last_name, contact_number, address, email, date_created, last_updated, status`,
-        [
-          firstName,
-          lastName,
-          email,
-          '', // Empty password for Google sign-in users
-          '1990-01-01', // Default birthday
-          0, // Default age
-        ],
-      );
-
-      const staff = newStaff.rows[0];
-      if (!staff) {
-        throw new InternalServerErrorException(
-          'Failed to create staff account',
-        );
-      }
-
-      const safeStaff: any = {
-        staff_id: staff.staff_id,
-        first_name: staff.first_name,
-        last_name: staff.last_name,
-        contact_number: staff.contact_number,
-        address: staff.address,
-        email: staff.email,
-        date_created: staff.date_created,
-        last_updated: staff.last_updated,
-        status: staff.status,
-        role: 'staff',
-      };
-
+      // Account not found - don't allow login
       return {
-        ok: true,
-        staff: safeStaff,
-        newAccount: true,
+        ok: false,
+        error:
+          'No account found with this email. Please contact an administrator to create your account.',
       };
     } catch (error) {
       console.error('Google Sign-In Error:', error);

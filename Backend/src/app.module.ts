@@ -5,6 +5,7 @@ import { StaffManagementController } from './controllers/management/staff-manage
 import { UserManagementController } from './controllers/management/user-management.controller';
 import { RepairManagementController } from './controllers/management/repair-management.controller';
 import { ArchiveManagementController } from './controllers/management/archive-management.controller';
+import { MachineManagementController } from './controllers/management/machine-management.controller';
 import { SettingsController } from './controllers/settings/settings.controller';
 
 import { AppService } from './service/app.service';
@@ -21,6 +22,7 @@ import { NodemailerService } from './service/email/nodemailer.service';
     UserManagementController,
     RepairManagementController,
     ArchiveManagementController,
+    MachineManagementController,
     SettingsController,
   ],
   providers: [AppService, DatabaseService, StaffAuthService, NodemailerService],

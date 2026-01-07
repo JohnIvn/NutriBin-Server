@@ -2,6 +2,7 @@ import Settings from "@/pages/Settings";
 import Analytics from "@/pages/Analytics";
 import Login from "@/pages/Login";
 import Machines from "@/pages/Machines";
+import MachinesGrid from "@/pages/MachinesGrid";
 import Modules from "@/pages/Modules";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Staff from "@/pages/Staff";
@@ -63,7 +64,15 @@ function PageRouter() {
         }
       />
       <Route
-        path="/machines"
+        path="/machine"
+        element={
+          <ProtectedRoute>
+            <MachinesGrid />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/repair"
         element={
           <ProtectedRoute>
             <Machines />

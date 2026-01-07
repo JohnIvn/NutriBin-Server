@@ -51,6 +51,9 @@ export default function Header() {
               <Button asChild className={"bg-transparent hover:bg-amber-700"}>
                 <Link to={"/dashboard"}>Dashboard</Link>
               </Button>
+              <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+                <Link to={"/machine"}>Machines</Link>
+              </Button>
               {user.role === "admin" && (
                 <Button asChild className={"bg-transparent hover:bg-amber-700"}>
                   <Link to={"/staff"}>Staff</Link>
@@ -65,7 +68,7 @@ export default function Header() {
                 </Button>
               )}
               <Button asChild className={"bg-transparent hover:bg-amber-700"}>
-                <Link to={"/machines"}>Repairs</Link>
+                <Link to={"/repair"}>Repairs</Link>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

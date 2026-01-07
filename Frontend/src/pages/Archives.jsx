@@ -62,16 +62,17 @@ function Archives() {
   const fetchArchives = async () => {
     try {
       setLoading(true);
-      const endpoint = activeTab === "users" 
-        ? "/management/archives/users"
-        : "/management/archives/staff";
-      
+      const endpoint =
+        activeTab === "users"
+          ? "/management/archives/users"
+          : "/management/archives/staff";
+
       const response = await Requests({
         url: endpoint,
         method: "GET",
         credentials: true,
       });
-      
+
       if (response.data.ok) {
         if (activeTab === "users") {
           setUserArchives(response.data.archives || []);
@@ -90,12 +91,16 @@ function Archives() {
   const term = filterForm.watch("term").toLowerCase();
 
   const currentData = activeTab === "users" ? userArchives : staffArchives;
-  
+
   const filteredData = currentData.filter((item) => {
     const fullName = `${item.first_name} ${item.last_name}`.toLowerCase();
     const email = item.email?.toLowerCase() || "";
     const id = activeTab === "users" ? item.customer_id : item.staff_id;
-    return fullName.includes(term) || email.includes(term) || id?.toLowerCase().includes(term);
+    return (
+      fullName.includes(term) ||
+      email.includes(term) ||
+      id?.toLowerCase().includes(term)
+    );
   });
 
   const totalPages = Math.ceil(filteredData.length / count);
@@ -247,7 +252,9 @@ function Archives() {
                     </TableHead>
                   )}
                   {activeTab === "staff" && (
-                    <TableHead className="font-bold text-gray-700">AGE</TableHead>
+                    <TableHead className="font-bold text-gray-700">
+                      AGE
+                    </TableHead>
                   )}
                   <TableHead className="font-bold text-gray-700">
                     STATUS
@@ -283,7 +290,8 @@ function Archives() {
                   </TableRow>
                 ) : (
                   paginatedData.map((item) => {
-                    const id = activeTab === "users" ? item.customer_id : item.staff_id;
+                    const id =
+                      activeTab === "users" ? item.customer_id : item.staff_id;
                     return (
                       <TableRow
                         key={id}
@@ -338,7 +346,8 @@ function Archives() {
           {/* pagination */}
           <div className="p-5 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-50/30">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Total {activeTab === "users" ? "Users" : "Staff"}: {filteredData.length}
+              Total {activeTab === "users" ? "Users" : "Staff"}:{" "}
+              {filteredData.length}
             </span>
             <Pagination className="mx-0 w-auto">
               <PaginationContent className="gap-2">

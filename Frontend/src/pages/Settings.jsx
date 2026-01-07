@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { useUser } from "@/contexts/UserContext";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -58,16 +58,25 @@ function Account() {
   });
 
   useEffect(() => {
-    if (user?.staff_id) {
+    const userId = user?.staff_id || user?.admin_id;
+    if (userId) {
       fetchProfile();
+    } else {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user?.staff_id, user?.admin_id]);
 
   const fetchProfile = async () => {
+    const userId = user?.staff_id || user?.admin_id;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await Requests({
-        url: `/settings/${user.staff_id}`,
+        url: `/settings/${userId}`,
         method: "GET",
         credentials: true,
       });
@@ -111,12 +120,13 @@ function Account() {
   };
 
   const handleSubmission = async () => {
+    const userId = user?.staff_id || user?.admin_id;
     try {
       setSaveLoading(true);
       const values = form.getValues();
 
       const response = await Requests({
-        url: `/settings/${user.staff_id}`,
+        url: `/settings/${userId}`,
         method: "PATCH",
         data: {
           firstname: values.firstname,
@@ -142,12 +152,13 @@ function Account() {
   };
 
   const handleCloseAccount = async () => {
-    if (!user?.staff_id) return;
+    const userId = user?.staff_id || user?.admin_id;
+    if (!userId) return;
 
     try {
       setClosingAccount(true);
       const response = await Requests({
-        url: `/settings/${user.staff_id}/close`,
+        url: `/settings/${userId}/close`,
         method: "PATCH",
         credentials: true,
       });
@@ -373,12 +384,12 @@ function Account() {
         <div className="flex flex-col w-full lg:w-80 gap-6">
           <div className="flex flex-col justify-center items-center h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
             <h1 className="text-lg font-bold tracking-tight text-black text-center w-full">
-              Reset Password
+              Change Password
             </h1>
             <hr className="w-full border-gray-100" />
             <p className="text-gray-500 text-center text-sm leading-relaxed w-full">
               Request a 6-digit code sent to your registered email, then enter
-              it below to reset your password.
+              it below to change your password.
             </p>
             <Button
               className="w-full h-10 bg-sky-700 hover:bg-sky-800 cursor-pointer"
@@ -388,14 +399,14 @@ function Account() {
                 setResetOpen(true);
               }}
             >
-              Reset
+              Change
             </Button>
           </div>
 
           <Dialog open={resetOpen} onOpenChange={setResetOpen}>
             <DialogContent className="bg-white">
               <DialogHeader>
-                <DialogTitle>Reset Password</DialogTitle>
+                <DialogTitle>Change Password</DialogTitle>
                 <DialogDescription>
                   Send a 6-digit code to your email, then enter it below with
                   your new password.
@@ -416,10 +427,11 @@ function Account() {
                     variant="outline"
                     disabled={sendingReset}
                     onClick={async () => {
+                      const userId = user?.staff_id || user?.admin_id;
                       try {
                         setSendingReset(true);
                         const res = await Requests({
-                          url: `/settings/${user.staff_id}/password-reset`,
+                          url: `/settings/${userId}/password-reset`,
                           method: "POST",
                           credentials: true,
                         });
@@ -575,16 +587,17 @@ function Account() {
                     !passwordChecks.match
                   }
                   onClick={async () => {
+                    const userId = user?.staff_id || user?.admin_id;
                     try {
                       setResetSubmitting(true);
                       const res = await Requests({
-                        url: `/settings/${user.staff_id}/password-reset/verify`,
+                        url: `/settings/${userId}/password-reset/verify`,
                         method: "POST",
                         data: { code: resetCode, newPassword },
                         credentials: true,
                       });
                       if (res.data?.ok) {
-                        toast.success("Password has been reset successfully");
+                        toast.success("Password has been changed successfully");
                         setCodeError("");
                         setResetOpen(false);
                         setResetCode("");
@@ -592,13 +605,13 @@ function Account() {
                         setConfirmPassword("");
                       } else {
                         toast.error(
-                          res.data?.message || "Failed to reset password"
+                          res.data?.message || "Failed to change password"
                         );
                       }
                     } catch (error) {
                       const msg =
                         error.response?.data?.message ||
-                        "Failed to reset password";
+                        "Failed to change password";
                       if (msg.toLowerCase().includes("code")) setCodeError(msg);
                       toast.error(msg);
                     } finally {
@@ -606,7 +619,7 @@ function Account() {
                     }
                   }}
                 >
-                  {resetSubmitting ? "Resetting..." : "Reset Password"}
+                  {resetSubmitting ? "Changing..." : "Change Password"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -660,6 +673,50 @@ function Account() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          <div className="flex flex-col justify-center items-start h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
+            <h1 className="text-lg font-bold tracking-tight text-black w-full">
+              Content
+            </h1>
+            <hr className="w-full border-gray-100" />
+            <div className="flex flex-col gap-2 w-full">
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+              >
+                <Link to="/about">About Us</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+              >
+                <Link to="/faqs">FAQs</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+              >
+                <Link to="/policies">Terms of Service</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+              >
+                <Link to="/socials">Socials</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+              >
+                <Link to="/studies">Studies</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
     </section>

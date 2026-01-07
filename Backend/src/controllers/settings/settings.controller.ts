@@ -73,6 +73,23 @@ export class SettingsController {
     const client = this.databaseService.getClient();
 
     try {
+      // First check if it's an admin
+      const adminResult = await client.query<any>(
+        `SELECT admin_id as staff_id, first_name, last_name, NULL as birthday, NULL as age, contact_number, address, email, date_created, last_updated, status
+         FROM user_admin
+         WHERE admin_id = $1
+         LIMIT 1`,
+        [staffId],
+      );
+
+      if (adminResult.rowCount) {
+        return {
+          ok: true,
+          staff: mapStaff(adminResult.rows[0]),
+        };
+      }
+
+      // If not admin, check staff table
       const result = await client.query<StaffPublicRow>(
         `SELECT staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status
          FROM user_staff
@@ -82,7 +99,7 @@ export class SettingsController {
       );
 
       if (!result.rowCount) {
-        throw new NotFoundException('Staff account not found');
+        throw new NotFoundException('Account not found');
       }
 
       return {
@@ -158,6 +175,24 @@ export class SettingsController {
     const client = this.databaseService.getClient();
 
     try {
+      // First try to update admin table
+      const adminResult = await client.query<any>(
+        `UPDATE user_admin
+         SET ${setClause}
+         WHERE admin_id = $${updates.length + 1}
+         RETURNING admin_id as staff_id, first_name, last_name, NULL as birthday, NULL as age, contact_number, address, email, date_created, last_updated, status`,
+        [...values, staffId],
+      );
+
+      if (adminResult.rowCount) {
+        return {
+          ok: true,
+          staff: mapStaff(adminResult.rows[0]),
+          message: 'Settings updated successfully',
+        };
+      }
+
+      // If not admin, try staff table
       const result = await client.query<StaffPublicRow>(
         `UPDATE user_staff
          SET ${setClause}
@@ -167,7 +202,7 @@ export class SettingsController {
       );
 
       if (!result.rowCount) {
-        throw new NotFoundException('Staff account not found');
+        throw new NotFoundException('Account not found');
       }
 
       return {
@@ -196,13 +231,40 @@ export class SettingsController {
     const client = this.databaseService.getClient();
 
     try {
+      // First check admin table
+      const adminExisting = await client.query<{ status: string }>(
+        'SELECT status FROM user_admin WHERE admin_id = $1 LIMIT 1',
+        [staffId],
+      );
+
+      if (adminExisting.rowCount) {
+        const currentStatus = adminExisting.rows[0].status;
+        if (currentStatus === 'inactive') {
+          throw new BadRequestException('Account is already inactive');
+        }
+        if (currentStatus === 'banned') {
+          throw new BadRequestException('Banned accounts cannot be closed');
+        }
+
+        await client.query(
+          'UPDATE user_admin SET status = $1, last_updated = now() WHERE admin_id = $2',
+          ['inactive', staffId],
+        );
+
+        return {
+          ok: true,
+          message: 'Admin account has been deactivated',
+        };
+      }
+
+      // If not admin, check staff table
       const existing = await client.query<{ status: string }>(
         'SELECT status FROM user_staff WHERE staff_id = $1 LIMIT 1',
         [staffId],
       );
 
       if (!existing.rowCount) {
-        throw new NotFoundException('Staff account not found');
+        throw new NotFoundException('Account not found');
       }
 
       const currentStatus = existing.rows[0].status;
@@ -246,13 +308,22 @@ export class SettingsController {
     const client = this.databaseService.getClient();
 
     try {
-      const userResult = await client.query<StaffPublicRow>(
-        `SELECT staff_id, first_name, email FROM user_staff WHERE staff_id = $1 LIMIT 1`,
+      // First check admin table
+      let userResult = await client.query<any>(
+        `SELECT admin_id as staff_id, first_name, email FROM user_admin WHERE admin_id = $1 LIMIT 1`,
         [staffId],
       );
 
+      // If not admin, check staff table
       if (!userResult.rowCount) {
-        throw new NotFoundException('Staff account not found');
+        userResult = await client.query<StaffPublicRow>(
+          `SELECT staff_id, first_name, email FROM user_staff WHERE staff_id = $1 LIMIT 1`,
+          [staffId],
+        );
+      }
+
+      if (!userResult.rowCount) {
+        throw new NotFoundException('Account not found');
       }
 
       const staff = userResult.rows[0];
@@ -314,13 +385,23 @@ export class SettingsController {
 
     const client = this.databaseService.getClient();
     try {
-      // Ensure user exists
-      const userResult = await client.query(
-        'SELECT staff_id FROM user_staff WHERE staff_id = $1 LIMIT 1',
+      // Check if user exists in either admin or staff table
+      let userResult = await client.query(
+        'SELECT admin_id as staff_id FROM user_admin WHERE admin_id = $1 LIMIT 1',
         [staffId],
       );
+
+      let isAdmin = (userResult.rowCount ?? 0) > 0;
+
       if (!userResult.rowCount) {
-        throw new NotFoundException('Staff account not found');
+        userResult = await client.query(
+          'SELECT staff_id FROM user_staff WHERE staff_id = $1 LIMIT 1',
+          [staffId],
+        );
+      }
+
+      if (!userResult.rowCount) {
+        throw new NotFoundException('Account not found');
       }
 
       // Get latest reset record for this user
@@ -352,10 +433,20 @@ export class SettingsController {
       return await (async () => {
         const bcrypt = await import('bcryptjs');
         const passwordHash = await bcrypt.hash(newPassword, 10);
-        await client.query(
-          'UPDATE user_staff SET password = $1, last_updated = NOW() WHERE staff_id = $2',
-          [passwordHash, staffId],
-        );
+
+        // Update password in the appropriate table
+        if (isAdmin) {
+          await client.query(
+            'UPDATE user_admin SET password = $1, last_updated = NOW() WHERE admin_id = $2',
+            [passwordHash, staffId],
+          );
+        } else {
+          await client.query(
+            'UPDATE user_staff SET password = $1, last_updated = NOW() WHERE staff_id = $2',
+            [passwordHash, staffId],
+          );
+        }
+
         await client.query(
           'DELETE FROM staff_password_resets WHERE staff_id = $1',
           [staffId],

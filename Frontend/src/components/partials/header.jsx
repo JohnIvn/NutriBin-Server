@@ -39,7 +39,10 @@ export default function Header() {
         </header>
       ) : (
         <header className="flex flex-wrap w-full justify-between items-center bg-[#CD5C08] text-white px-2 py-2">
-          <Link to={"/"} className="flex items-center">
+          <Link
+            to={user ? "/dashboard" : "/login"}
+            className="flex items-center"
+          >
             <img
               src="/NutriBin_Logo.svg"
               alt="NutriBin Logo"

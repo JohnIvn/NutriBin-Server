@@ -1,16 +1,17 @@
-import Header from '@/components/partials/header'
-import PageRouter from './PageRouter'
-import Footer from '@/components/partials/footer'
+import Sidebar from "@/components/partials/sidebar";
+import PageRouter from "./PageRouter";
 
 function MainLayout() {
-
-	return (
-		<section className='min-h-screen w-full flex flex-col justify-start items-center h-auto bg-[#FFF5E4]'>
-			<Header />
-			<PageRouter />
-			<Footer />
-		</section>
-	)
+  return (
+    <section className="min-h-screen w-full flex bg-[#FFF5E4]">
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-h-screen">
+        <div className="flex-1">
+          <PageRouter />
+        </div>
+      </div>
+    </section>
+  );
 }
 
-export default MainLayout
+export default MainLayout;

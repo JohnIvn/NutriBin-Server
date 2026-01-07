@@ -7,8 +7,14 @@
 @layer utilities {
   /* Image slides in from right */
   @keyframes fadeInRight {
-    0% { opacity: 0; transform: translateX(40px); }
-    100% { opacity: 1; transform: translateX(0); }
+    0% {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
   .animate-fadeInRight {
     animation: fadeInRight 0.8s ease-out forwards;
@@ -16,8 +22,14 @@
 
   /* Buttons + header slide in from left */
   @keyframes fadeInLeft {
-    0% { opacity: 0; transform: translateX(-40px); }
-    100% { opacity: 1; transform: translateX(0); }
+    0% {
+      opacity: 0;
+      transform: translateX(-40px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
   .animate-fadeInLeft {
     animation: fadeInLeft 0.8s ease-out forwards;
@@ -152,5 +164,18 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Fix text selection highlight color */
+  input::selection,
+  textarea::selection {
+    background-color: #cd5c08;
+    color: white;
+  }
+
+  input::-moz-selection,
+  textarea::-moz-selection {
+    background-color: #cd5c08;
+    color: white;
   }
 }

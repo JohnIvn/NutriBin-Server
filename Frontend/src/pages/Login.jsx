@@ -29,6 +29,7 @@ export function Login() {
 
   const form = useForm({
     resolver: zodResolver(adminLogin),
+    mode: "onChange", // Enable real-time validation
     defaultValues: {
       email: "",
       password: "",
@@ -65,17 +66,17 @@ export function Login() {
       {/* left */}
       <div className="hidden lg:flex flex-col justify-center items-center relative h-full">
         <div className="absolute inset-0 bg-zinc-900" />
-        <img src="/login-bg.jpg" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src="/login-bg.jpg"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
       </div>
 
       {/* right */}
       <div className="flex items-center justify-center py-12 px-4 sm:px-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[380px]">
-          
           <div className="flex flex-col space-y-2 text-center">
-            <h1 className="text-3xl font-bold tracking-tight">
-              SIGN IN
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">SIGN IN</h1>
             <p className="text-sm text-muted-foreground">
               Enter your email below to login to your account
             </p>
@@ -123,19 +124,19 @@ export function Login() {
               </div>
 
               <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="showPassword"
-                  onCheckedChange={(checked) => setShowPass(checked)}
-                  className="border-[#CD5C08] data-[state=checked]:bg-[#CD5C08] data-[state=checked]:text-white cursor-pointer"
-                />
-                <Label
-                  htmlFor="showPassword"
-                  className="text-sm font-medium leading-none cursor-pointer"
-                >
-                  Show Password
-                </Label>
-              </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="showPassword"
+                    onCheckedChange={(checked) => setShowPass(checked)}
+                    className="border-[#CD5C08] data-[state=checked]:bg-[#CD5C08] data-[state=checked]:text-white cursor-pointer"
+                  />
+                  <Label
+                    htmlFor="showPassword"
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    Show Password
+                  </Label>
+                </div>
 
                 <Button
                   type="button"
@@ -147,7 +148,10 @@ export function Login() {
                 </Button>
               </div>
 
-              <Button type="submit" className="w-full font-semibold bg-[#CD5C08] text-white hover:bg-[#A34906] cursor-pointer">
+              <Button
+                type="submit"
+                className="w-full font-semibold bg-[#CD5C08] text-white hover:bg-[#A34906] cursor-pointer"
+              >
                 Sign In
               </Button>
 
@@ -176,7 +180,11 @@ export function Login() {
               </div>
 
               {/* google */}
-              <Button variant="outline" type="button" className="w-full bg-[#FFF5E4] border-2 border-[#CD5C08] cursor-pointer hover:bg-[#CD5C08] hover:text-white">
+              <Button
+                variant="outline"
+                type="button"
+                className="w-full bg-[#FFF5E4] border-2 border-[#CD5C08] cursor-pointer hover:bg-[#CD5C08] hover:text-white"
+              >
                 <svg
                   className="mr-2 h-4 w-4"
                   viewBox="0 0 24 24"

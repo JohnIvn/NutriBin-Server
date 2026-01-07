@@ -8,7 +8,7 @@ export default function Tos() {
     <div className="min-h-screen bg-[#FFF5E4] pb-12 font-sans text-[#2E2E2E] overflow-x-hidden">
       
       {/* header */}
-      <header className="bg-gradient-to-r from-[#F2A541] to-[#C46A1C] pt-20 pb-32 px-1 text-center text-white shadow-md relative">
+      <header className="bg-gradient-to-r from-[#F2A541] to-[#C46A1C] pt-20 pb-32 px-10 text-center text-white shadow-md relative">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex justify-center mb-6">
             <div className="bg-white/20 p-4 rounded-full backdrop-blur-sm shadow-inner">
@@ -172,14 +172,14 @@ export default function Tos() {
             <div className="pt-10 border-t border-gray-200 mt-12">
               <div className="flex flex-col sm:flex-row justify-center gap-6">
                 <Button 
-                  className="bg-[#C46A1C] hover:bg-[#A05515] text-white h-14 px-12 text-lg rounded-full font-bold shadow-lg shadow-orange-200 transition-all hover:-translate-y-1"
+                  className="bg-[#C46A1C] hover:bg-[#A05515] text-white h-14 px-12 text-lg rounded-full font-bold shadow-lg shadow-orange-200 transition-all hover:-translate-y-1 cursor-pointer"
                 >
                   <Check className="mr-2 h-6 w-6" /> I Accept the Terms
                 </Button>
                 
                 <Button 
                   variant="outline"
-                  className="border-2 border-gray-200 text-gray-500 hover:text-[#C46A1C] hover:border-[#C46A1C] hover:bg-orange-50 h-14 px-12 text-lg rounded-full font-bold transition-all"
+                  className="border-2 border-gray-200 text-gray-500 hover:text-[#C46A1C] hover:border-[#C46A1C] hover:bg-orange-50 h-14 px-12 text-lg rounded-full font-bold transition-all cursor-pointer"
                 >
                   Decline
                 </Button>
@@ -198,7 +198,6 @@ export default function Tos() {
   );
 }
 
-// Reusable Section Component
 function TosSection({ number, title, children }) {
   return (
     <div className="relative flex flex-col md:flex-row gap-6 md:gap-12 group">

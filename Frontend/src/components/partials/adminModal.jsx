@@ -41,6 +41,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   const [codeSent, setCodeSent] = useState(false);
   const [codeFormatValid, setCodeFormatValid] = useState(false);
   const [codeError, setCodeError] = useState("");
+  const [googleError, setGoogleError] = useState("");
 
   const form = useForm({
     resolver: zodResolver(mode === "edit" ? adminAccountEdit : adminAccount),
@@ -217,13 +218,14 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
 
   async function handleGoogleSignIn(credentialResponse) {
     try {
+      setGoogleError("");
       const response = await axios.post(
-        "http://localhost:3000/staff/google-signin",
+        "http://localhost:3000/staff/google-signup",
         { credential: credentialResponse.credential }
       );
 
       if (!response.data.ok) {
-        toast.error(response.data.error || "Google sign-in failed");
+        setGoogleError(response.data.error || "Google sign-up failed");
         return;
       }
 
@@ -233,11 +235,11 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
       }
       cancel();
     } catch (error) {
-      toast.error(
+      const errorMessage =
         error.response?.data?.message ||
-          error.message ||
-          "Failed to create staff account with Google"
-      );
+        error.message ||
+        "Failed to create staff account with Google";
+      setGoogleError(errorMessage);
       console.error(error);
     }
   }
@@ -395,6 +397,11 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                 ? "Edit the staff account information"
                 : "Create a new account for the staff management"}
             </CardDescription>
+            {googleError && (
+              <div className="mt-3 p-3 bg-destructive/15 border border-destructive/50 rounded-md text-destructive text-sm">
+                {googleError}
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <Form {...form}>

@@ -37,4 +37,13 @@ export class StaffAuthController {
 
     return this.staffAuthService.googleSignIn(body.credential);
   }
+
+  @Post('google-signup')
+  async googleSignUp(@Body() body: GoogleSignInDto) {
+    if (!body || !body.credential) {
+      throw new BadRequestException('Google credential is required');
+    }
+
+    return this.staffAuthService.googleSignUp(body.credential);
+  }
 }

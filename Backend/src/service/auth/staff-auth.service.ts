@@ -339,4 +339,103 @@ export class StaffAuthService {
       throw new UnauthorizedException('Failed to authenticate with Google');
     }
   }
+
+  async googleSignUp(credential: string) {
+    try {
+      // Verify the Google token
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        throw new UnauthorizedException('Invalid Google token');
+      }
+
+      const email = normalizeEmail(payload.email);
+      const firstName = payload.given_name || '';
+      const lastName = payload.family_name || '';
+
+      const client = this.databaseService.getClient();
+
+      // Check if user already exists in user_admin table
+      const adminResult = await client.query<any>(
+        `SELECT admin_id as id FROM user_admin WHERE email = $1 LIMIT 1`,
+        [email],
+      );
+
+      if (adminResult.rowCount) {
+        return {
+          ok: false,
+          error: 'An admin account with this email already exists',
+        };
+      }
+
+      // Check if user already exists in user_staff table
+      const staffResult = await client.query<StaffPublicRow>(
+        `SELECT staff_id FROM user_staff WHERE email = $1 LIMIT 1`,
+        [email],
+      );
+
+      if (staffResult.rowCount) {
+        return {
+          ok: false,
+          error: 'A staff account with this email already exists',
+        };
+      }
+
+      // Create new staff account
+      const newStaff = await client.query<StaffPublicRow>(
+        `INSERT INTO user_staff (first_name, last_name, email, password, birthday, age)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING staff_id, first_name, last_name, contact_number, address, email, date_created, last_updated, status`,
+        [
+          firstName,
+          lastName,
+          email,
+          '', // Empty password for Google sign-in users
+          '1990-01-01', // Default birthday
+          0, // Default age
+        ],
+      );
+
+      const staff = newStaff.rows[0];
+      if (!staff) {
+        throw new InternalServerErrorException(
+          'Failed to create staff account',
+        );
+      }
+
+      const safeStaff: any = {
+        staff_id: staff.staff_id,
+        first_name: staff.first_name,
+        last_name: staff.last_name,
+        contact_number: staff.contact_number,
+        address: staff.address,
+        email: staff.email,
+        date_created: staff.date_created,
+        last_updated: staff.last_updated,
+        status: staff.status,
+        role: 'staff',
+      };
+
+      return {
+        ok: true,
+        staff: safeStaff,
+        newAccount: true,
+      };
+    } catch (error) {
+      console.error('Google Sign-Up Error:', error);
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      if (error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Failed to create staff account with Google',
+      );
+    }
+  }
 }

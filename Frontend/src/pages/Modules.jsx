@@ -148,7 +148,7 @@ function Modules() {
 
         setComponentFlags(nextFlags);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to load diagnostics");
     }
   };

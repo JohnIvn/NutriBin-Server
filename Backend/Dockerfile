@@ -1,5 +1,3 @@
-## Railway-ready Dockerfile for NestJS Backend
-
 # ---------- Build stage ----------
 FROM node:20-alpine AS builder
 WORKDIR /app

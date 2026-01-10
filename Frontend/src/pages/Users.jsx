@@ -60,7 +60,7 @@ function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const role = "admin";
+  // const role = "admin";
 
   const filterForm = useForm({
     resolver: zodResolver(userFilter),
@@ -80,7 +80,7 @@ function Users() {
         credentials: true,
       });
       if (response.data.ok) setUserList(response.data.users || []);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load user data");
     } finally {
       setLoading(false);

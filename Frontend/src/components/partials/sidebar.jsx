@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// eslint-disable-next-line no-unused-vars
 function NavItem({ to, icon: Icon, label, active, collapsed }) {
   return (
     <Link to={to} className="block" title={collapsed ? label : undefined}>
@@ -49,28 +50,21 @@ export default function Sidebar() {
   const { user, logout } = useUser();
   const location = useLocation();
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
-  const [sidebarMode, setSidebarMode] = useState("expanded");
+  const [sidebarMode, setSidebarMode] = useState(() => {
+    const saved = localStorage.getItem("sidebar:mode");
+    return saved || "expanded";
+  });
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem("sidebar:mode");
+    return saved === "collapsed";
+  });
   const [isHovering, setIsHovering] = useState(false);
 
   const getInitials = (first, last) =>
     `${first?.[0] || ""}${last?.[0] || ""}`.toUpperCase();
 
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar:mode");
-    if (saved) setSidebarMode(saved);
-  }, []);
-
-  useEffect(() => {
     localStorage.setItem("sidebar:mode", sidebarMode);
-  }, [sidebarMode]);
-
-  useEffect(() => {
-    if (sidebarMode === "collapsed") {
-      setCollapsed(true);
-    } else if (sidebarMode === "expanded") {
-      setCollapsed(false);
-    }
   }, [sidebarMode]);
 
   const handleLogout = () => {

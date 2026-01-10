@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
-function Error({code, title, message}) {
-  return (
-	<div>
-	  
-	</div>
-  )
+function Error() {
+  return <div></div>;
 }
 
-export default Error
+export default Error;

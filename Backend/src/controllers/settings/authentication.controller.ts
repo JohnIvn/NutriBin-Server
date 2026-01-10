@@ -7,7 +7,6 @@ import {
   Patch,
   Body,
   Post,
-  Query,
 } from '@nestjs/common';
 
 import { DatabaseService } from '../../service/database/database.service';
@@ -31,7 +30,7 @@ export class AuthenticationController {
     try {
       // Check if userId is admin or staff
       let isAdmin = false;
-      let adminCheckResult = await client.query(
+      const adminCheckResult = await client.query(
         'SELECT admin_id FROM user_admin WHERE admin_id = $1 LIMIT 1',
         [userId],
       );
@@ -52,7 +51,7 @@ export class AuthenticationController {
         mfaType:
           result.rows.length > 0 ? result.rows[0].authentication_type : 'N/A',
       };
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('Failed to load MFA settings');
     }
   }
@@ -74,7 +73,7 @@ export class AuthenticationController {
     try {
       // Check if userId is admin or staff
       let isAdmin = false;
-      let adminCheckResult = await client.query(
+      const adminCheckResult = await client.query(
         'SELECT admin_id FROM user_admin WHERE admin_id = $1 LIMIT 1',
         [userId],
       );
@@ -143,7 +142,10 @@ export class AuthenticationController {
       console.log(`[MFA] Verifying token for ${idColumn}=${userId}`);
 
       // Verify token exists and is not expired
-      const result = await client.query<any>(
+      const result = await client.query<{
+        mfa_token: string | null;
+        mfa_token_expiry: string | null;
+      }>(
         `SELECT mfa_token, mfa_token_expiry FROM authentication WHERE ${idColumn} = $1 LIMIT 1`,
         [userId],
       );
@@ -168,7 +170,10 @@ export class AuthenticationController {
         throw new BadRequestException('Invalid MFA token');
       }
 
-      if (new Date(record.mfa_token_expiry) < new Date()) {
+      if (
+        record.mfa_token_expiry &&
+        new Date(record.mfa_token_expiry) < new Date()
+      ) {
         throw new BadRequestException('MFA token has expired');
       }
 
@@ -182,7 +187,17 @@ export class AuthenticationController {
         userQuery = `SELECT staff_id as id, first_name, last_name, contact_number, address, email, date_created, last_updated, status FROM user_staff WHERE staff_id = $1`;
       }
 
-      const userResult = await client.query<any>(userQuery, [userId]);
+      const userResult = await client.query<{
+        id: string;
+        first_name: string;
+        last_name: string;
+        contact_number: string | null;
+        address: string | null;
+        email: string;
+        date_created: string;
+        last_updated: string;
+        status: string;
+      }>(userQuery, [userId]);
 
       if (userResult.rows.length === 0) {
         throw new BadRequestException('User not found');

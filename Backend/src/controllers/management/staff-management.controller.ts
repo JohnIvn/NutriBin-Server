@@ -116,7 +116,19 @@ export class StaffManagementController {
   }
 
   @Post()
-  async createStaff(@Body() createData: any) {
+  async createStaff(
+    @Body()
+    createData: {
+      firstname?: string;
+      lastname?: string;
+      email?: string;
+      birthday?: string;
+      age?: number;
+      contact?: string;
+      address?: string;
+      password?: string;
+    },
+  ) {
     const client = this.databaseService.getClient();
 
     try {
@@ -200,7 +212,20 @@ export class StaffManagementController {
   }
 
   @Put(':id')
-  async updateStaff(@Param('id') staffId: string, @Body() updateData: any) {
+  async updateStaff(
+    @Param('id') staffId: string,
+    @Body()
+    updateData: {
+      firstname?: string;
+      lastname?: string;
+      email?: string;
+      birthday?: string;
+      age?: number;
+      contact?: string;
+      address?: string;
+      emailVerificationCode?: string;
+    },
+  ) {
     const client = this.databaseService.getClient();
 
     try {
@@ -279,7 +304,10 @@ export class StaffManagementController {
           );
         }
 
-        const record = verification.rows[0];
+        const record = verification.rows[0] as {
+          code: string;
+          expires_at: string;
+        };
         const now = new Date();
         const expiresAt = new Date(record.expires_at);
 
@@ -508,7 +536,20 @@ export class StaffManagementController {
         throw new NotFoundException('Staff member not found');
       }
 
-      const staff = checkResult.rows[0];
+      const staff = checkResult.rows[0] as {
+        staff_id: string;
+        first_name: string;
+        last_name: string;
+        birthday: string;
+        age: number;
+        contact_number: string | null;
+        address: string | null;
+        email: string;
+        password: string;
+        date_created: string;
+        last_updated: string;
+        status: string;
+      };
 
       // Move staff to archive table
       await client.query(

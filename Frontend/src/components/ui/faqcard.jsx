@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function faqcard({ question, answer }) {
+export default function FaqCard({ question, answer }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleCard = () => setIsOpen(!isOpen);

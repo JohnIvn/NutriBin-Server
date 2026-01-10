@@ -52,7 +52,7 @@ function MachinesGrid() {
         credentials: true,
       });
       if (response.data.ok) setMachines(response.data.machines || []);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load machines data");
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ function MachinesGrid() {
       if (response.data.ok) {
         setMachineDetails(response.data.machine);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to load machine details");
     } finally {
       setDetailsLoading(false);
@@ -83,16 +83,16 @@ function MachinesGrid() {
     fetchMachineDetails(machine.machine_id);
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedMachine(null);
-    setMachineDetails(null);
-  };
+  // const handleCloseModal = () => {
+  //   setModalOpen(false);
+  //   setSelectedMachine(null);
+  //   setMachineDetails(null);
+  // };
 
   // Helpers for NPK computations (with mock fallback)
   const toNumber = (val) => {
     if (val === null || val === undefined) return NaN;
-    const num = parseFloat(String(val).replace(/[^0-9.\-]/g, ""));
+    const num = parseFloat(String(val).replace(/[^0-9.-]/g, ""));
     return Number.isFinite(num) ? num : NaN;
   };
 

@@ -67,6 +67,7 @@ function Account() {
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.staff_id, user?.admin_id]);
 
   const fetchProfile = async () => {

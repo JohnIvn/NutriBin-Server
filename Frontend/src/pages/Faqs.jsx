@@ -1,5 +1,6 @@
 import React from "react";
 import FaqCard from "../components/ui/faqcard";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { FaCommentDots } from "react-icons/fa";
 

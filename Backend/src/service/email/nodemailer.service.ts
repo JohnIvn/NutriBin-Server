@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
-import { Transporter } from 'nodemailer';
+import { Transporter, SentMessageInfo } from 'nodemailer';
 
 export interface EmailOptions {
   to: string | string[];
@@ -127,16 +127,23 @@ export class NodemailerService {
         attachments: options.attachments,
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const info: SentMessageInfo =
+        await this.transporter.sendMail(mailOptions);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       console.log('Email sent successfully:', info.messageId);
       return {
         success: true,
-        messageId: info.messageId,
-        response: info.response,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        messageId: info.messageId as string,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        response: info.response as string,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error sending email:', error);
-      throw new Error(`Failed to send email: ${error.message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to send email: ${errorMessage}`);
     }
   }
 

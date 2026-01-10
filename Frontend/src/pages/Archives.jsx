@@ -57,6 +57,7 @@ function Archives() {
 
   useEffect(() => {
     fetchArchives();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const fetchArchives = async () => {
@@ -80,7 +81,7 @@ function Archives() {
           setStaffArchives(response.data.archives || []);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to load archive data");
     } finally {
       setLoading(false);

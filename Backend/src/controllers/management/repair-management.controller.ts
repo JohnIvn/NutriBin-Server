@@ -123,7 +123,14 @@ export class RepairManagementController {
   }
 
   @Post()
-  async createRepair(@Body() createData: any) {
+  async createRepair(
+    @Body()
+    createData: {
+      user_id?: string;
+      machine_id?: string;
+      repair_status?: string;
+    },
+  ) {
     const client = this.databaseService.getClient();
 
     try {
@@ -146,7 +153,15 @@ export class RepairManagementController {
   }
 
   @Put(':id')
-  async updateRepair(@Param('id') id: string, @Body() updateData: any) {
+  async updateRepair(
+    @Param('id') id: string,
+    @Body()
+    updateData: {
+      user_id?: string;
+      machine_id?: string;
+      repair_status?: string;
+    },
+  ) {
     const client = this.databaseService.getClient();
 
     try {

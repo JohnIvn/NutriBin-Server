@@ -16,51 +16,6 @@ type MachineRow = {
   email: string;
 };
 
-type MachineDetailsRow = {
-  machine_id: string;
-  customer_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  fertilizer_analytics: {
-    nitrogen: string;
-    phosphorus: string;
-    potassium: string;
-    temperature: string;
-    ph: string;
-    humidity: string;
-    moisture: string;
-    methane: string;
-    hydrogen: string;
-    smoke: string;
-    benzene: string;
-    date_created: string;
-  }[];
-  module_analytics: {
-    esp32: boolean;
-    arduino_q: boolean;
-    arduino_r3: boolean;
-    ultrasonic: boolean;
-    reed: boolean;
-    moisture: boolean;
-    temperature: boolean;
-    humidity: boolean;
-    gas: boolean;
-    ph: boolean;
-    npk: boolean;
-    camera_1: boolean;
-    camera_2: boolean;
-    stepper_motor: boolean;
-    heating_pad: boolean;
-    exhaust_fan: boolean;
-    dc_motor: boolean;
-    grinder_motor: boolean;
-    power_supply: boolean;
-    servo_motor: boolean;
-    date_created: string;
-  }[];
-};
-
 @Controller('management/machines')
 export class MachineManagementController {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -86,7 +41,7 @@ export class MachineManagementController {
         ok: true,
         machines: result.rows,
       };
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('Failed to fetch machines list');
     }
   }
@@ -114,7 +69,13 @@ export class MachineManagementController {
         throw new NotFoundException('Machine not found');
       }
 
-      const machineInfo = machineResult.rows[0];
+      const machineInfo = machineResult.rows[0] as {
+        machine_id: string;
+        customer_id: string;
+        first_name: string;
+        last_name: string;
+        email: string;
+      };
 
       // Get fertilizer analytics (NPK data)
       const fertilizerResult = await client.query(
@@ -172,7 +133,7 @@ export class MachineManagementController {
       // Calculate error rate from module analytics
       let errorRate = 0;
       if (moduleResult.rows.length > 0) {
-        const latestModule = moduleResult.rows[0];
+        const latestModule = moduleResult.rows[0] as Record<string, unknown>;
         const totalModules = 20; // Total number of modules
         let workingModules = 0;
 

@@ -114,7 +114,17 @@ export class UserManagementController {
   }
 
   @Post()
-  async createUser(@Body() createData: any) {
+  async createUser(
+    @Body()
+    createData: {
+      firstname?: string;
+      lastname?: string;
+      email?: string;
+      contact?: string;
+      address?: string;
+      password?: string;
+    },
+  ) {
     const client = this.databaseService.getClient();
 
     try {
@@ -180,7 +190,18 @@ export class UserManagementController {
   }
 
   @Put(':id')
-  async updateUser(@Param('id') customerId: string, @Body() updateData: any) {
+  async updateUser(
+    @Param('id') customerId: string,
+    @Body()
+    updateData: {
+      firstname?: string;
+      lastname?: string;
+      email?: string;
+      contact?: string;
+      address?: string;
+      emailVerificationCode?: string;
+    },
+  ) {
     const client = this.databaseService.getClient();
 
     try {
@@ -257,7 +278,10 @@ export class UserManagementController {
           );
         }
 
-        const record = verification.rows[0];
+        const record = verification.rows[0] as {
+          code: string;
+          expires_at: string;
+        };
         const now = new Date();
         const expiresAt = new Date(record.expires_at);
 
@@ -475,7 +499,18 @@ export class UserManagementController {
         throw new NotFoundException('User not found');
       }
 
-      const user = checkResult.rows[0];
+      const user = checkResult.rows[0] as {
+        customer_id: string;
+        first_name: string;
+        last_name: string;
+        contact_number: string | null;
+        address: string | null;
+        email: string;
+        password: string;
+        date_created: string;
+        last_updated: string;
+        status: string;
+      };
 
       // Move user to archive table
       await client.query(

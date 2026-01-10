@@ -1,4 +1,5 @@
 import { BookOpenIcon } from "@heroicons/react/24/solid";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import StudyCard from "../components/ui/studycard"; // lowercase filename
 

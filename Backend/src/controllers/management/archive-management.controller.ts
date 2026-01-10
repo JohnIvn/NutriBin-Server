@@ -47,7 +47,7 @@ export class ArchiveManagementController {
         ok: true,
         archives: result.rows,
       };
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to fetch user archive list',
       );
@@ -69,7 +69,7 @@ export class ArchiveManagementController {
         ok: true,
         archives: result.rows,
       };
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Failed to fetch staff archive list',
       );

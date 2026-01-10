@@ -95,7 +95,7 @@ function Staff() {
         credentials: true,
       });
       if (response.data.ok) setStaffList(response.data.staff || []);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load staff data");
     } finally {
       setLoading(false);

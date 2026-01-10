@@ -64,7 +64,7 @@ import ConfirmBox from "@/components/partials/confirmBox";
 function Admins() {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("");
-  const [confirmType, setConfirmType] = useState("");
+  // const [confirmType, setConfirmType] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmInformation, setConfirmInformation] = useState({
     mode: "",
@@ -108,6 +108,7 @@ function Admins() {
     setShowConfirm(false);
   };
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const entriesCount = parseInt(filterForm.watch("count") || "10");
 
   function filterSubmit() {

@@ -127,7 +127,7 @@ function Machines() {
       if (response.data.ok) {
         setRepairList(response.data.repairs || []);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to load repair data");
     } finally {
       setLoading(false);

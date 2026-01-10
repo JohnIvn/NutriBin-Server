@@ -125,7 +125,18 @@ export class StaffAuthService {
     const client = this.databaseService.getClient();
 
     // First check user_admin table
-    const adminResult = await client.query<any>(
+    const adminResult = await client.query<{
+      id: string;
+      first_name: string;
+      last_name: string;
+      contact_number: string | null;
+      address: string | null;
+      email: string;
+      password: string;
+      date_created: string;
+      last_updated: string;
+      status: string;
+    }>(
       `SELECT admin_id as id, first_name, last_name, contact_number, address, email, password, date_created, last_updated, status
        FROM user_admin
        WHERE email = $1
@@ -155,7 +166,10 @@ export class StaffAuthService {
       }
 
       // Check if MFA is enabled for this admin
-      const mfaResult = await client.query<any>(
+      const mfaResult = await client.query<{
+        authentication_type: string;
+        enabled: boolean;
+      }>(
         `SELECT authentication_type, enabled FROM authentication WHERE admin_id = $1 LIMIT 1`,
         [admin.id],
       );
@@ -310,7 +324,10 @@ export class StaffAuthService {
     }
 
     // Check if MFA is enabled for this staff
-    const mfaResult = await client.query<any>(
+    const mfaResult = await client.query<{
+      authentication_type: string;
+      enabled: boolean;
+    }>(
       `SELECT authentication_type, enabled FROM authentication WHERE staff_id = $1 LIMIT 1`,
       [staff.staff_id],
     );
@@ -409,7 +426,7 @@ export class StaffAuthService {
       };
     }
 
-    const safeStaff: any = {
+    const safeStaff = {
       staff_id: staff.staff_id,
       first_name: staff.first_name,
       last_name: staff.last_name,
@@ -419,7 +436,7 @@ export class StaffAuthService {
       date_created: staff.date_created,
       last_updated: staff.last_updated,
       status: staff.status,
-      role: 'staff',
+      role: 'staff' as const,
     };
 
     return {
@@ -442,13 +459,24 @@ export class StaffAuthService {
       }
 
       const email = normalizeEmail(payload.email);
-      const firstName = payload.given_name || '';
-      const lastName = payload.family_name || '';
+      // Note: firstName and lastName from Google payload are not used in sign-in, only in sign-up
+      // const firstName = payload.given_name || '';
+      // const lastName = payload.family_name || '';
 
       const client = this.databaseService.getClient();
 
       // Check if user exists in user_admin table
-      const adminResult = await client.query<any>(
+      const adminResult = await client.query<{
+        id: string;
+        first_name: string;
+        last_name: string;
+        contact_number: string | null;
+        address: string | null;
+        email: string;
+        date_created: string;
+        last_updated: string;
+        status: string;
+      }>(
         `SELECT admin_id as id, first_name, last_name, contact_number, address, email, date_created, last_updated, status
          FROM user_admin
          WHERE email = $1
@@ -510,7 +538,7 @@ export class StaffAuthService {
           };
         }
 
-        const safeStaff: any = {
+        const safeStaff = {
           staff_id: staff.staff_id,
           first_name: staff.first_name,
           last_name: staff.last_name,
@@ -520,7 +548,7 @@ export class StaffAuthService {
           date_created: staff.date_created,
           last_updated: staff.last_updated,
           status: staff.status,
-          role: 'staff',
+          role: 'staff' as const,
         };
 
         return {
@@ -558,13 +586,14 @@ export class StaffAuthService {
       }
 
       const email = normalizeEmail(payload.email);
+      // Note: firstName and lastName are from Google payload but stored in DB with different names
       const firstName = payload.given_name || '';
       const lastName = payload.family_name || '';
 
       const client = this.databaseService.getClient();
 
       // Check if user already exists in user_admin table
-      const adminResult = await client.query<any>(
+      const adminResult = await client.query<{ id: string }>(
         `SELECT admin_id as id FROM user_admin WHERE email = $1 LIMIT 1`,
         [email],
       );
@@ -611,7 +640,7 @@ export class StaffAuthService {
         );
       }
 
-      const safeStaff: any = {
+      const safeStaff = {
         staff_id: staff.staff_id,
         first_name: staff.first_name,
         last_name: staff.last_name,
@@ -621,7 +650,7 @@ export class StaffAuthService {
         date_created: staff.date_created,
         last_updated: staff.last_updated,
         status: staff.status,
-        role: 'staff',
+        role: 'staff' as const,
       };
 
       return {

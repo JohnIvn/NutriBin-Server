@@ -74,7 +74,19 @@ export class SettingsController {
 
     try {
       // First check if it's an admin
-      const adminResult = await client.query<any>(
+      const adminResult = await client.query<{
+        staff_id: string;
+        first_name: string;
+        last_name: string;
+        birthday: string | null;
+        age: number | null;
+        contact_number: string | null;
+        address: string | null;
+        email: string;
+        date_created: string;
+        last_updated: string;
+        status: string;
+      }>(
         `SELECT admin_id as staff_id, first_name, last_name, NULL as birthday, NULL as age, contact_number, address, email, date_created, last_updated, status
          FROM user_admin
          WHERE admin_id = $1
@@ -85,7 +97,7 @@ export class SettingsController {
       if (adminResult.rowCount) {
         return {
           ok: true,
-          staff: mapStaff(adminResult.rows[0]),
+          staff: mapStaff(adminResult.rows[0] as StaffPublicRow),
         };
       }
 
@@ -176,7 +188,19 @@ export class SettingsController {
 
     try {
       // First try to update admin table
-      const adminResult = await client.query<any>(
+      const adminResult = await client.query<{
+        staff_id: string;
+        first_name: string;
+        last_name: string;
+        birthday: string | null;
+        age: number | null;
+        contact_number: string | null;
+        address: string | null;
+        email: string;
+        date_created: string;
+        last_updated: string;
+        status: string;
+      }>(
         `UPDATE user_admin
          SET ${setClause}
          WHERE admin_id = $${updates.length + 1}
@@ -187,7 +211,7 @@ export class SettingsController {
       if (adminResult.rowCount) {
         return {
           ok: true,
-          staff: mapStaff(adminResult.rows[0]),
+          staff: mapStaff(adminResult.rows[0] as StaffPublicRow),
           message: 'Settings updated successfully',
         };
       }
@@ -309,14 +333,22 @@ export class SettingsController {
 
     try {
       // First check admin table
-      let userResult = await client.query<any>(
+      let userResult = await client.query<{
+        staff_id: string;
+        first_name: string;
+        email: string;
+      }>(
         `SELECT admin_id as staff_id, first_name, email FROM user_admin WHERE admin_id = $1 LIMIT 1`,
         [staffId],
       );
 
       // If not admin, check staff table
       if (!userResult.rowCount) {
-        userResult = await client.query<StaffPublicRow>(
+        userResult = await client.query<{
+          staff_id: string;
+          first_name: string;
+          email: string;
+        }>(
           `SELECT staff_id, first_name, email FROM user_staff WHERE staff_id = $1 LIMIT 1`,
           [staffId],
         );
@@ -391,7 +423,7 @@ export class SettingsController {
         [staffId],
       );
 
-      let isAdmin = (userResult.rowCount ?? 0) > 0;
+      const isAdmin = (userResult.rowCount ?? 0) > 0;
 
       if (!userResult.rowCount) {
         userResult = await client.query(
@@ -405,7 +437,7 @@ export class SettingsController {
       }
 
       // Get latest reset record for this user
-      const reset = await client.query(
+      const reset = await client.query<{ token: string; expires_at: string }>(
         `SELECT token, expires_at FROM staff_password_resets
          WHERE staff_id = $1
          ORDER BY created_at DESC

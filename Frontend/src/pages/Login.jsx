@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/partials/header";
 
+import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { adminLogin } from "@/schema/adminAccount";
@@ -130,7 +131,7 @@ export function Login() {
                   setMfaMessage(null);
                   setLoginError(null);
                 }}
-                className="w-full bg-[#CD5C08] text-white hover:bg-[#A34906] font-semibold"
+                className="w-full bg-[] text-white hover:bg-[#A34906] font-semibold"
               >
                 Back to Login
               </Button>
@@ -152,7 +153,7 @@ export function Login() {
           {/* right */}
           <div className="flex items-center justify-center py-12 px-4 sm:px-8">
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[380px]">
-              <div className="flex flex-col space-y-2 text-center">
+              <div className="flex flex-col space-y-2 text-center text-[#4F6F52]">
                 <h1 className="text-3xl font-bold tracking-tight">SIGN IN</h1>
                 <p className="text-sm text-muted-foreground">
                   Enter your email below to login to your account
@@ -164,7 +165,7 @@ export function Login() {
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-6 "
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-4 text-[#4F6F52]">
                     <FormField
                       control={form.control}
                       name="email"
@@ -174,7 +175,7 @@ export function Login() {
                           <FormControl>
                             <Input
                               placeholder="name@example.com"
-                              className="h-10 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]"
+                              className="h-10 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
                               {...field}
                             />
                           </FormControl>
@@ -187,15 +188,31 @@ export function Login() {
                       control={form.control}
                       name="password"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="mb-1">
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input
-                              type={showPass ? "text" : "password"}
-                              placeholder="Enter your password"
-                              className="h-10 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]"
-                              {...field}
-                            />
+                            <div className="relative">
+                              <Input
+                                type={showPass ? "text" : "password"}
+                                placeholder="Enter your password"
+                                className="h-10 pr-10 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
+                                {...field}
+                              />
+
+                              {/* eye */}
+                              <button
+                                type="button"
+                                onClick={() => setShowPass((prev) => !prev)}
+                                className="absolute inset-y-0 right-3 flex items-center text-[#4F6F52] hover:text-[#739072] cursor-pointer"
+                                tabIndex={-1}
+                              >
+                                {showPass ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -203,26 +220,12 @@ export function Login() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="showPassword"
-                        onCheckedChange={(checked) => setShowPass(checked)}
-                        className="border-[#CD5C08] data-[state=checked]:bg-[#CD5C08] data-[state=checked]:text-white cursor-pointer"
-                      />
-                      <Label
-                        htmlFor="showPassword"
-                        className="text-sm font-medium leading-none cursor-pointer"
-                      >
-                        Show Password
-                      </Label>
-                    </div>
-
+                  <div className="-mt-7 flex justify-start">
                     <Button
                       type="button"
                       variant="link"
                       asChild
-                      className="px-0 font-normal text-sm text-[#CD5C08]"
+                      className="px-0 font-normal text-xs text-[#4F6F52]"
                     >
                       <Link to="/password-reset">Forgot password?</Link>
                     </Button>
@@ -230,7 +233,7 @@ export function Login() {
 
                   <Button
                     type="submit"
-                    className="w-full font-semibold bg-[#CD5C08] text-white hover:bg-[#A34906] cursor-pointer"
+                    className="w-full font-semibold bg-[#4F6F52] text-white hover:bg-[#739072] cursor-pointer"
                   >
                     Sign In
                   </Button>

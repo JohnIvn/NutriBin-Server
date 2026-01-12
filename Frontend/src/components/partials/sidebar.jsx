@@ -35,8 +35,8 @@ function NavItem({ to, icon: Icon, label, active, collapsed }) {
           collapsed ? "justify-center" : "gap-3"
         } px-3 py-2 rounded-md text-sm font-medium transition-colors ${
           active
-            ? "bg-amber-100 text-[#CD5C08]"
-            : "text-gray-700 hover:bg-amber-50 hover:text-[#CD5C08]"
+            ? "bg-[#4F6F52] text-white"
+            : "text-gray-700 hover:bg-[#ECE3CE]/35 hover:text-[#4F6F52]"
         }`}
       >
         <Icon size={18} />
@@ -95,12 +95,12 @@ export default function Sidebar() {
           }`}
         >
           <img
-            src="/NutriBin_Logo.svg"
+            src="/Logo.svg"
             alt="NutriBin Logo"
             className="h-8 w-auto"
           />
           {!shouldCollapse && (
-            <span className="font-extrabold text-[#CD5C08]">NutriBin</span>
+            <span className="font-extrabold text-[#4F6F52] text-4xl">NutriBin</span>
           )}
         </Link>
         <div
@@ -228,7 +228,7 @@ export default function Sidebar() {
           >
             <Avatar className="size-9">
               <AvatarImage alt={user.first_name} />
-              <AvatarFallback className="bg-[#CD5C08]/10 text-[#CD5C08] font-bold">
+              <AvatarFallback className="bg-[#4F6F52]/10 text-[#4F6F52] font-bold">
                 {getInitials(user.first_name, user.last_name)}
               </AvatarFallback>
             </Avatar>

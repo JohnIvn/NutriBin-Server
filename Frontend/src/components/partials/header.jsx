@@ -38,7 +38,7 @@ export default function Header() {
           <h1>Loading...</h1>
         </header>
       ) : (
-        <header className="flex flex-wrap w-full justify-between items-center bg-[#CD5C08] text-white px-2 py-2">
+        <header className="flex flex-wrap w-full justify-between items-center bg-[#4F6F52] text-white px-2 py-2">
           <Link
             to={user ? "/dashboard" : "/login"}
             className="flex items-center"
@@ -110,10 +110,10 @@ export default function Header() {
             </nav>
           ) : (
             <nav className="flex flex-wrap gap-2 sm:gap-4 items-center">
-              <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+              <Button asChild className={"bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52]"}>
                 <Link to={"/login"}>Home</Link>
               </Button>
-              <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+              <Button asChild className={"bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52]"}>
                 <Link to={"/guide"}>Guide</Link>
               </Button>
               {/* <Button asChild className={"bg-transparent hover:bg-amber-700"}>

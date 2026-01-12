@@ -55,7 +55,7 @@ function Account() {
                   <FormItem>
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled={!editMode} placeholder="First Name" className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
+                      <Input {...field} disabled={!editMode} placeholder="First Name" className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -69,7 +69,7 @@ function Account() {
                   <FormItem>
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled={!editMode} placeholder="Last Name" className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
+                      <Input {...field} disabled={!editMode} placeholder="Last Name" className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -84,7 +84,7 @@ function Account() {
                 <FormItem>
                   <FormLabel>Address</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled={!editMode} placeholder="Complete Address" className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
+                    <Input {...field} disabled={!editMode} placeholder="Complete Address" className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -99,7 +99,7 @@ function Account() {
                   <FormItem>
                     <FormLabel>Age</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} disabled={!editMode} className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
+                      <Input type="number" {...field} disabled={!editMode} className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -113,7 +113,7 @@ function Account() {
                   <FormItem>
                     <FormLabel>Contact Number</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} disabled={!editMode} className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]" />
+                      <Input type="number" {...field} disabled={!editMode} className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -137,14 +137,14 @@ function Account() {
                       {/* radio buttons */}
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="male" className="border-gray-300 data-[state=checked]:border-[#CD5C08] data-[state=checked]:text-[#CD5C08] cursor-pointer" />
+                          <RadioGroupItem value="male" className="border-gray-300 data-[state=checked]:border-[#4F6F52] data-[state=checked]:text-[#4F6F52] cursor-pointer" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">Male</FormLabel>
                       </FormItem>
 
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="female" className="border-gray-300 data-[state=checked]:border-[#CD5C08] data-[state=checked]:text-[#CD5C08] cursor-pointer" />
+                          <RadioGroupItem value="female" className="border-gray-300 data-[state=checked]:border-[#4F6F52] data-[state=checked]:text-[#4F6F52] cursor-pointer" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">Female</FormLabel>
                       </FormItem>
@@ -157,7 +157,7 @@ function Account() {
             <div className='flex flex-wrap gap-4 pt-4'>
               <Button 
                 type='button' 
-                className={`${editMode ? 'hidden' : 'inline-flex'} min-w-[140px] h-11 bg-[#CD5C08] hover:bg-[#A34906] text-white cursor-pointer`} 
+                className={`${editMode ? 'hidden' : 'inline-flex'} min-w-[140px] h-11 bg-[#4F6F52] hover:bg-[#A34906] text-white cursor-pointer`} 
                 onClick={() => setEditMode(true)}
               >
                 Edit Profile

@@ -24,22 +24,22 @@ function Analytics() {
   ]
   
   const pieChartData = [
-    { name: "Nitrogen", value: 275, fill: "#624DE3" },
-    { name: "Phosporus", value: 200, fill: "#00A7E1" },
-    { name: "Potassium", value: 187, fill: "#CD5C08" },
+    { name: "Nitrogen", value: 275, fill: "#C26A4A" },
+    { name: "Phosporus", value: 200, fill: "#D4A017" },
+    { name: "Potassium", value: 187, fill: "#739072" },
   ]
 
   const chartConfig = {
-    nitrogen: { label: "Nitrogen", color: "#624DE3" },
-    phosporus: { label: "Phosporus", color: "#00A7E1" },
-    potassium: { label: "Potassium", color: "#CD5C08" },
+    nitrogen: { label: "Nitrogen", color: "#C26A4A" },
+    phosporus: { label: "Phosporus", color: "#D4A017" },
+    potassium: { label: "Potassium", color: "#739072" },
   }
 
   return (
-    <div className="w-full bg-[#FDF8F1] min-h-screen p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
+    <div className="w-full bg-[#ECE3CE]/10 min-h-screen p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
       
       {/* header */}
-      <div className="flex flex-col gap-1 border-l-4 border-[#CD5C08] pl-6">
+      <div className="flex flex-col gap-1 border-l-4 border-[#4F6F52] pl-6">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
           Fertilizer Analytics
         </h1>
@@ -56,7 +56,7 @@ function Analytics() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-[#CD5C08]" />
+                  <Activity className="h-5 w-5 text-[#4F6F52]" />
                   <CardTitle>NPK Ratio Overview</CardTitle>
                 </div>
                 <CardDescription>Nutrient percentage per Nutribin batch ID</CardDescription>
@@ -116,7 +116,7 @@ function Analytics() {
         <div className="flex flex-col gap-4">
           <div className="px-2">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Zap className="h-5 w-5 text-[#CD5C08] fill-[#CD5C08]/20" />
+              <Zap className="h-5 w-5 text-[#4F6F52] fill-[#4F6F52]/20" />
               Operational Summary
             </h2>
             <p className="text-xs text-gray-500 mb-2 italic">Performance tracking and status updates.</p>
@@ -124,9 +124,9 @@ function Analytics() {
           
           <div className="flex-grow grid grid-cols-1 gap-4">
             {/* active machines */}
-            <Card className="bg-white border-none shadow-lg hover:shadow-[#CD5C08]/20 transition-all group overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Gauge className="h-16 w-16 text-gray-900" />
+            <Card className="bg-white border-none shadow-lg hover:shadow-[#3A4D39]/20 transition-all group overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-80 transition-opacity">
+                <Gauge className="h-16 w-16 text-[#3A4D39]" />
               </div>
               <CardContent className="p-6 relative z-10">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status Check</p>
@@ -135,7 +135,7 @@ function Analytics() {
                   <span className="text-xs font-bold text-gray-500 uppercase">Active Machines</span>
                 </div>
                 <div className="mt-4 w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                   <div className="bg-[#CD5C08] h-full w-[85%] rounded-full" />
+                   <div className="bg-[#739072] h-full w-[85%] rounded-full" />
                 </div>
                 <p className="text-[10px] text-gray-500 mt-2 font-medium">System healthy and operational.</p>
               </CardContent>
@@ -143,8 +143,8 @@ function Analytics() {
 
             {/* processed waste */}
             <Card className="bg-white border-none shadow-lg hover:shadow-[#624DE3]/20 transition-all group overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Trash2 className="h-16 w-16 text-gray-900" />
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-80 transition-opacity">
+                <Trash2 className="h-16 w-16 text-[#3A4D39]" />
               </div>
               <CardContent className="p-6 relative z-10">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Resource Input</p>
@@ -152,26 +152,26 @@ function Analytics() {
                   <h3 className="text-4xl font-black text-gray-900">15.0<span className="text-lg ml-1 text-gray-400">kg</span></h3>
                   <span className="text-xs font-bold text-gray-500 uppercase mt-1">Processed Waste</span>
                 </div>
-                <p className="text-[10px] text-gray-500 mt-4 font-medium italic border-l-2 border-[#624DE3] pl-2">
+                <p className="text-[10px] text-gray-500 mt-4 font-medium italic border-l-2 border-[#739072] pl-2">
                   Daily intake processed via bio-digesters.
                 </p>
               </CardContent>
             </Card>
 
             {/* fertilizer yield */}
-            <Card className="bg-white border-none shadow-lg hover:shadow-[#CD5C08]/20 transition-all group overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Package className="h-16 w-16 text-gray-900" />
+            <Card className="bg-white border-none shadow-lg hover:shadow-[#4F6F52]/20 transition-all group overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-80 transition-opacity">
+                <Package className="h-16 w-16 text-[#3A4D39]" />
               </div>
               <CardContent className="p-6 relative z-10">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Production Result</p>
                 <div className="flex flex-col">
-                  <h3 className="text-4xl font-black text-[#CD5C08]">12.32<span className="text-lg ml-1 opacity-60">kg</span></h3>
+                  <h3 className="text-4xl font-black text-[#4F6F52]">12.32<span className="text-lg ml-1 opacity-60">kg</span></h3>
                   <span className="text-xs font-bold text-gray-500 uppercase mt-1">Fertilizer Yield</span>
                 </div>
                 <div className="mt-4 flex gap-1">
                   {[1,2,3,4,5,6,7,8].map(i => (
-                    <div key={i} className={`h-1 flex-1 rounded-full ${i < 7 ? 'bg-[#CD5C08]' : 'bg-gray-100'}`} />
+                    <div key={i} className={`h-1 flex-1 rounded-full ${i < 7 ? 'bg-[#4F6F52]' : 'bg-gray-100'}`} />
                   ))}
                 </div>
               </CardContent>

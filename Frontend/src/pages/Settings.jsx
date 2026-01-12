@@ -248,7 +248,7 @@ function Account() {
 
             {loading ? (
               <div className="flex flex-col items-center gap-3 py-12">
-                <div className="w-10 h-10 border-4 border-[#CD5C08] border-t-transparent rounded-full animate-spin" />
+                <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
                 <p className="text-gray-400 font-medium">Loading profile...</p>
               </div>
             ) : (
@@ -265,7 +265,7 @@ function Account() {
                             {...field}
                             disabled={!editMode}
                             placeholder="First Name"
-                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]"
+                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -284,7 +284,7 @@ function Account() {
                             {...field}
                             disabled={!editMode}
                             placeholder="Last Name"
-                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]"
+                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -304,7 +304,7 @@ function Account() {
                           {...field}
                           disabled={!editMode}
                           placeholder="Complete Address"
-                          className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]"
+                          className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
                         />
                       </FormControl>
                       <FormMessage />
@@ -324,7 +324,7 @@ function Account() {
                             type="number"
                             {...field}
                             disabled={!editMode}
-                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]"
+                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -343,7 +343,7 @@ function Account() {
                             {...field}
                             disabled={!editMode}
                             placeholder="+1234567890"
-                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08]"
+                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -370,7 +370,7 @@ function Account() {
                             <FormControl>
                               <RadioGroupItem
                                 value="male"
-                                className="border-gray-300 data-[state=checked]:border-[#CD5C08] data-[state=checked]:text-[#CD5C08] cursor-pointer"
+                                className="border-gray-300 data-[state=checked]:border-[#4F6F52] data-[state=checked]:text-[#4F6F52] cursor-pointer"
                               />
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">
@@ -382,7 +382,7 @@ function Account() {
                             <FormControl>
                               <RadioGroupItem
                                 value="female"
-                                className="border-gray-300 data-[state=checked]:border-[#CD5C08] data-[state=checked]:text-[#CD5C08] cursor-pointer"
+                                className="border-gray-300 data-[state=checked]:border-[#4F6F52] data-[state=checked]:text-[#4F6F52] cursor-pointer"
                               />
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">
@@ -400,7 +400,7 @@ function Account() {
                     type="button"
                     className={`${
                       editMode ? "hidden" : "inline-flex"
-                    } min-w-[140px] h-11 bg-[#CD5C08] hover:bg-[#A34906] text-white cursor-pointer`}
+                    } min-w-[140px] h-11 bg-[#4F6F52] hover:bg-[#A34906] text-white cursor-pointer`}
                     onClick={() => setEditMode(true)}
                   >
                     Edit Profile
@@ -787,35 +787,35 @@ function Account() {
               <Button
                 asChild
                 variant="outline"
-                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
               >
                 <Link to="/about">About Us</Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
               >
                 <Link to="/faqs">FAQs</Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
               >
                 <Link to="/policies">Terms of Service</Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
               >
                 <Link to="/socials">Socials</Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
-                className="justify-start h-10 hover:bg-amber-50 hover:text-[#CD5C08] hover:border-[#CD5C08]"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
               >
                 <Link to="/studies">Studies</Link>
               </Button>

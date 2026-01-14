@@ -191,7 +191,7 @@ function MachinesGrid() {
 
       {/* Machine Details Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] h-[85vh] bg-[#FDF8F1] border-[#CD5C08]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-[#CD5C08]">
               Machine Details: {selectedMachine?.machine_id}

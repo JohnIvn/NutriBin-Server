@@ -146,94 +146,107 @@ export class SettingsController {
       throw new BadRequestException('staffId is required');
     }
 
-    const updates: string[] = [];
-    const values: (string | number | null)[] = [];
-
-    if (body.firstname !== undefined) {
-      updates.push(`first_name = $${updates.length + 1}`);
-      values.push(body.firstname.trim());
-    }
-
-    if (body.lastname !== undefined) {
-      updates.push(`last_name = $${updates.length + 1}`);
-      values.push(body.lastname.trim());
-    }
-
-    if (body.address !== undefined) {
-      updates.push(`address = $${updates.length + 1}`);
-      values.push(body.address?.trim() || null);
-    }
-
-    if (body.contact !== undefined) {
-      updates.push(`contact_number = $${updates.length + 1}`);
-      values.push(body.contact?.trim() || null);
-    }
-
-    if (body.age !== undefined) {
-      const parsedAge = Number(body.age);
-      if (Number.isNaN(parsedAge)) {
-        throw new BadRequestException('age must be a number');
-      }
-      updates.push(`age = $${updates.length + 1}`);
-      values.push(parsedAge);
-    }
-
-    if (updates.length === 0) {
-      throw new BadRequestException('No fields provided to update');
-    }
-
-    const setClause = `${updates.join(', ')}, last_updated = now()`;
-
     const client = this.databaseService.getClient();
 
     try {
-      // First try to update admin table
-      const adminResult = await client.query<{
-        staff_id: string;
-        first_name: string;
-        last_name: string;
-        birthday: string | null;
-        age: number | null;
-        contact_number: string | null;
-        address: string | null;
-        email: string;
-        date_created: string;
-        last_updated: string;
-        status: string;
-      }>(
-        `UPDATE user_admin
-         SET ${setClause}
-         WHERE admin_id = $${updates.length + 1}
-         RETURNING admin_id as staff_id, first_name, last_name, NULL as birthday, NULL as age, contact_number, address, email, date_created, last_updated, status`,
-        [...values, staffId],
+      // First check if it's an admin
+      const adminCheck = await client.query(
+        'SELECT admin_id FROM user_admin WHERE admin_id = $1',
+        [staffId],
       );
 
-      if (adminResult.rowCount) {
+      const isAdmin = (adminCheck.rowCount ?? 0) > 0;
+
+      const updates: string[] = [];
+      const values: (string | number | null)[] = [];
+
+      if (body.firstname !== undefined) {
+        updates.push(`first_name = $${updates.length + 1}`);
+        values.push(body.firstname.trim());
+      }
+
+      if (body.lastname !== undefined) {
+        updates.push(`last_name = $${updates.length + 1}`);
+        values.push(body.lastname.trim());
+      }
+
+      if (body.address !== undefined) {
+        updates.push(`address = $${updates.length + 1}`);
+        values.push(body.address?.trim() || null);
+      }
+
+      if (body.contact !== undefined) {
+        updates.push(`contact_number = $${updates.length + 1}`);
+        values.push(body.contact?.trim() || null);
+      }
+
+      // Only update age for staff (not admin)
+      if (body.age !== undefined && !isAdmin) {
+        const parsedAge = Number(body.age);
+        if (Number.isNaN(parsedAge)) {
+          throw new BadRequestException('age must be a number');
+        }
+        updates.push(`age = $${updates.length + 1}`);
+        values.push(parsedAge);
+      }
+
+      if (updates.length === 0) {
+        throw new BadRequestException('No fields provided to update');
+      }
+
+      const setClause = `${updates.join(', ')}, last_updated = now()`;
+
+      if (isAdmin) {
+        // Update admin table
+        const adminResult = await client.query<{
+          staff_id: string;
+          first_name: string;
+          last_name: string;
+          birthday: string | null;
+          age: number | null;
+          contact_number: string | null;
+          address: string | null;
+          email: string;
+          date_created: string;
+          last_updated: string;
+          status: string;
+        }>(
+          `UPDATE user_admin
+           SET ${setClause}
+           WHERE admin_id = $${updates.length + 1}
+           RETURNING admin_id as staff_id, first_name, last_name, NULL as birthday, NULL as age, contact_number, address, email, date_created, last_updated, status`,
+          [...values, staffId],
+        );
+
+        if (!adminResult.rowCount) {
+          throw new NotFoundException('Account not found');
+        }
+
         return {
           ok: true,
           staff: mapStaff(adminResult.rows[0] as StaffPublicRow),
           message: 'Settings updated successfully',
         };
+      } else {
+        // Update staff table
+        const result = await client.query<StaffPublicRow>(
+          `UPDATE user_staff
+           SET ${setClause}
+           WHERE staff_id = $${updates.length + 1}
+           RETURNING staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status`,
+          [...values, staffId],
+        );
+
+        if (!result.rowCount) {
+          throw new NotFoundException('Account not found');
+        }
+
+        return {
+          ok: true,
+          staff: mapStaff(result.rows[0]),
+          message: 'Settings updated successfully',
+        };
       }
-
-      // If not admin, try staff table
-      const result = await client.query<StaffPublicRow>(
-        `UPDATE user_staff
-         SET ${setClause}
-         WHERE staff_id = $${updates.length + 1}
-         RETURNING staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status`,
-        [...values, staffId],
-      );
-
-      if (!result.rowCount) {
-        throw new NotFoundException('Account not found');
-      }
-
-      return {
-        ok: true,
-        staff: mapStaff(result.rows[0]),
-        message: 'Settings updated successfully',
-      };
     } catch (error) {
       if (
         error instanceof BadRequestException ||

@@ -117,7 +117,7 @@ function Analytics() {
                     cornerRadius={6} 
                     stroke="white" 
                     strokeWidth={3} 
-                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
                     {pieChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}

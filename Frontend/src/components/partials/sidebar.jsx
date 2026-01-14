@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 
-function NavItem({ to, icon: Icon, label, active, collapsed }) {
+function NavItem({ to, icon, label, active, collapsed }) {
+  const Icon = icon;
   return (
     <Link to={to} className="block" title={collapsed ? label : undefined}>
       <div
@@ -63,11 +64,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     localStorage.setItem("sidebar:mode", sidebarMode);
-    if (sidebarMode === "collapsed") {
-      setCollapsed(true);
-    } else if (sidebarMode === "expanded") {
-      setCollapsed(false);
-    }
+    setCollapsed(sidebarMode === "collapsed");
   }, [sidebarMode]);
 
   const handleLogout = () => {

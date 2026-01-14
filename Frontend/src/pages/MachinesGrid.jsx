@@ -126,7 +126,7 @@ function MachinesGrid() {
                     <FormControl>
                       <Input
                         placeholder="Search by Machine ID or Owner..."
-                        className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#3A4D39] w-full h-11 transition-all duration-200"
+                        className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52] w-full h-11 transition-all duration-200"
                         {...field}
                       />
                     </FormControl>

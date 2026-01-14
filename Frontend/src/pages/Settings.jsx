@@ -234,7 +234,7 @@ function Account() {
   return (
     <section className="flex bg-[#ECE3CE]/10 flex-col min-h-screen w-full justify-start items-center p-4 sm:p-8 gap-8">
       <div className="w-full max-w-7xl space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-[#4F6F52]">Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-[black]">Settings</h1>
         <p className="text-muted-foreground">Manage your account details and preferences.</p>
       </div>
 

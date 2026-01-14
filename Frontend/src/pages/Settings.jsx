@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { User, Lock, AlertTriangle } from "lucide-react";
 
 function Account() {
   const [editMode, setEditMode] = useState(false);
@@ -93,7 +94,7 @@ function Account() {
           address: staff.address || "",
           age: staff.age || 0,
           number: staff.contact_number || "",
-          gender: "male", // Default since gender is not in the backend
+          gender: "male",
         });
         setEmailShown(staff.email || user?.email || "");
       }
@@ -193,7 +194,7 @@ function Account() {
       if (response.data.ok) {
         toast.success("Profile updated successfully");
         setEditMode(false);
-        fetchProfile(); // Refresh data
+        fetchProfile();
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update profile");
@@ -231,41 +232,46 @@ function Account() {
   };
 
   return (
-    <section className="flex flex-col min-h-full h-auto w-full max-w-7xl m-auto justify-start items-center p-4 sm:p-6 gap-6">
-      <section className="flex flex-col lg:flex-row w-full h-full gap-6 items-start">
-        <Form {...form}>
-          <form className="w-full lg:flex-1 space-y-6 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg p-6 sm:p-8">
-            <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black">
-                Account Settings
-              </h1>
-              <p className="text-sm text-gray-500">
-                Manage your personal information and contact details.
-              </p>
-            </div>
+    <section className="flex bg-[#ECE3CE]/10 flex-col min-h-screen w-full justify-start items-center p-4 sm:p-8 gap-8">
+      <div className="w-full max-w-7xl space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-[#4F6F52]">Settings</h1>
+        <p className="text-muted-foreground">Manage your account details and preferences.</p>
+      </div>
 
-            <hr className="border-gray-100" />
+      <section className="flex flex-col lg:flex-row w-full max-w-7xl gap-8 items-start">
+        
+        {/* === Left Column: Profile Form === */}
+        <Form {...form}>
+          <form className="w-full lg:flex-1 space-y-8 bg-white border border-gray-100 shadow-sm rounded-xl p-6 sm:p-8">
+            <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
+              <div className="bg-[#4F6F52]/10 p-2 rounded-lg">
+                <User className="w-5 h-5 text-[#4F6F52]" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Personal Information</h2>
+                <p className="text-xs text-gray-500">Update your personal details here.</p>
+              </div>
+            </div>
 
             {loading ? (
               <div className="flex flex-col items-center gap-3 py-12">
-                <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
-                <p className="text-gray-400 font-medium">Loading profile...</p>
+                <div className="w-8 h-8 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+                <p className="text-[#4F6F52] text-sm font-medium">Loading profile...</p>
               </div>
             ) : (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="firstname"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name</FormLabel>
+                        <FormLabel className="text-gray-600">First Name</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             disabled={!editMode}
-                            placeholder="First Name"
-                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
+                            className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -278,13 +284,12 @@ function Account() {
                     name="lastname"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name</FormLabel>
+                        <FormLabel className="text-gray-600">Last Name</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             disabled={!editMode}
-                            placeholder="Last Name"
-                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
+                            className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -298,13 +303,12 @@ function Account() {
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Address</FormLabel>
+                      <FormLabel className="text-gray-600">Address</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           disabled={!editMode}
-                          placeholder="Complete Address"
-                          className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
+                          className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
                         />
                       </FormControl>
                       <FormMessage />
@@ -312,19 +316,19 @@ function Account() {
                   )}
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="age"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Age</FormLabel>
+                        <FormLabel className="text-gray-600">Age</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             {...field}
                             disabled={!editMode}
-                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
+                            className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -337,13 +341,12 @@ function Account() {
                     name="number"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contact Number</FormLabel>
+                        <FormLabel className="text-gray-600">Contact Number</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             disabled={!editMode}
-                            placeholder="+1234567890"
-                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
+                            className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
                           />
                         </FormControl>
                         <FormMessage />
@@ -357,7 +360,7 @@ function Account() {
                   name="gender"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Gender</FormLabel>
+                      <FormLabel className="text-gray-600">Gender</FormLabel>
                       <FormControl>
                         <RadioGroup
                           value={field.value}
@@ -365,15 +368,14 @@ function Account() {
                           className="flex gap-6"
                           disabled={!editMode}
                         >
-                          {/* radio buttons */}
                           <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl>
                               <RadioGroupItem
                                 value="male"
-                                className="border-gray-300 data-[state=checked]:border-[#4F6F52] data-[state=checked]:text-[#4F6F52] cursor-pointer"
+                                className="border-gray-300 text-[#4F6F52] focus:ring-[#4F6F52]"
                               />
                             </FormControl>
-                            <FormLabel className="font-normal cursor-pointer">
+                            <FormLabel className="font-normal text-gray-700 cursor-pointer">
                               Male
                             </FormLabel>
                           </FormItem>
@@ -382,10 +384,10 @@ function Account() {
                             <FormControl>
                               <RadioGroupItem
                                 value="female"
-                                className="border-gray-300 data-[state=checked]:border-[#4F6F52] data-[state=checked]:text-[#4F6F52] cursor-pointer"
+                                className="border-gray-300 text-[#4F6F52] focus:ring-[#4F6F52]"
                               />
                             </FormControl>
-                            <FormLabel className="font-normal cursor-pointer">
+                            <FormLabel className="font-normal text-gray-700 cursor-pointer">
                               Female
                             </FormLabel>
                           </FormItem>
@@ -395,12 +397,12 @@ function Account() {
                   )}
                 />
 
-                <div className="flex flex-wrap gap-4 pt-4">
+                <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-100">
                   <Button
                     type="button"
                     className={`${
                       editMode ? "hidden" : "inline-flex"
-                    } min-w-[140px] h-11 bg-[#4F6F52] hover:bg-[#A34906] text-white cursor-pointer`}
+                    } h-11 px-8 bg-[#4F6F52] hover:bg-[#3A523D] text-white font-semibold transition-all cursor-pointer`}
                     onClick={() => setEditMode(true)}
                   >
                     Edit Profile
@@ -410,7 +412,7 @@ function Account() {
                     disabled={saveLoading}
                     className={`${
                       editMode ? "inline-flex" : "hidden"
-                    } min-w-[140px] h-11 bg-[#1CE01C] hover:bg-[#13B013] text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+                    } h-11 px-8 bg-[#4F6F52] hover:bg-[#3A523D] text-white font-semibold transition-all cursor-pointer`}
                     onClick={handleSubmission}
                   >
                     {saveLoading ? "Saving..." : "Save Changes"}
@@ -421,408 +423,283 @@ function Account() {
                     disabled={saveLoading}
                     className={`${
                       editMode ? "inline-flex" : "hidden"
-                    } min-w-[140px] h-11 bg-[#D73E18] text-white hover:bg-[#B62E0B] cursor-pointer hover:text-white disabled:opacity-50`}
+                    } h-11 px-8 bg-[red]/80 text-white border-gray-200 font-semibold hover:bg-[red]/100 hover:text-[white] cursor-pointer`}
                     onClick={() => setEditMode(false)}
                   >
                     Cancel
                   </Button>
                 </div>
-              </>
+              </div>
             )}
           </form>
         </Form>
 
-        {/* right side cards */}
-        <div className="flex flex-col w-full lg:w-80 gap-6">
-          <div className="flex flex-col justify-center items-center h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
-            <h1 className="text-lg font-bold tracking-tight text-black text-center w-full">
-              Change Password
-            </h1>
-            <hr className="w-full border-gray-100" />
-            <p className="text-gray-500 text-center text-sm leading-relaxed w-full">
-              Request a 6-digit code sent to your registered email, then enter
-              it below to change your password.
-            </p>
-            <Button
-              className="w-full h-10 bg-sky-700 hover:bg-sky-800 cursor-pointer"
-              type="button"
-              onClick={() => {
-                setResetSent(false);
-                setResetOpen(true);
-              }}
-            >
-              Change
-            </Button>
-          </div>
-
-          <Dialog open={resetOpen} onOpenChange={setResetOpen}>
-            <DialogContent className="bg-white">
-              <DialogHeader>
-                <DialogTitle>Change Password</DialogTitle>
-                <DialogDescription>
-                  Send a 6-digit code to your email, then enter it below with
-                  your new password.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 p-3 border border-dashed border-gray-200 rounded-md bg-gray-50">
-                    <div className="text-sm text-gray-600">
-                      Registered email
-                    </div>
-                    <div className="font-semibold">
-                      {emailShown || user?.email || "(unknown)"}
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={sendingReset}
-                    onClick={async () => {
-                      const userId = user?.staff_id || user?.admin_id;
-                      try {
-                        setSendingReset(true);
-                        const res = await Requests({
-                          url: `/settings/${userId}/password-reset`,
-                          method: "POST",
-                          credentials: true,
-                        });
-                        if (res.data?.ok) {
-                          setResetSent(true);
-                          setCodeError("");
-                          toast.success("Verification code sent to your email");
-                        } else {
-                          toast.error(
-                            res.data?.message || "Failed to send code"
-                          );
-                        }
-                      } catch (error) {
-                        console.error(error);
-                        toast.error(
-                          error.response?.data?.message || "Failed to send code"
-                        );
-                      } finally {
-                        setSendingReset(false);
-                      }
-                    }}
-                  >
-                    {sendingReset
-                      ? "Sending..."
-                      : resetSent
-                      ? "Resend Code"
-                      : "Send Code"}
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <label className="text-sm font-medium">
-                      Verification Code
-                    </label>
-                    <Input
-                      placeholder="6-digit code"
-                      inputMode="numeric"
-                      maxLength={6}
-                      className="mt-1"
-                      value={resetCode}
-                      onChange={(e) => {
-                        const v = e.target.value.replace(/[^0-9]/g, "");
-                        setResetCode(v);
-                      }}
-                    />
-                    <div className="flex items-center gap-2 text-xs mt-1">
-                      {codeError ? (
-                        <span className="text-red-600">{codeError}</span>
-                      ) : codeFormatValid ? (
-                        <span className="text-green-600">
-                          Code format looks good
-                        </span>
-                      ) : (
-                        <span className="text-amber-600">
-                          Enter a 6-digit numeric code
-                        </span>
-                      )}
-                      {!codeError && resetSent && (
-                        <span className="text-gray-500">Code sent</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium">New Password</label>
-                    <Input
-                      type="password"
-                      className="mt-1"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                    />
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-600 mt-1">
-                      <span
-                        className={
-                          passwordChecks.minLength ? "text-green-600" : ""
-                        }
-                      >
-                        • 8+ characters
-                      </span>
-                      <span
-                        className={
-                          passwordChecks.hasUppercase ? "text-green-600" : ""
-                        }
-                      >
-                        • Uppercase
-                      </span>
-                      <span
-                        className={
-                          passwordChecks.hasLowercase ? "text-green-600" : ""
-                        }
-                      >
-                        • Lowercase
-                      </span>
-                      <span
-                        className={
-                          passwordChecks.hasNumber ? "text-green-600" : ""
-                        }
-                      >
-                        • Number
-                      </span>
-                      <span
-                        className={
-                          passwordChecks.hasSpecial ? "text-green-600" : ""
-                        }
-                      >
-                        • Symbol
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium">
-                      Confirm Password
-                    </label>
-                    <Input
-                      type="password"
-                      className="mt-1"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-                    <div className="text-[11px] mt-1">
-                      {newPassword && confirmPassword && (
-                        <span
-                          className={
-                            passwordChecks.match
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }
-                        >
-                          {passwordChecks.match
-                            ? "Passwords match"
-                            : "Passwords do not match"}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  className="bg-sky-700 hover:bg-sky-800"
-                  disabled={
-                    resetSubmitting ||
-                    !codeFormatValid ||
-                    !passwordChecks.minLength ||
-                    !passwordChecks.hasUppercase ||
-                    !passwordChecks.hasLowercase ||
-                    !passwordChecks.hasNumber ||
-                    !passwordChecks.hasSpecial ||
-                    !passwordChecks.match
-                  }
-                  onClick={async () => {
-                    const userId = user?.staff_id || user?.admin_id;
-                    try {
-                      setResetSubmitting(true);
-                      const res = await Requests({
-                        url: `/settings/${userId}/password-reset/verify`,
-                        method: "POST",
-                        data: { code: resetCode, newPassword },
-                        credentials: true,
-                      });
-                      if (res.data?.ok) {
-                        toast.success("Password has been changed successfully");
-                        setCodeError("");
-                        setResetOpen(false);
-                        setResetCode("");
-                        setNewPassword("");
-                        setConfirmPassword("");
-                      } else {
-                        toast.error(
-                          res.data?.message || "Failed to change password"
-                        );
-                      }
-                    } catch (error) {
-                      const msg =
-                        error.response?.data?.message ||
-                        "Failed to change password";
-                      if (msg.toLowerCase().includes("code")) setCodeError(msg);
-                      toast.error(msg);
-                    } finally {
-                      setResetSubmitting(false);
-                    }
-                  }}
-                >
-                  {resetSubmitting ? "Changing..." : "Change Password"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <div className="flex flex-col justify-center items-center h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
-            <h1 className="text-lg font-bold tracking-tight text-black text-center w-full">
-              Close Account
-            </h1>
-            <hr className="w-full border-gray-100" />
-            <p className="text-gray-500 text-center text-sm leading-relaxed w-full">
-              Deactivate your account and sign out. You will not be able to log
-              in again unless an admin reactivates you.
-            </p>
-            <Button
-              variant="destructive"
-              className="w-full h-10 cursor-pointer"
-              disabled={closingAccount}
-              onClick={() => setCloseConfirmOpen(true)}
-            >
-              {closingAccount ? "Closing..." : "Close"}
-            </Button>
-          </div>
-
-          <div className="flex flex-col justify-center items-start h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
-            <h1 className="text-lg font-bold tracking-tight text-black w-full">
-              Multi-Factor Authentication
-            </h1>
-            <hr className="w-full border-gray-100" />
-            <p className="text-gray-500 text-sm leading-relaxed w-full">
-              Add an extra layer of security to your account. When enabled,
-              you'll need to verify your identity via email when logging in.
-            </p>
-            <div className="w-full space-y-3">
-              <div className="flex items-center space-x-2 p-3 rounded-md border border-gray-200 hover:bg-amber-50 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  id="mfa-disabled"
-                  name="mfa"
-                  value="N/A"
-                  checked={mfaType === "N/A"}
-                  onChange={() => handleMFAChange("N/A")}
-                  disabled={mfaLoading}
-                  className="cursor-pointer"
-                />
-                <label htmlFor="mfa-disabled" className="cursor-pointer flex-1">
-                  <div className="font-medium text-gray-900">Disabled</div>
-                  <div className="text-xs text-gray-500">
-                    No additional security
-                  </div>
-                </label>
-              </div>
-              <div className="flex items-center space-x-2 p-3 rounded-md border border-gray-200 hover:bg-amber-50 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  id="mfa-email"
-                  name="mfa"
-                  value="email"
-                  checked={mfaType === "email"}
-                  onChange={() => handleMFAChange("email")}
-                  disabled={mfaLoading}
-                  className="cursor-pointer"
-                />
-                <label htmlFor="mfa-email" className="cursor-pointer flex-1">
-                  <div className="font-medium text-gray-900">
-                    Email Verification
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Requires email verification on login
-                  </div>
-                </label>
-              </div>
+        {/* === Right Column: Sidebar Actions === */}
+        <div className="flex flex-col w-full lg:w-96 gap-6">
+          
+          {/* Security Card */}
+          <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
+                <Lock className="w-4 h-4 text-[#4F6F52]" />
+                <h3 className="font-bold text-gray-800 text-sm">Security & Privacy</h3>
             </div>
-            {mfaLoading && <p className="text-xs text-gray-400">Updating...</p>}
+            <div className="p-6 space-y-6">
+                {/* Password Reset */}
+                <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-gray-700">Password</h4>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                        Secure your account by updating your password regularly.
+                    </p>
+                    <Button
+                        variant="outline"
+                        className="w-full justify-between h-10 bg-[#3A4D39] text-white hover:text-[#4F6F52] hover:border-[#4F6F52] cursor-pointer"
+                        type="button"
+                        onClick={() => {
+                            setResetSent(false);
+                            setResetOpen(true);
+                        }}
+                    >
+                        Change Password 
+                    </Button>
+                </div>
+
+                <hr className="border-gray-100" />
+
+                {/* MFA Section */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <Lock className="w-4 h-4 text-[#4F6F52]" />
+                        <h4 className="text-sm font-semibold text-gray-700">Multi-Factor Auth</h4>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
+                            <input
+                                type="radio"
+                                name="mfa"
+                                value="N/A"
+                                checked={mfaType === "N/A"}
+                                onChange={() => handleMFAChange("N/A")}
+                                disabled={mfaLoading}
+                                className="accent-[#4F6F52]"
+                            />
+                            <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-900">Disabled</div>
+                            </div>
+                        </label>
+                        
+                        <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
+                            <input
+                                type="radio"
+                                name="mfa"
+                                value="email"
+                                checked={mfaType === "email"}
+                                onChange={() => handleMFAChange("email")}
+                                disabled={mfaLoading}
+                                className="accent-[#4F6F52]"
+                            />
+                            <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-900">Email Verification</div>
+                                <div className="text-[10px] text-gray-500">Code sent to email on login</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <hr className="border-gray-100" />
+
+                {/* Close Account */}
+                <div className="pt-2">
+                    <Button
+                        variant="ghost"
+                        className="w-full h-10 text-red-600 hover:text-red-700 hover:bg-red-50 justify-start px-2 cursor-pointer"
+                        disabled={closingAccount}
+                        onClick={() => setCloseConfirmOpen(true)}
+                    >
+                        Deactivate Account
+                    </Button>
+                </div>
+            </div>
           </div>
 
-          <Dialog open={closeConfirmOpen} onOpenChange={setCloseConfirmOpen}>
-            <DialogContent className="bg-white">
-              <DialogHeader>
-                <DialogTitle>Close account</DialogTitle>
-                <DialogDescription>
-                  Deactivate your account and sign out. You will not be able to
-                  log in again unless an admin reactivates you.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={closingAccount}
-                  onClick={() => setCloseConfirmOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={closingAccount}
-                  onClick={handleCloseAccount}
-                >
-                  {closingAccount ? "Closing..." : "Confirm close"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <div className="flex flex-col justify-center items-start h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
-            <h1 className="text-lg font-bold tracking-tight text-black w-full">
-              Content
-            </h1>
-            <hr className="w-full border-gray-100" />
-            <div className="flex flex-col gap-2 w-full">
-              <Button
-                asChild
-                variant="outline"
-                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
-              >
-                <Link to="/about">About Us</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
-              >
-                <Link to="/faqs">FAQs</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
-              >
-                <Link to="/policies">Terms of Service</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
-              >
-                <Link to="/socials">Socials</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
-              >
-                <Link to="/studies">Studies</Link>
-              </Button>
+          {/* Quick Links Card */}
+          <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
+             <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
+                <User className="w-4 h-4 text-[#4F6F52]" />
+                <h3 className="font-bold text-gray-800 text-sm">Resources</h3>
+            </div>
+            <div className="p-2">
+              {[
+                  { label: "About Us", link: "/about" },
+                  { label: "FAQs", link: "/faqs" },
+                  { label: "Terms of Service", link: "/policies" },
+                  { label: "Socials", link: "/socials" },
+                  { label: "Studies", link: "/studies" }
+              ].map((item) => (
+                  <Button
+                    key={item.label}
+                    asChild
+                    variant="ghost"
+                    className="w-full justify-between h-10 text-gray-600 hover:text-[#4F6F52] hover:bg-[#ECE3CE]/20 font-normal"
+                  >
+                    <Link to={item.link}>
+                        {item.label}
+                    </Link>
+                  </Button>
+              ))}
             </div>
           </div>
         </div>
       </section>
+
+      {/* === Dialogs === */}
+      
+      {/* Password Reset Dialog */}
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent className="bg-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-[#4F6F52]">Change Password</DialogTitle>
+            <DialogDescription>
+              We'll send a code to your email to verify it's you.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="text-sm">
+                    <p className="text-gray-500 text-xs uppercase font-bold">Send code to:</p>
+                    <p className="font-medium text-gray-900">{emailShown || user?.email}</p>
+                </div>
+                <Button
+                size="sm"
+                className="bg-[#4F6F52] hover:bg-[#3A523D] text-white text-xs h-8"
+                disabled={sendingReset}
+                onClick={async () => {
+                    const userId = user?.staff_id || user?.admin_id;
+                    try {
+                    setSendingReset(true);
+                    const res = await Requests({
+                        url: `/settings/${userId}/password-reset`,
+                        method: "POST",
+                        credentials: true,
+                    });
+                    if (res.data?.ok) {
+                        setResetSent(true);
+                        setCodeError("");
+                        toast.success("Code sent!");
+                    } else {
+                        toast.error(res.data?.message || "Failed");
+                    }
+                    } catch (error) {
+                    toast.error("Error sending code");
+                    } finally {
+                    setSendingReset(false);
+                    }
+                }}
+                >
+                {sendingReset ? "Sending..." : resetSent ? "Resend" : "Send Code"}
+                </Button>
+            </div>
+
+            <div className="space-y-3">
+                <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-600">Verification Code</label>
+                    <Input
+                        placeholder="000000"
+                        maxLength={6}
+                        className="text-center tracking-[0.5em] font-mono text-lg border-gray-200 focus-visible:border-[#4F6F52] text-[#4F6F52]"
+                        value={resetCode}
+                        onChange={(e) => setResetCode(e.target.value.replace(/[^0-9]/g, ""))}
+                    />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-600">New Password</label>
+                        <Input
+                            type="password"
+                            className="border-gray-200 focus-visible:border-[#4F6F52]"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-600">Confirm</label>
+                        <Input
+                            type="password"
+                            className="border-gray-200 focus-visible:border-[#4F6F52]"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                    </div>
+                </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              className="w-full bg-[#4F6F52] hover:bg-[#3A523D]"
+              disabled={
+                resetSubmitting ||
+                !codeFormatValid ||
+                !passwordChecks.match
+              }
+              onClick={async () => {
+                const userId = user?.staff_id || user?.admin_id;
+                try {
+                    setResetSubmitting(true);
+                    const res = await Requests({
+                    url: `/settings/${userId}/password-reset/verify`,
+                    method: "POST",
+                    data: { code: resetCode, newPassword },
+                    credentials: true,
+                    });
+                    if (res.data?.ok) {
+                    toast.success("Password changed!");
+                    setResetOpen(false);
+                    }
+                } catch {
+                    toast.error("Failed to change password");
+                } finally {
+                    setResetSubmitting(false);
+                }
+              }}
+            >
+              {resetSubmitting ? "Updating..." : "Update Password"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Close Account Dialog */}
+      <Dialog open={closeConfirmOpen} onOpenChange={setCloseConfirmOpen}>
+        <DialogContent className="bg-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" /> Deactivate Account
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to deactivate your account? You will be logged out immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setCloseConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700"
+              onClick={handleCloseAccount}
+              disabled={closingAccount}
+            >
+              {closingAccount ? "Deactivating..." : "Yes, Deactivate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </section>
   );
 }

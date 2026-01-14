@@ -237,7 +237,7 @@ export default function Sidebar() {
           variant="ghost"
           className={`w-full ${
             shouldCollapse ? "justify-center" : "justify-start"
-          } text-gray-700 hover:text-red-600 hover:bg-red-50`}
+          } text-gray-700 hover:text-red-600 hover:bg-red-50 cursor-pointer`}
           title="Logout"
         >
           <LogOut size={18} className={`${shouldCollapse ? "mr-0" : "mr-2"}`} />

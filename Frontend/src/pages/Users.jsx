@@ -206,7 +206,7 @@ function Users() {
                         <FormControl>
                           <Input
                             placeholder="Filter by ID, name, or email..."
-                            className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-11 transition-all duration-200"
+                            className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] text-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-11 transition-all duration-200"
                             {...field}
                           />
                         </FormControl>
@@ -229,7 +229,7 @@ function Users() {
                           defaultValue={field.value.toString()}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52]">
+                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52] font-bold text-[#4F6F52]">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
@@ -342,7 +342,7 @@ function Users() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-9 w-9 rounded-full hover:bg-[#4F6F52]/10 hover:text-[#4F6F52] transition-colors cursor-pointer"
+                              className="h-9 w-9 rounded-full text-[#3A4D39] hover:bg-[#4F6F52]/10 hover:text-[#4F6F52] transition-colors cursor-pointer"
                             >
                               <MoreHorizontalIcon className="h-5 w-5" />
                             </Button>

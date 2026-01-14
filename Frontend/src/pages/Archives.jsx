@@ -118,10 +118,10 @@ function Archives() {
   };
 
   return (
-    <div className="w-full bg-[#FDF8F1] min-h-screen pb-10">
+    <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
       <section className="flex flex-col w-full px-4 md:px-8 pt-6 space-y-6 animate-in fade-in duration-500">
         {/* header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-[#CD5C08] pl-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-[#4F6F52] pl-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
               Archive Management
@@ -140,9 +140,9 @@ function Archives() {
               setActiveTab("users");
               setCurrentPage(1);
             }}
-            className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 cursor-pointer ${
               activeTab === "users"
-                ? "bg-[#CD5C08] hover:bg-[#B54F07] text-white shadow-md"
+                ? "bg-[#4F6F52] hover:bg-[#739072] text-white shadow-md"
                 : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >
@@ -155,9 +155,9 @@ function Archives() {
               setActiveTab("staff");
               setCurrentPage(1);
             }}
-            className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 cursor-pointer ${
               activeTab === "staff"
-                ? "bg-[#CD5C08] hover:bg-[#B54F07] text-white shadow-md"
+                ? "bg-[#4F6F52] hover:bg-[#739072] text-white shadow-md"
                 : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >
@@ -171,7 +171,7 @@ function Archives() {
             <Form {...filterForm}>
               <div className="flex flex-col md:flex-row gap-4 items-center w-full">
                 <div className="relative w-full md:w-[450px] group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-200 group-focus-within:text-[#CD5C08] z-10" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-200 group-focus-within:text-[#4F6F52] z-10" />
                   <FormField
                     control={filterForm.control}
                     name="term"
@@ -180,7 +180,7 @@ function Archives() {
                         <FormControl>
                           <Input
                             placeholder="Filter by ID, name, or email..."
-                            className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#CD5C08] focus-visible:border-[#CD5C08] w-full h-11 transition-all duration-200"
+                            className="pl-10 border-gray-200 focus-visible:ring-1 text-[#4F6F52] focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-11 transition-all duration-200"
                             {...field}
                             onChange={(e) => {
                               field.onChange(e);
@@ -210,7 +210,7 @@ function Archives() {
                           defaultValue={field.value.toString()}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#CD5C08]">
+                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52] font-bold text-[#4F6F52]">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
@@ -273,7 +273,7 @@ function Archives() {
                       className="h-64 text-center"
                     >
                       <div className="flex flex-col items-center gap-3">
-                        <div className="w-10 h-10 border-4 border-[#CD5C08] border-t-transparent rounded-full animate-spin" />
+                        <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
                         <p className="text-gray-400 font-medium">
                           Fetching Archive Records...
                         </p>
@@ -355,7 +355,7 @@ function Archives() {
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={`text-[#CD5C08] hover:text-white bg-white hover:bg-[#CD5C08] border-[#CD5C08] transition-colors shadow-sm h-10 px-4 rounded-md flex items-center ${
+                    className={`text-[#4F6F52] hover:text-white bg-white hover:bg-[#4F6F52] border-[#4F6F52] transition-colors shadow-sm h-10 px-4 rounded-md flex items-center ${
                       currentPage === 1
                         ? "opacity-50 pointer-events-none"
                         : "cursor-pointer"
@@ -363,7 +363,7 @@ function Archives() {
                   />
                 </PaginationItem>
                 <PaginationItem>
-                  <div className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-bold text-[#CD5C08] shadow-sm">
+                  <div className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-bold text-[#4F6F52] shadow-sm">
                     {currentPage} / {totalPages || 1}
                   </div>
                 </PaginationItem>
@@ -372,7 +372,7 @@ function Archives() {
                     onClick={() =>
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
-                    className={`text-[#CD5C08] hover:text-white bg-white hover:bg-[#CD5C08] border-[#CD5C08] transition-colors shadow-sm h-10 px-4 rounded-md flex items-center ${
+                    className={`text-[#4F6F52] hover:text-white bg-white hover:bg-[#4F6F52] border-[#4F6F52] transition-colors shadow-sm h-10 px-4 rounded-md flex items-center ${
                       currentPage === (totalPages || 1)
                         ? "opacity-50 pointer-events-none"
                         : "cursor-pointer"

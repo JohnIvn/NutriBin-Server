@@ -40,7 +40,7 @@ function Analytics() {
       
       {/* header */}
       <div className="flex flex-col gap-1 border-l-4 border-[#4F6F52] pl-6">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#3A4D39]">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[black]">
           Fertilizer Analytics
         </h1>
         <p className="text-sm text-gray-500 italic">

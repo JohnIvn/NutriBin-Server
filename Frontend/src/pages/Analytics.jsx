@@ -71,7 +71,16 @@ function Analytics() {
                   <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.2} />
                   <XAxis dataKey="batch" tickLine={false} tickMargin={10} axisLine={false} className="text-xs font-medium fill-gray-500" />
                   <YAxis tickLine={false} axisLine={false} tickMargin={10} className="text-xs font-medium fill-gray-500" unit="%" />
-                  <ChartTooltip cursor={{fill: '#f8f9fa'}} content={<ChartTooltipContent />} />
+                  
+                  <ChartTooltip 
+                    cursor={{fill: '#f8f9fa'}} 
+                    content={
+                      <ChartTooltipContent 
+                        className="bg-white border border-[#4F6F52]/20 shadow-lg text-[#3A4D39] rounded-lg"
+                      />
+                    } 
+                  />
+
                   <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{paddingBottom: '20px'}} />
                   <ReferenceLine y={30} stroke="#e2e8f0" strokeDasharray="5 5" label={{ position: 'right', value: 'Goal', fill: '#94a3b8', fontSize: 10 }} />
                   <Bar dataKey="nitrogen" fill="var(--color-nitrogen)" radius={[4, 4, 0, 0]}>
@@ -106,7 +115,16 @@ function Analytics() {
             <CardContent className="flex-1 pb-6">
               <ChartContainer config={chartConfig} className="mx-auto aspect-square h-72">
                 <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                  
+                  <ChartTooltip 
+                    content={
+                      <ChartTooltipContent 
+                        hideLabel 
+                        className="bg-white border border-[#4F6F52]/20 shadow-lg text-[#3A4D39] rounded-lg"
+                      />
+                    } 
+                  />
+
                   <Pie 
                     data={pieChartData} 
                     dataKey="value" 
@@ -117,7 +135,7 @@ function Analytics() {
                     cornerRadius={6} 
                     stroke="white" 
                     strokeWidth={3} 
-                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
                     {pieChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}

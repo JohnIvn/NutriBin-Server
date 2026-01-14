@@ -251,6 +251,7 @@ function Account() {
   };
 
   return (
+<<<<<<< HEAD
     <section className="flex flex-col min-h-screen w-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -268,6 +269,29 @@ function Account() {
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
+=======
+    <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
+      <section className="flex flex-col w-full px-4 md:px-8 pt-6 space-y-6 animate-in fade-in duration-500">
+        <section className="flex flex-col lg:flex-row w-full gap-6 items-start">
+        <Form {...form}>
+          <form className="w-full lg:flex-1 space-y-6 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg p-6 sm:p-8">
+            <div className="space-y-1">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black">
+                Account Settings
+              </h1>
+              <p className="text-sm text-gray-500">
+                Manage your personal information and contact details.
+              </p>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            {loading ? (
+              <div className="flex flex-col items-center gap-3 py-12">
+                <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+                <p className="text-gray-400 font-medium">Loading profile...</p>
+              </div>
+>>>>>>> 46b609a (refactor analytics and sidebar)
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-[#4F6F52] to-[#3d5642] flex items-center justify-center">
                 <span className="text-lg font-bold text-white">
@@ -1122,6 +1146,7 @@ function Account() {
             >
               Cancel
             </Button>
+<<<<<<< HEAD
             <Button
               type="button"
               variant="destructive"
@@ -1134,6 +1159,139 @@ function Account() {
         </DialogContent>
       </Dialog>
     </section>
+=======
+          </div>
+
+          <div className="flex flex-col justify-center items-start h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
+            <h1 className="text-lg font-bold tracking-tight text-black w-full">
+              Multi-Factor Authentication
+            </h1>
+            <hr className="w-full border-gray-100" />
+            <p className="text-gray-500 text-sm leading-relaxed w-full">
+              Add an extra layer of security to your account. When enabled,
+              you'll need to verify your identity via email when logging in.
+            </p>
+            <div className="w-full space-y-3">
+              <div className="flex items-center space-x-2 p-3 rounded-md border border-gray-200 hover:bg-amber-50 cursor-pointer transition-colors">
+                <input
+                  type="radio"
+                  id="mfa-disabled"
+                  name="mfa"
+                  value="N/A"
+                  checked={mfaType === "N/A"}
+                  onChange={() => handleMFAChange("N/A")}
+                  disabled={mfaLoading}
+                  className="cursor-pointer"
+                />
+                <label htmlFor="mfa-disabled" className="cursor-pointer flex-1">
+                  <div className="font-medium text-gray-900">Disabled</div>
+                  <div className="text-xs text-gray-500">
+                    No additional security
+                  </div>
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 rounded-md border border-gray-200 hover:bg-amber-50 cursor-pointer transition-colors">
+                <input
+                  type="radio"
+                  id="mfa-email"
+                  name="mfa"
+                  value="email"
+                  checked={mfaType === "email"}
+                  onChange={() => handleMFAChange("email")}
+                  disabled={mfaLoading}
+                  className="cursor-pointer"
+                />
+                <label htmlFor="mfa-email" className="cursor-pointer flex-1">
+                  <div className="font-medium text-gray-900">
+                    Email Verification
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Requires email verification on login
+                  </div>
+                </label>
+              </div>
+            </div>
+            {mfaLoading && <p className="text-xs text-gray-400">Updating...</p>}
+          </div>
+
+          <Dialog open={closeConfirmOpen} onOpenChange={setCloseConfirmOpen}>
+            <DialogContent className="bg-white">
+              <DialogHeader>
+                <DialogTitle>Close account</DialogTitle>
+                <DialogDescription>
+                  Deactivate your account and sign out. You will not be able to
+                  log in again unless an admin reactivates you.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={closingAccount}
+                  onClick={() => setCloseConfirmOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={closingAccount}
+                  onClick={handleCloseAccount}
+                >
+                  {closingAccount ? "Closing..." : "Confirm close"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <div className="flex flex-col justify-center items-start h-auto p-6 gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200 rounded-lg">
+            <h1 className="text-lg font-bold tracking-tight text-black w-full">
+              Content
+            </h1>
+            <hr className="w-full border-gray-100" />
+            <div className="flex flex-col gap-2 w-full">
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
+              >
+                <Link to="/about">About Us</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
+              >
+                <Link to="/faqs">FAQs</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
+              >
+                <Link to="/policies">Terms of Service</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
+              >
+                <Link to="/socials">Socials</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="justify-start h-10 bg-[#4F6F52] text-white hover:bg-amber-50 hover:text-[#4F6F52] hover:border-[#4F6F52]"
+              >
+                <Link to="/studies">Studies</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+      </section>
+    </div>
+>>>>>>> 46b609a (refactor analytics and sidebar)
   );
 }
 

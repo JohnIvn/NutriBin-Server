@@ -65,6 +65,11 @@ export default function Sidebar() {
 
   useEffect(() => {
     localStorage.setItem("sidebar:mode", sidebarMode);
+    if (sidebarMode === "collapsed") {
+      setCollapsed(true);
+    } else if (sidebarMode === "expanded") {
+      setCollapsed(false);
+    }
   }, [sidebarMode]);
 
   const handleLogout = () => {
@@ -94,33 +99,13 @@ export default function Sidebar() {
             shouldCollapse ? "justify-center" : "gap-2"
           }`}
         >
-          <img
-            src="/Logo.svg"
-            alt="NutriBin Logo"
-            className="h-8 w-auto"
-          />
+          <img src="/Logo.svg" alt="NutriBin Logo" className="h-8 w-auto" />
           {!shouldCollapse && (
-            <span className="font-extrabold text-[#4F6F52] text-4xl">NutriBin</span>
+            <span className="font-extrabold text-[#4F6F52] text-4xl">
+              NutriBin
+            </span>
           )}
         </Link>
-        <div
-          className={`mt-3 ${
-            shouldCollapse ? "flex justify-center" : "text-right"
-          }`}
-        >
-          <button
-            onClick={() => setCollapsed((c) => !c)}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-amber-50 text-gray-600"
-            aria-label={shouldCollapse ? "Expand sidebar" : "Collapse sidebar"}
-            title={shouldCollapse ? "Expand" : "Collapse"}
-          >
-            {shouldCollapse ? (
-              <ChevronsRight size={18} />
-            ) : (
-              <ChevronsLeft size={18} />
-            )}
-          </button>
-        </div>
       </div>
 
       <nav className={`py-3 space-y-1 ${shouldCollapse ? "px-1" : "px-3"}`}>
@@ -210,6 +195,13 @@ export default function Sidebar() {
                 Expand on hover
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <button
+              onClick={() => setCollapsed((c) => !c)}
+              className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-gray-100 text-gray-700"
+            >
+              {shouldCollapse ? "Expand" : "Collapse"}
+            </button>
           </DropdownMenuContent>
         </DropdownMenu>
 

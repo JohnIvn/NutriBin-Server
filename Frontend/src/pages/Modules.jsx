@@ -29,9 +29,9 @@ const StatusBadge = ({ isOffline }) => (
 
 const ModuleGroup = ({ title, items, icon, columns = "grid-cols-1" }) => (
   <div className="flex flex-col bg-white rounded-2xl border border-[#ECE3CE] shadow-sm overflow-hidden h-full">
-    {/* Card Header */}
+    {/* card header */}
     <div className="bg-[#ECE3CE]/30 px-5 py-4 border-b border-[#ECE3CE] flex items-center justify-between">
-      <h2 className="font-bold text-sm uppercase tracking-widest text-[#3A4D39] flex items-center gap-3">
+      <h2 className="font-bold text-xs uppercase tracking-widest text-[#3A4D39] flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#4F6F52] shadow-sm">
           <FontAwesomeIcon icon={icon} />
         </div>

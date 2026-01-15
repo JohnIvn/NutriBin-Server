@@ -229,7 +229,7 @@ function Users() {
                           defaultValue={field.value.toString()}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52] font-bold text-[#4F6F52]">
+                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52] font-bold text-[#4F6F52] cursor-pointer">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>

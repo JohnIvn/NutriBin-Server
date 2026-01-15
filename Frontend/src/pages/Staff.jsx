@@ -212,7 +212,7 @@ function Staff() {
           </div>
           <Button
             onClick={() => displayModal("default")}
-            className="bg-[#4F6F52] hover:bg-[#739072] text-white shadow-lg cursor-pointer transition-transform active:scale-95 px-6"
+            className="bg-[#4F6F52] hover:bg-[#3A4D39] text-white shadow-lg cursor-pointer transition-colors active:scale-95 px-6"
           >
             <Plus className="mr-2 h-5 w-5" /> Add New Staff
           </Button>
@@ -255,7 +255,7 @@ function Staff() {
                           defaultValue={field.value.toString()}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52] font-bold text-[#4F6F52]">
+                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52] font-bold text-[#4F6F52] cursor-pointer">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>

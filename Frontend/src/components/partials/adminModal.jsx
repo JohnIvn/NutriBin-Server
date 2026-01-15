@@ -318,8 +318,8 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     <IconComp
       className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${
         active
-          ? "text-[#CD5C08]"
-          : "text-gray-400 group-focus-within:text-[#CD5C08]"
+          ? "text-[#4F6F52]"
+          : "text-gray-400 group-focus-within:text-[#4F6F52]"
       }`}
     />
   );
@@ -327,7 +327,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   return (
     <Dialog open={true} onOpenChange={cancel}>
       <DialogContent className="sm:max-w-[650px] p-0 gap-0 overflow-hidden border-none shadow-2xl bg-white">
-        <div className="bg-[#CD5C08] p-6 text-white relative overflow-hidden">
+        <div className="bg-[#4F6F52] p-6 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <ShieldCheck className="w-32 h-32" />
           </div>
@@ -356,14 +356,14 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     control={form.control}
                     name="firstname"
                     render={({ field }) => (
-                      <FormItem className="space-y-1">
+                      <FormItem className="space-y-1 text-[#4F6F52]">
                         <FormLabel>First Name</FormLabel>
                         <FormControl>
                           <div className="relative group">
                             <InputIcon icon={User} />
                             <Input
                               placeholder="Barry"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08]"
+                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
                               {...field}
                             />
                           </div>
@@ -378,14 +378,14 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     control={form.control}
                     name="lastname"
                     render={({ field }) => (
-                      <FormItem className="space-y-1">
+                      <FormItem className="space-y-1 text-[#4F6F52]">
                         <FormLabel>Last Name</FormLabel>
                         <FormControl>
                           <div className="relative group">
                             <InputIcon icon={User} />
                             <Input
                               placeholder="Allen"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08]"
+                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
                               {...field}
                             />
                           </div>
@@ -403,14 +403,14 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     control={form.control}
                     name="birthday"
                     render={({ field }) => (
-                      <FormItem className="space-y-1">
+                      <FormItem className="space-y-1 text-[#4F6F52]">
                         <FormLabel>Birthday</FormLabel>
                         <FormControl>
                           <div className="relative group">
                             <InputIcon icon={Calendar} />
                             <Input
                               type="date"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08]"
+                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
                               {...field}
                             />
                           </div>
@@ -425,14 +425,14 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     control={form.control}
                     name="address"
                     render={({ field }) => (
-                      <FormItem className="space-y-1">
+                      <FormItem className="space-y-1 text-[#4F6F52]">
                         <FormLabel>Address</FormLabel>
                         <FormControl>
                           <div className="relative group">
                             <InputIcon icon={MapPin} />
                             <Input
                               placeholder="City, Country"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08]"
+                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
                               {...field}
                             />
                           </div>
@@ -456,14 +456,14 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                      <FormItem className="space-y-1">
+                      <FormItem className="space-y-1 text-[#4F6F52]">
                         <FormLabel>Email Address</FormLabel>
                         <FormControl>
                           <div className="relative group">
                             <InputIcon icon={Mail} active={emailAvailable} />
                             <Input
                               placeholder="user@example.com"
-                              className={`pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08] ${
+                              className={`pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] ${
                                 emailAvailable === false
                                   ? "border-red-500 bg-red-50"
                                   : "border-gray-200"
@@ -490,14 +490,14 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     control={form.control}
                     name="contact"
                     render={({ field }) => (
-                      <FormItem className="space-y-1">
+                      <FormItem className="space-y-1 text-[#4F6F52]">
                         <FormLabel>Mobile Number</FormLabel>
                         <FormControl>
                           <div className="relative group">
                             <InputIcon icon={Phone} active={phoneAvailable} />
                             <Input
                               placeholder="09..."
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08]"
+                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
                               {...field}
                             />
                           </div>
@@ -512,9 +512,9 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
 
                 {/* verification */}
                 {(!isEdit || emailChanged) && (
-                  <div className="p-4 border border-[#CD5C08]/30 bg-[#CD5C08]/5 rounded-lg mt-2 space-y-3">
+                  <div className="p-4 border border-[#4F6F52]/30 bg-[#4F6F52]/5 rounded-lg mt-2 space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label className="text-[#CD5C08] font-bold">
+                      <Label className="text-[#4F6F52] font-bold">
                         Verify Email
                       </Label>
                       <Button
@@ -524,7 +524,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                         disabled={
                           sendingCode || emailAvailable === false || !email
                         }
-                        className="bg-[#CD5C08] text-white cursor-pointer hover:bg-[#A34906]"
+                        className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#A34906]"
                       >
                         {sendingCode ? "Sending..." : "Send Code"}
                       </Button>
@@ -542,7 +542,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                             <Input
                               placeholder="6-digit code"
                               maxLength={6}
-                              className="pl-10 h-10 focus-visible:ring-1 focus-visible:ring-[#CD5C08]"
+                              className="pl-10 h-10 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
                               {...field}
                               onChange={(e) =>
                                 field.onChange(
@@ -576,22 +576,22 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                       control={form.control}
                       name="password"
                       render={({ field }) => (
-                        <FormItem className="space-y-1">
+                        <FormItem className="space-y-1 text-[#4F6F52]">
                           <FormLabel>Password</FormLabel>
                           <div className="relative group">
                             <InputIcon icon={Lock} />
                             <Input
                               type={showPass ? "text" : "password"}
                               placeholder="••••••••"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08]"
+                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
                               {...field}
                             />
                             <button
                               type="button"
                               onClick={() => setShowPass(!showPass)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
                             >
-                              <Eye size={16} />
+                              {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                             </button>
                           </div>
                           <div className="min-h-[1.25rem]">
@@ -604,14 +604,14 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                       control={form.control}
                       name="confirmPassword"
                       render={({ field }) => (
-                        <FormItem className="space-y-1">
+                        <FormItem className="space-y-1 text-[#4F6F52]">
                           <FormLabel>Confirm</FormLabel>
                           <div className="relative group">
                             <InputIcon icon={Lock} />
                             <Input
                               type={showPass ? "text" : "password"}
                               placeholder="••••••••"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#CD5C08]"
+                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
                               {...field}
                             />
                           </div>
@@ -629,7 +629,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
               <div className="pt-6 flex flex-col gap-3">
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-[#CD5C08] hover:bg-[#A34906] text-white font-bold text-lg cursor-pointer transition-all active:scale-95 shadow-md"
+                  className="w-full h-12 bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-bold text-lg cursor-pointer transition-all active:scale-95 shadow-md"
                 >
                   {isEdit ? "Save Changes" : "Create Account"}
                 </Button>
@@ -638,7 +638,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                   type="button"
                   onClick={cancel}
                   variant="outline"
-                  className="w-full h-12 border-gray-300 text-gray-500 hover:border-[#CD5C08] hover:text-[#CD5C08] hover:bg-orange-50 transition-all duration-200 cursor-pointer font-medium"
+                  className="w-full h-12 text-white bg-[#FF3838] hover:bg-[#DC0000] hover:text-[white] transition-all duration-200 cursor-pointer font-medium"
                 >
                   Cancel
                 </Button>

@@ -346,12 +346,21 @@ function Machines() {
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter ${
                             repair.repair_status === "active"
-                              ? "bg-blue-50 text-blue-700 border border-blue-100"
+                              ? "bg-green-50 text-green-700 border border-green-100"
                               : repair.repair_status === "cancelled"
                               ? "bg-red-50 text-red-700 border border-red-100"
-                              : "bg-yellow-50 text-yellow-700 border border-yellow-100"
+                              : "bg-orange-50 text-orange-700 border border-orange-100"
                           }`}
                         >
+                          <div
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              repair.repair_status === "active"
+                                ? "bg-green-500 animate-pulse"
+                                : repair.repair_status === "cancelled"
+                                ? "bg-red-500"
+                                : "bg-orange-500"
+                            }`}
+                          />
                           {repair.repair_status}
                         </span>
                       </TableCell>

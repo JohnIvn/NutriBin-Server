@@ -322,7 +322,7 @@ function Archives() {
                         )}
                         <TableCell>
                           <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter ${
                               item.status === "active"
                                 ? "bg-green-100 text-green-700"
                                 : item.status === "inactive"
@@ -330,6 +330,15 @@ function Archives() {
                                 : "bg-red-100 text-red-700"
                             }`}
                           >
+                            <div
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              item.status === "active"
+                                ? "bg-green-500 animate-pulse"
+                                : item.status === "cancelled"
+                                ? "bg-red-500"
+                                : "bg-orange-500"
+                            }`}
+                          />
                             {item.status}
                           </span>
                         </TableCell>

@@ -139,7 +139,7 @@ export default function Socials() {
               <div className="relative z-10 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
                 <FaArrowRight className="text-[#ECE3CE]" />
               </div>
-            </motion.a>``
+            </motion.a>
           ))}
         </motion.div>
 

@@ -1,88 +1,165 @@
-import React from "react";
-import FaqCard from "../components/ui/faqcard";
-// eslint-disable-next-line no-unused-vars
-import { motion } from "framer-motion";
-import { FaCommentDots } from "react-icons/fa";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaCommentDots, FaPlus, FaMinus } from "react-icons/fa";
 
 const faqsData = [
   {
-    question: "Q: What does the compost bin system do?",
+    question: "What does the compost bin system do?",
     answer:
-      "A: The compost bin system processes organic waste such as food scraps and plant materials and converts them into nutrient-rich fertilizer through controlled composting.",
+      "The compost bin system processes organic waste such as food scraps and plant materials and converts them into nutrient-rich fertilizer through controlled composting.",
   },
   {
-    question: "Q: What types of waste can be placed in the compost bin?",
+    question: "What types of waste can be placed in the compost bin?",
     answer:
-      "A: The system accepts biodegradable materials such as fruit and vegetable waste, leaves, grass clippings, and other organic matter. Non-biodegradable materials like plastics, metals, and chemicals should not be added.",
+      "The system accepts biodegradable materials such as fruit and vegetable waste, leaves, grass clippings, and other organic matter. Non-biodegradable materials like plastics, metals, and chemicals should not be added.",
   },
   {
-    question: "Q: How does the system monitor the composting process?",
+    question: "How does the system monitor the composting process?",
     answer:
-      "A: The system uses sensors to monitor parameters such as temperature, humidity, and gas levels to ensure optimal conditions for efficient composting and safe operation.",
+      "The system uses sensors to monitor parameters such as temperature, humidity, and gas levels to ensure optimal conditions for efficient composting and safe operation.",
   },
   {
-    question: "Q: Does the compost bin require regular maintenance?",
+    question: "Does the compost bin require regular maintenance?",
     answer:
-      "A: Minimal maintenance is required. Users need to periodically add organic waste, ensure proper moisture levels, and collect the finished fertilizer as instructed by the system.",
+      "Minimal maintenance is required. Users need to periodically add organic waste, ensure proper moisture levels, and collect the finished fertilizer as instructed by the system.",
   },
   {
-    question: "Q: Is the system odor-free?",
+    question: "Is the system odor-free?",
     answer:
-      "A: The system is designed to minimize odor through proper airflow and controlled composting conditions. Odors may occur if non-recommended materials are added.",
+      "The system is designed to minimize odor through proper airflow and controlled composting conditions. Odors may occur if non-recommended materials are added.",
   },
   {
-    question: "Q: Can users track compost data and fertilizer output?",
+    question: "Can users track compost data and fertilizer output?",
     answer:
-      "A: Yes. The system includes a monitoring interface that allows users to view compost status, historical data, and fertilizer output records.",
+      "Yes. The system includes a monitoring interface that allows users to view compost status, historical data, and fertilizer output records.",
   },
 ];
+
+// --- custom styled accordion component ---
+const FaqItem = ({ question, answer }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <motion.div
+      className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
+        isOpen
+          ? "bg-white border-[#3A4D39] shadow-md"
+          : "bg-white/60 border-[#ECE3CE] hover:border-[#739072]"
+      }`}
+      initial={false}
+    >
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-5 text-left gap-4 cursor-pointer"
+      >
+        <span
+          className={`text-lg font-bold transition-colors ${
+            isOpen ? "text-[#3A4D39]" : "text-[#4F6F52]"
+          }`}
+        >
+          {question}
+        </span>
+        <div
+          className={`flex-shrink-0 p-2 rounded-full transition-colors ${
+            isOpen ? "bg-[#3A4D39] text-[#ECE3CE]" : "bg-[#ECE3CE] text-[#3A4D39]"
+          }`}
+        >
+          {isOpen ? <FaMinus size={12} /> : <FaPlus size={12} />}
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div className="px-5 pb-5 pt-0">
+              <div className="h-[1px] w-full bg-[#ECE3CE] mb-4" />
+              <p className="text-[#739072] font-medium leading-relaxed">
+                {answer}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
 export default function Faqs() {
   return (
-    <div className="w-full min-h-screen pt-12">
-      {/* Header (LEFT ALIGNED) */}
-      <div className="w-full max-w-[90%] mx-auto mb-8">
-        <div className="flex items-center gap-4">
-          <FaCommentDots className="text-black text-3xl" />
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-black">
-            FAQs
+    <div className="w-full min-h-screen bg-[#ECE3CE]/30 font-sans">
+      <div className="w-full max-w-5xl mx-auto px-6 py-16">
+        
+        {/* --- header section --- */}
+        <motion.div
+          className="mb-12 flex flex-col items-center md:items-start text-center md:text-left border-l-0 md:border-l-4 border-[#3A4D39] md:pl-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
+            <FaCommentDots className="text-[#739072] text-2xl" />
+            <span className="text-[#739072] font-bold uppercase tracking-widest text-sm">
+              Support Center
+            </span>
+          </div>
+          <h1 className="text-4xl lg:text-6xl font-black text-[#3A4D39]">
+            Frequently <br className="hidden md:block" /> Asked Questions.
           </h1>
-        </div>
-      </div>
+          <p className="mt-4 text-[#4F6F52] text-lg max-w-xl mx-auto md:mx-0">
+            Everything you need to know about the compost system, maintenance, and monitoring.
+          </p>
+        </motion.div>
 
-      {/* FAQ Cards */}
-      <motion.div
-        className="w-full flex flex-col gap-4"
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: {},
-          visible: {
-            transition: {
-              staggerChildren: 0.15,
+        {/* --- FAQ grid --- */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: {
+              transition: { staggerChildren: 0.1 },
             },
-          },
-        }}
-      >
-        {faqsData.map((faq, idx) => (
-          <motion.div
-            key={idx}
-            variants={{
-              hidden: { y: 30, opacity: 0 },
-              visible: {
-                y: 0,
-                opacity: 1,
-                transition: {
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 25,
+          }}
+        >
+          {faqsData.map((faq, idx) => (
+            <motion.div
+              key={idx}
+              variants={{
+                hidden: { y: 20, opacity: 0 },
+                visible: {
+                  y: 0,
+                  opacity: 1,
+                  transition: { type: "spring", stiffness: 120, damping: 14 },
                 },
-              },
-            }}
-          >
-            <FaqCard question={faq.question} answer={faq.answer} />
-          </motion.div>
-        ))}
-      </motion.div>
+              }}
+            >
+              <FaqItem question={faq.question} answer={faq.answer} />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* --- footer note --- */}
+        <motion.div 
+          className="mt-16 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+        >
+          <p className="text-[#739072] text-sm">
+            Still have questions?{" "}
+            <a href="/contact" className="text-[#3A4D39] font-bold underline hover:text-[#4F6F52] transition-colors cursor-pointer">
+              Contact Support
+            </a>
+          </p>
+        </motion.div>
+
+      </div>
     </div>
   );
 }

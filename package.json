@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@radix-ui/react-scroll-area": "^1.2.10"
+    "@radix-ui/react-scroll-area": "^1.2.10",
+    "framer-motion": "^12.26.2"
   }
 }

@@ -1,7 +1,6 @@
-import { BookOpenIcon } from "@heroicons/react/24/solid";
-// eslint-disable-next-line no-unused-vars
+import React from "react";
 import { motion } from "framer-motion";
-import StudyCard from "../components/ui/studycard"; // lowercase filename
+import { BookOpenIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 
 const researchData = [
   {
@@ -11,7 +10,7 @@ const researchData = [
   },
   {
     title:
-      "Comparative performance of integrated nutrient management between composted agricultural wastes, chemical fertilizers, and biofertilizers in improving soil quantitative and qualitative properties and crop yields under arid conditions",
+      "Comparative performance of integrated nutrient management between composted agricultural wastes and chemical fertilizers",
     link: "https://doi.org/10.3390/agronomy10101503",
   },
   {
@@ -40,7 +39,7 @@ const researchData = [
   },
   {
     title:
-      "Waste reduction and bioconversion of quail, chicken and pig manure by Black Soldier Fly (Hermetia illucens L.)",
+      "Waste reduction and bioconversion of quail, chicken and pig manure by Black Soldier Fly",
     link: "https://philjournalsci.dost.gov.ph/wp-content/uploads/2024/04/waste-reduction-and-bioconversion-of-quail-chicken-and-pig-manure-by-black-soldier-fly_.pdf",
   },
   {
@@ -50,56 +49,113 @@ const researchData = [
   },
   {
     title:
-      "Fruit and vegetable waste characteristics and management practices at Pasig Mega Market in Pasig City, Philippines",
+      "Fruit and vegetable waste characteristics and management practices at Pasig Mega Market",
     link: "https://pdfs.semanticscholar.org/310f/310f472d61d6caf7b778bf548afa0cc5f9aea31c.pdf",
   },
 ];
 
-const Studies = () => {
-  // Motion variants for staggered slide-up animation
-  const container = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.1, // slight delay between cards
-      },
-    },
-  };
+// --- custom internal card component ---
+const StudyItem = ({ title, link }) => (
+  <motion.a
+    href={link}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="group flex flex-col justify-between h-full bg-white rounded-xl p-6 border border-[#3A4D39]/10 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+  >
+    {/* top */}
+    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#739072] to-[#3A4D39] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-  const cardVariant = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { ease: "easeOut", duration: 0.5 } },
-  };
-
-  return (
-    <div className="min-h-screen pt-12">
-      {/* Header */}
-      <div className="w-full max-w-[90%] mx-auto mb-8">
-        <div className="flex items-center gap-4">
-          <BookOpenIcon className="w-10 h-10 text-black" />
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-black">
-            Studies
-          </h1>
+    <div className="space-y-4 relative z-10">
+      <div className="flex justify-between items-start gap-3">
+        <div className="p-2 bg-[#ECE3CE]/40 rounded-lg text-[#3A4D39] group-hover:bg-[#3A4D39] group-hover:text-[#ECE3CE] transition-colors duration-300">
+          <BookOpenIcon className="w-6 h-6" />
         </div>
+        <ArrowTopRightOnSquareIcon className="w-5 h-5 text-[#739072] opacity-50 group-hover:opacity-100 group-hover:text-[#4F6F52] transition-all" />
       </div>
+      
+      <h3 className="text-lg font-bold text-[#3A4D39] leading-snug group-hover:text-[#4F6F52] transition-colors line-clamp-4">
+        {title}
+      </h3>
+    </div>
 
-      {/* Grid */}
-      <motion.div
-        className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-items-center items-start"
-        variants={container}
-        initial="hidden"
-        animate="show"
-      >
-        {researchData.map((item, index) => (
-          <motion.div
-            className="w-full max-w-xs"
-            key={index}
-            variants={cardVariant}
-          >
-            <StudyCard title={item.title} link={item.link} />
-          </motion.div>
-        ))}
-      </motion.div>
+    <div className="mt-6 pt-4 border-t border-[#ECE3CE] flex items-center gap-2 text-sm font-medium text-[#739072] group-hover:text-[#3A4D39] transition-colors">
+      <span>Read Publication</span>
+      <span className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">→</span>
+    </div>
+  </motion.a>
+);
+
+const Studies = () => {
+  return (
+    <div className="min-h-screen w-full bg-[#ECE3CE]/20 font-sans">
+      <div className="w-full max-w-7xl mx-auto px-6 py-16">
+        
+        {/* --- header --- */}
+        <motion.div 
+          className="mb-14 flex flex-col md:flex-row items-center md:items-start gap-4 text-center md:text-left border-b border-[#3A4D39]/10 pb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="p-3 bg-[#3A4D39] rounded-2xl shadow-lg shadow-[#3A4D39]/20 hidden md:block">
+            <BookOpenIcon className="w-8 h-8 text-[#ECE3CE]" />
+          </div>
+          <div>
+            <h1 className="text-4xl lg:text-5xl font-black text-[#3A4D39] tracking-tight">
+              Research Studies
+            </h1>
+            <p className="mt-2 text-[#4F6F52] text-lg font-medium max-w-2xl">
+              Scientific literature and case studies supporting sustainable composting and organic waste management.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* --- grid layout --- */}
+        <motion.div
+          className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"
+          initial="hidden"
+          animate="show"
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.1 },
+            },
+          }}
+        >
+          {researchData.map((item, index) => (
+            <motion.div
+              key={index}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { 
+                  opacity: 1, 
+                  y: 0, 
+                  transition: { type: "spring", stiffness: 50, damping: 20 } 
+                },
+              }}
+              className="h-full"
+            >
+              <StudyItem title={item.title} link={item.link} />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* --- footer note --- */}
+        <motion.div 
+          className="mt-16 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+          <p className="text-[#739072] text-sm">
+            Access to full papers may require academic credentials or subscription.
+          </p>
+        </motion.div>
+
+      </div>
     </div>
   );
 };

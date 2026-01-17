@@ -453,6 +453,37 @@ export class UserManagementController {
     }
   }
 
+  @Patch(':id/ban')
+  async banUser(@Param('id') customerId: string) {
+    const client = this.databaseService.getClient();
+
+    try {
+      const result = await client.query<UserPublicRow>(
+        `UPDATE user_customer 
+         SET status = 'banned',
+             last_updated = NOW()
+         WHERE customer_id = $1
+         RETURNING customer_id, first_name, last_name, contact_number, address, email, date_created, last_updated, status`,
+        [customerId],
+      );
+
+      if (result.rows.length === 0) {
+        throw new NotFoundException('User not found');
+      }
+
+      return {
+        ok: true,
+        user: result.rows[0],
+        message: 'User banned successfully',
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to ban user');
+    }
+  }
+
   @Patch(':id/enable')
   async enableUser(@Param('id') customerId: string) {
     const client = this.databaseService.getClient();

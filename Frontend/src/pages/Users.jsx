@@ -108,6 +108,16 @@ function Users() {
           toast.success("User disabled successfully");
           fetchUsers();
         }
+      } else if (confirmInformation.mode === "Ban") {
+        const response = await Requests({
+          url: `/management/users/${selectedUser.customer_id}/ban`,
+          method: "PATCH",
+          credentials: true,
+        });
+        if (response.data.ok) {
+          toast.success("User banned successfully");
+          fetchUsers();
+        }
       } else if (confirmInformation.mode === "Enable") {
         const response = await Requests({
           url: `/management/users/${selectedUser.customer_id}/enable`,
@@ -384,6 +394,22 @@ function Users() {
                                 >
                                   <UserCheck className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
                                   Enable Account
+                                </DropdownMenuItem>
+                              )}
+                              {user.status !== "banned" && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    displayConfirm(
+                                      "Ban",
+                                      "Ban Account",
+                                      "This user will be permanently blocked from logging in.",
+                                      user
+                                    )
+                                  }
+                                  className="group cursor-pointer focus:bg-red-700 focus:text-white rounded-md py-2 transition-colors"
+                                >
+                                  <ShieldAlert className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
+                                  Ban Account
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem

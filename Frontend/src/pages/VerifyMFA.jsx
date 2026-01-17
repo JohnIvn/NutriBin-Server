@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import Requests from "@/utils/Requests";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
@@ -41,10 +42,11 @@ export function VerifyMFA() {
 
         console.log("[MFA Page] Sending payload:", payload);
 
-        const response = await axios.post(
-          "nutribin-server.railway.internalauthentication/verify-mfa",
-          payload
-        );
+        const response = await Requests({
+          url: "/authentication/verify-mfa",
+          method: "POST",
+          data: payload,
+        });
 
         console.log("[MFA Page] Response:", response.data);
 

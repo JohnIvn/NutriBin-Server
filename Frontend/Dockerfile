@@ -32,9 +32,12 @@ RUN npm install -g serve
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
 
+# Copy server config for security headers
+COPY .serverc.json ./
+
 # Railway provides PORT; default to 8080
 ENV PORT=8080
 EXPOSE 8080
 
-# Serve the static files
-CMD ["serve", "-s", "dist", "-l", "8080"]
+# Serve the static files with security headers
+CMD ["serve", "-s", "dist", "-l", "3000", "-c", ".serverc.json"]

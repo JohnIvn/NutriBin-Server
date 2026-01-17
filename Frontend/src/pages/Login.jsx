@@ -46,7 +46,7 @@ export function Login() {
       const formData = values;
 
       const response = await axios.post(
-        "http://localhost:3000/staff/signin",
+        "nutribin-server.railway.internalstaff/signin",
         formData
       );
       if (!response.data.ok) {
@@ -74,7 +74,7 @@ export function Login() {
       setMfaMessage(null);
 
       const response = await axios.post(
-        "http://localhost:3000/staff/google-signin",
+        "nutribin-server.railway.internalstaff/google-signin",
         { credential: credentialResponse.credential }
       );
 

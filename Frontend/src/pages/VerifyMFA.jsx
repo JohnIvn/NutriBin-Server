@@ -42,7 +42,7 @@ export function VerifyMFA() {
         console.log("[MFA Page] Sending payload:", payload);
 
         const response = await axios.post(
-          "http://localhost:3000/authentication/verify-mfa",
+          "nutribin-server.railway.internalauthentication/verify-mfa",
           payload
         );
 

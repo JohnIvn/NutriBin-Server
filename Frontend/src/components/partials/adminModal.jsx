@@ -191,38 +191,6 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     return () => clearTimeout(timeoutId);
   }, [contact, mode, originalPhone, isEdit, form]);
 
-  // async function handleGoogleSignIn(credentialResponse) {
-  //   try {
-  //     setGoogleError("");
-  //     const response = await axios.post(
-  //       "http://localhost:3000/staff/google-signup",
-  //       { credential: credentialResponse.credential }
-  //     );
-
-  //     if (!response.data.ok) {
-  //       setGoogleError(response.data.error || "Google sign-up failed");
-  //       return;
-  //     }
-
-  //     toast.success("Staff account created with Google!");
-  //     if (onSuccess) {
-  //       onSuccess();
-  //     }
-  //     cancel();
-  //   } catch (error) {
-  //     const errorMessage =
-  //       error.response?.data?.message ||
-  //       error.message ||
-  //       "Failed to create staff account with Google";
-  //     setGoogleError(errorMessage);
-  //     console.error(error);
-  //   }
-  // }
-
-  // function handleGoogleError() {
-  //   toast.error("Google sign-in failed. Please try again.");
-  // }
-
   async function onSubmit(values) {
     try {
       const formData = { ...values };
@@ -591,7 +559,11 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                               onClick={() => setShowPass(!showPass)}
                               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
                             >
-                              {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                              {showPass ? (
+                                <EyeOff size={16} />
+                              ) : (
+                                <Eye size={16} />
+                              )}
                             </button>
                           </div>
                           <div className="min-h-[1.25rem]">

@@ -26,9 +26,9 @@ RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit
 # Copy built artifacts
 COPY --from=builder /app/dist ./dist
 
-# Railway provides PORT; default to 3000
-ENV PORT=3000
-EXPOSE 3000
+# Railway provides PORT; default to 8080
+ENV PORT=8080
+EXPOSE 8080
 
 # Start the application (package.json: start:prod -> node dist/src/main.js)
 CMD ["npm", "run", "start:prod"]

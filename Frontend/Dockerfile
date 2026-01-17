@@ -15,7 +15,7 @@ COPY src ./src
 COPY public ./public
 
 # Build arguments for Railway variables
-ARG VITE_API_URL=http://nutribin-server.railway.internal:3000
+ARG VITE_API_URL=http://nutribin-server.railway.internal:8080
 ARG VITE_GOOGLE_CLIENT_ID
 
 # Build the React/Vite app to ./dist

@@ -38,7 +38,7 @@ function Account() {
   const [resetSent, setResetSent] = useState(false);
   const [emailShown, setEmailShown] = useState("");
   const [resetCode, setResetCode] = useState("");
-  const [codeError, setCodeError] = useState("");
+  const [_codeError, setCodeError] = useState("");
   const [codeFormatValid, setCodeFormatValid] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -234,12 +234,15 @@ function Account() {
   return (
     <section className="flex bg-[#ECE3CE]/10 flex-col min-h-screen w-full justify-start items-center p-4 sm:p-8 gap-8">
       <div className="w-full max-w-7xl space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-[black]">Settings</h1>
-        <p className="text-muted-foreground">Manage your account details and preferences.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-[black]">
+          Settings
+        </h1>
+        <p className="text-muted-foreground">
+          Manage your account details and preferences.
+        </p>
       </div>
 
       <section className="flex flex-col lg:flex-row w-full max-w-7xl gap-8 items-start">
-        
         {/* === Left Column: Profile Form === */}
         <Form {...form}>
           <form className="w-full lg:flex-1 space-y-8 bg-white border border-gray-100 shadow-sm rounded-xl p-6 sm:p-8">
@@ -248,15 +251,21 @@ function Account() {
                 <User className="w-5 h-5 text-[#4F6F52]" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Personal Information</h2>
-                <p className="text-xs text-gray-500">Update your personal details here.</p>
+                <h2 className="text-lg font-bold text-gray-900">
+                  Personal Information
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Update your personal details here.
+                </p>
               </div>
             </div>
 
             {loading ? (
               <div className="flex flex-col items-center gap-3 py-12">
                 <div className="w-8 h-8 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
-                <p className="text-[#4F6F52] text-sm font-medium">Loading profile...</p>
+                <p className="text-[#4F6F52] text-sm font-medium">
+                  Loading profile...
+                </p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -266,7 +275,9 @@ function Account() {
                     name="firstname"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-600">First Name</FormLabel>
+                        <FormLabel className="text-gray-600">
+                          First Name
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -284,7 +295,9 @@ function Account() {
                     name="lastname"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-600">Last Name</FormLabel>
+                        <FormLabel className="text-gray-600">
+                          Last Name
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -341,7 +354,9 @@ function Account() {
                     name="number"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-600">Contact Number</FormLabel>
+                        <FormLabel className="text-gray-600">
+                          Contact Number
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -436,116 +451,125 @@ function Account() {
 
         {/* === Right Column: Sidebar Actions === */}
         <div className="flex flex-col w-full lg:w-96 gap-6">
-          
           {/* Security Card */}
           <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
             <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-[#4F6F52]" />
-                <h3 className="font-bold text-gray-800 text-sm">Security & Privacy</h3>
+              <Lock className="w-4 h-4 text-[#4F6F52]" />
+              <h3 className="font-bold text-gray-800 text-sm">
+                Security & Privacy
+              </h3>
             </div>
             <div className="p-6 space-y-6">
-                {/* Password Reset */}
-                <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-gray-700">Password</h4>
-                    <p className="text-xs text-gray-500 leading-relaxed">
-                        Secure your account by updating your password regularly.
-                    </p>
-                    <Button
-                        variant="outline"
-                        className="w-full justify-between h-10 bg-[#3A4D39] text-white hover:text-[#4F6F52] hover:border-[#4F6F52] cursor-pointer"
-                        type="button"
-                        onClick={() => {
-                            setResetSent(false);
-                            setResetOpen(true);
-                        }}
-                    >
-                        Change Password 
-                    </Button>
+              {/* Password Reset */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700">
+                  Password
+                </h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Secure your account by updating your password regularly.
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full justify-between h-10 bg-[#3A4D39] text-white hover:text-[#4F6F52] hover:border-[#4F6F52] cursor-pointer"
+                  type="button"
+                  onClick={() => {
+                    setResetSent(false);
+                    setResetOpen(true);
+                  }}
+                >
+                  Change Password
+                </Button>
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* MFA Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-[#4F6F52]" />
+                  <h4 className="text-sm font-semibold text-gray-700">
+                    Multi-Factor Auth
+                  </h4>
                 </div>
 
-                <hr className="border-gray-100" />
-
-                {/* MFA Section */}
-                <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-[#4F6F52]" />
-                        <h4 className="text-sm font-semibold text-gray-700">Multi-Factor Auth</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
+                    <input
+                      type="radio"
+                      name="mfa"
+                      value="N/A"
+                      checked={mfaType === "N/A"}
+                      onChange={() => handleMFAChange("N/A")}
+                      disabled={mfaLoading}
+                      className="accent-[#4F6F52]"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-900">
+                        Disabled
+                      </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                        <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
-                            <input
-                                type="radio"
-                                name="mfa"
-                                value="N/A"
-                                checked={mfaType === "N/A"}
-                                onChange={() => handleMFAChange("N/A")}
-                                disabled={mfaLoading}
-                                className="accent-[#4F6F52]"
-                            />
-                            <div className="flex-1">
-                                <div className="text-sm font-medium text-gray-900">Disabled</div>
-                            </div>
-                        </label>
-                        
-                        <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
-                            <input
-                                type="radio"
-                                name="mfa"
-                                value="email"
-                                checked={mfaType === "email"}
-                                onChange={() => handleMFAChange("email")}
-                                disabled={mfaLoading}
-                                className="accent-[#4F6F52]"
-                            />
-                            <div className="flex-1">
-                                <div className="text-sm font-medium text-gray-900">Email Verification</div>
-                                <div className="text-[10px] text-gray-500">Code sent to email on login</div>
-                            </div>
-                        </label>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
+                    <input
+                      type="radio"
+                      name="mfa"
+                      value="email"
+                      checked={mfaType === "email"}
+                      onChange={() => handleMFAChange("email")}
+                      disabled={mfaLoading}
+                      className="accent-[#4F6F52]"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-900">
+                        Email Verification
+                      </div>
+                      <div className="text-[10px] text-gray-500">
+                        Code sent to email on login
+                      </div>
                     </div>
+                  </label>
                 </div>
+              </div>
 
-                <hr className="border-gray-100" />
+              <hr className="border-gray-100" />
 
-                {/* Close Account */}
-                <div className="pt-2">
-                    <Button
-                        variant="ghost"
-                        className="w-full h-10 text-red-600 hover:text-red-700 hover:bg-red-50 justify-start px-2 cursor-pointer"
-                        disabled={closingAccount}
-                        onClick={() => setCloseConfirmOpen(true)}
-                    >
-                        Deactivate Account
-                    </Button>
-                </div>
+              {/* Close Account */}
+              <div className="pt-2">
+                <Button
+                  variant="ghost"
+                  className="w-full h-10 text-red-600 hover:text-red-700 hover:bg-red-50 justify-start px-2 cursor-pointer"
+                  disabled={closingAccount}
+                  onClick={() => setCloseConfirmOpen(true)}
+                >
+                  Deactivate Account
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* Quick Links Card */}
           <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
-             <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
-                <User className="w-4 h-4 text-[#4F6F52]" />
-                <h3 className="font-bold text-gray-800 text-sm">Resources</h3>
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
+              <User className="w-4 h-4 text-[#4F6F52]" />
+              <h3 className="font-bold text-gray-800 text-sm">Resources</h3>
             </div>
             <div className="p-2">
               {[
-                  { label: "About Us", link: "/about" },
-                  { label: "FAQs", link: "/faqs" },
-                  { label: "Terms of Service", link: "/policies" },
-                  { label: "Socials", link: "/socials" },
-                  { label: "Studies", link: "/studies" }
+                { label: "About Us", link: "/about" },
+                { label: "FAQs", link: "/faqs" },
+                { label: "Terms of Service", link: "/policies" },
+                { label: "Socials", link: "/socials" },
+                { label: "Studies", link: "/studies" },
               ].map((item) => (
-                  <Button
-                    key={item.label}
-                    asChild
-                    variant="ghost"
-                    className="w-full justify-between h-10 text-gray-600 hover:text-[#4F6F52] hover:bg-[#ECE3CE]/20 font-normal"
-                  >
-                    <Link to={item.link}>
-                        {item.label}
-                    </Link>
-                  </Button>
+                <Button
+                  key={item.label}
+                  asChild
+                  variant="ghost"
+                  className="w-full justify-between h-10 text-gray-600 hover:text-[#4F6F52] hover:bg-[#ECE3CE]/20 font-normal"
+                >
+                  <Link to={item.link}>{item.label}</Link>
+                </Button>
               ))}
             </div>
           </div>
@@ -553,85 +577,103 @@ function Account() {
       </section>
 
       {/* === Dialogs === */}
-      
+
       {/* Password Reset Dialog */}
       <Dialog open={resetOpen} onOpenChange={setResetOpen}>
         <DialogContent className="bg-white sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#4F6F52]">Change Password</DialogTitle>
+            <DialogTitle className="text-[#4F6F52]">
+              Change Password
+            </DialogTitle>
             <DialogDescription>
               We'll send a code to your email to verify it's you.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <div className="text-sm">
-                    <p className="text-gray-500 text-xs uppercase font-bold">Send code to:</p>
-                    <p className="font-medium text-gray-900">{emailShown || user?.email}</p>
-                </div>
-                <Button
+              <div className="text-sm">
+                <p className="text-gray-500 text-xs uppercase font-bold">
+                  Send code to:
+                </p>
+                <p className="font-medium text-gray-900">
+                  {emailShown || user?.email}
+                </p>
+              </div>
+              <Button
                 size="sm"
                 className="bg-[#4F6F52] hover:bg-[#3A523D] text-white text-xs h-8"
                 disabled={sendingReset}
                 onClick={async () => {
-                    const userId = user?.staff_id || user?.admin_id;
-                    try {
+                  const userId = user?.staff_id || user?.admin_id;
+                  try {
                     setSendingReset(true);
                     const res = await Requests({
-                        url: `/settings/${userId}/password-reset`,
-                        method: "POST",
-                        credentials: true,
+                      url: `/settings/${userId}/password-reset`,
+                      method: "POST",
+                      credentials: true,
                     });
                     if (res.data?.ok) {
-                        setResetSent(true);
-                        setCodeError("");
-                        toast.success("Code sent!");
+                      setResetSent(true);
+                      setCodeError("");
+                      toast.success("Code sent!");
                     } else {
-                        toast.error(res.data?.message || "Failed");
+                      toast.error(res.data?.message || "Failed");
                     }
-                    } catch (error) {
+                  } catch {
                     toast.error("Error sending code");
-                    } finally {
+                  } finally {
                     setSendingReset(false);
-                    }
+                  }
                 }}
-                >
-                {sendingReset ? "Sending..." : resetSent ? "Resend" : "Send Code"}
-                </Button>
+              >
+                {sendingReset
+                  ? "Sending..."
+                  : resetSent
+                    ? "Resend"
+                    : "Send Code"}
+              </Button>
             </div>
 
             <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-600">
+                  Verification Code
+                </label>
+                <Input
+                  placeholder="000000"
+                  maxLength={6}
+                  className="text-center tracking-[0.5em] font-mono text-lg border-gray-200 focus-visible:border-[#4F6F52] text-[#4F6F52]"
+                  value={resetCode}
+                  onChange={(e) =>
+                    setResetCode(e.target.value.replace(/[^0-9]/g, ""))
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-600">Verification Code</label>
-                    <Input
-                        placeholder="000000"
-                        maxLength={6}
-                        className="text-center tracking-[0.5em] font-mono text-lg border-gray-200 focus-visible:border-[#4F6F52] text-[#4F6F52]"
-                        value={resetCode}
-                        onChange={(e) => setResetCode(e.target.value.replace(/[^0-9]/g, ""))}
-                    />
+                  <label className="text-xs font-semibold text-gray-600">
+                    New Password
+                  </label>
+                  <Input
+                    type="password"
+                    className="border-gray-200 focus-visible:border-[#4F6F52]"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-600">New Password</label>
-                        <Input
-                            type="password"
-                            className="border-gray-200 focus-visible:border-[#4F6F52]"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-600">Confirm</label>
-                        <Input
-                            type="password"
-                            className="border-gray-200 focus-visible:border-[#4F6F52]"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                    </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-600">
+                    Confirm
+                  </label>
+                  <Input
+                    type="password"
+                    className="border-gray-200 focus-visible:border-[#4F6F52]"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
                 </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -639,28 +681,26 @@ function Account() {
               type="button"
               className="w-full bg-[#4F6F52] hover:bg-[#3A523D]"
               disabled={
-                resetSubmitting ||
-                !codeFormatValid ||
-                !passwordChecks.match
+                resetSubmitting || !codeFormatValid || !passwordChecks.match
               }
               onClick={async () => {
                 const userId = user?.staff_id || user?.admin_id;
                 try {
-                    setResetSubmitting(true);
-                    const res = await Requests({
+                  setResetSubmitting(true);
+                  const res = await Requests({
                     url: `/settings/${userId}/password-reset/verify`,
                     method: "POST",
                     data: { code: resetCode, newPassword },
                     credentials: true,
-                    });
-                    if (res.data?.ok) {
+                  });
+                  if (res.data?.ok) {
                     toast.success("Password changed!");
                     setResetOpen(false);
-                    }
+                  }
                 } catch {
-                    toast.error("Failed to change password");
+                  toast.error("Failed to change password");
                 } finally {
-                    setResetSubmitting(false);
+                  setResetSubmitting(false);
                 }
               }}
             >
@@ -675,10 +715,11 @@ function Account() {
         <DialogContent className="bg-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-red-600 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5" /> Deactivate Account
+              <AlertTriangle className="w-5 h-5" /> Deactivate Account
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to deactivate your account? You will be logged out immediately.
+              Are you sure you want to deactivate your account? You will be
+              logged out immediately.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:justify-end">
@@ -699,7 +740,6 @@ function Account() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </section>
   );
 }

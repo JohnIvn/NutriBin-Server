@@ -424,7 +424,7 @@ function MachinesGrid() {
 
 // sub-components for cleaner code
 
-function EnvCard({ icon: Icon, label, value, unit, color, bg }) {
+function EnvCard({ icon: label, value, unit, color, bg }) {
     return (
         <div className={`rounded-xl p-5 border border-gray-100 flex items-center gap-5 transition-colors hover:shadow-sm ${bg ? 'bg-white' : 'bg-gray-50'}`}>
             <div className={`p-3.5 rounded-full ${bg} ${color}`}>

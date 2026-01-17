@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import {
   FaGithub,
   FaFacebook,
@@ -62,7 +61,6 @@ export default function Socials() {
 
   return (
     <div className="relative w-full min-h-screen flex flex-col lg:flex-row overflow-hidden bg-[#ECE3CE]/30 font-sans">
-      
       {/* --- right-side --- */}
       <motion.div
         className="absolute top-0 right-0 w-[45%] h-full hidden lg:block z-0"
@@ -80,9 +78,8 @@ export default function Socials() {
 
       {/* --- left-side content --- */}
       <div className="flex flex-col justify-center items-center lg:items-start w-full lg:w-[55%] relative z-10 p-8 lg:pl-20 lg:pr-8 min-h-screen">
-        
         {/* header */}
-        <motion.div 
+        <motion.div
           className="mb-10 lg:mb-14 w-full max-w-lg text-center lg:text-left"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -100,7 +97,8 @@ export default function Socials() {
             Our Social <br className="hidden lg:block" /> Presence.
           </h1>
           <p className="mt-4 text-[#4F6F52] text-lg font-medium max-w-md mx-auto lg:mx-0">
-            Follow our journey, get updates, and join the NutriBin community across all platforms.
+            Follow our journey, get updates, and join the NutriBin community
+            across all platforms.
           </p>
         </motion.div>
 
@@ -144,7 +142,7 @@ export default function Socials() {
         </motion.div>
 
         {/* footer */}
-        <motion.div 
+        <motion.div
           className="mt-12 text-[#739072] text-sm font-medium flex items-center gap-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -153,7 +151,6 @@ export default function Socials() {
           <span className="w-8 h-[2px] bg-[#739072]" />
           <span>NutriBin Official Links</span>
         </motion.div>
-
       </div>
     </div>
   );

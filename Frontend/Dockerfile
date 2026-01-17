@@ -15,7 +15,7 @@ COPY src ./src
 COPY public ./public
 
 # Build the React/Vite app to ./dist with Railway backend URL
-RUN VITE_API_URL=http://nutribin-server.railway.internal:3000 npm run build
+RUN VITE_API_URL=http://nutribin-server.railway.internal:8080 npm run build
 
 # ---------- Runtime stage ----------
 FROM node:20-alpine AS runner
@@ -28,9 +28,9 @@ RUN npm install -g serve
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
 
-# Railway provides PORT; default to 3000
-ENV PORT=3000
-EXPOSE 3000
+# Railway provides PORT; default to 8080
+ENV PORT=8080
+EXPOSE 8080
 
 # Serve the static files
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["serve", "-s", "dist", "-l", "8080"]

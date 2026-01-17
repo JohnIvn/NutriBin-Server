@@ -40,4 +40,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Serve the static files with security headers
-CMD ["serve", "-s", "dist", "-l", "3000", "-c", ".serverc.json"]
+CMD ["serve", "-s", "dist", "-l", "3000", "-c", "/app/.serverc.json"]

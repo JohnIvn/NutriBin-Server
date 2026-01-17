@@ -32,9 +32,8 @@ RUN npm install -g serve
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
 
-# Railway provides PORT; default to 3000
-ENV PORT=3000
-EXPOSE 3000
+# Expose the port Railway expects (it will set PORT env)
+EXPOSE 8080
 
-# Serve the static files
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Serve the static files on the PORT provided by the environment (default 8080)
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-8080}"]

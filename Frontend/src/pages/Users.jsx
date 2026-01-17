@@ -330,8 +330,8 @@ function Users() {
                             user.status === "active"
                               ? "bg-green-50 text-green-700 border border-green-100"
                               : user.status === "banned"
-                              ? "bg-red-50 text-red-700 border border-red-100"
-                              : "bg-gray-50 text-gray-700 border border-gray-100"
+                                ? "bg-red-50 text-red-700 border border-red-100"
+                                : "bg-gray-50 text-gray-700 border border-gray-100"
                           }`}
                         >
                           <div
@@ -339,8 +339,8 @@ function Users() {
                               user.status === "active"
                                 ? "bg-green-500 animate-pulse"
                                 : user.status === "banned"
-                                ? "bg-red-500"
-                                : "bg-gray-500"
+                                  ? "bg-red-500"
+                                  : "bg-gray-500"
                             }`}
                           />
                           {user.status}

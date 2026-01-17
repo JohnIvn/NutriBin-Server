@@ -129,6 +129,16 @@ function Staff() {
           toast.success("Staff member disabled successfully");
           fetchStaff();
         }
+      } else if (confirmInformation.mode === "Ban") {
+        const response = await Requests({
+          url: `/management/staff/${selectedStaff.staff_id}/ban`,
+          method: "PATCH",
+          credentials: true,
+        });
+        if (response.data.ok) {
+          toast.success("Staff member banned successfully");
+          fetchStaff();
+        }
       } else if (confirmInformation.mode === "Delete") {
         const response = await Requests({
           url: `/management/staff/${selectedStaff.staff_id}`,
@@ -384,6 +394,22 @@ function Staff() {
                                 >
                                   <UserCog className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />
                                   Edit Profile
+                                </DropdownMenuItem>
+                              )}
+                              {staff.status !== "banned" && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    displayConfirm(
+                                      "Ban",
+                                      "Ban Staff Account",
+                                      "This staff member will be permanently blocked from logging in.",
+                                      staff
+                                    )
+                                  }
+                                  className="group cursor-pointer focus:bg-red-700 focus:text-white rounded-md py-2 transition-colors"
+                                >
+                                  <ShieldAlert className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
+                                  Ban Account
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem

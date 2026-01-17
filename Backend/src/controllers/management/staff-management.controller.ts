@@ -490,6 +490,37 @@ export class StaffManagementController {
     }
   }
 
+  @Patch(':id/ban')
+  async banStaff(@Param('id') staffId: string) {
+    const client = this.databaseService.getClient();
+
+    try {
+      const result = await client.query<StaffPublicRow>(
+        `UPDATE user_staff 
+         SET status = 'banned',
+             last_updated = NOW()
+         WHERE staff_id = $1
+         RETURNING staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status`,
+        [staffId],
+      );
+
+      if (result.rows.length === 0) {
+        throw new NotFoundException('Staff member not found');
+      }
+
+      return {
+        ok: true,
+        staff: result.rows[0],
+        message: 'Staff member banned successfully',
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to ban staff member');
+    }
+  }
+
   @Patch(':id/enable')
   async enableStaff(@Param('id') staffId: string) {
     const client = this.databaseService.getClient();

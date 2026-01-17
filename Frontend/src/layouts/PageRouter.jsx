@@ -16,13 +16,32 @@ import Tos from "@/pages/Tos";
 import Socials from "@/pages/Socials";
 import Studies from "@/pages/Studies";
 import Guide from "@/pages/Guide";
+import { useUser } from "@/contexts/UserContext";
+
+function RootRedirect() {
+  const { user } = useUser();
+  return <Navigate replace to={user ? "/dashboard" : "/login"} />;
+}
+
+function LoginRoute() {
+  const { user } = useUser();
+  if (user) {
+    return <Navigate replace to="/dashboard" />;
+  }
+  return <Login />;
+}
+
+function FallbackRoute() {
+  const { user } = useUser();
+  return <Navigate replace to={user ? "/dashboard" : "/login"} />;
+}
 
 function PageRouter() {
   return (
     <Routes>
-      <Route path="*" element={<h1>404 Not Found</h1>} />
-      <Route path="/" element={<Navigate replace to={"/login"} />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="*" element={<FallbackRoute />} />
+      <Route path="/" element={<RootRedirect />} />
+      <Route path="/login" element={<LoginRoute />} />
       <Route path="/verify-mfa" element={<VerifyMFA />} />
 
       <Route

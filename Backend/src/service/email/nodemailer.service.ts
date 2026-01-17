@@ -88,20 +88,38 @@ export class NodemailerService {
   }
 
   private initializeTransporter() {
-    // Configure your email transporter
-    // Using port 465 with secure: true is generally more reliable for Gmail on cloud providers like Railway
+    const isGmail = (process.env.MAIL_HOST || '').includes('gmail.com');
+
+    // For Gmail, using their service preset is much more reliable on cloud platforms like Railway
+    // as it handles the correct ports, SSL/TLS handshakes, and timeouts automatically.
+    const transportConfig: any = isGmail
+      ? {
+          service: 'gmail',
+          auth: {
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASSWORD,
+          },
+        }
+      : {
+          host: process.env.MAIL_HOST || 'smtp.gmail.com',
+          port: parseInt(process.env.MAIL_PORT || '587'),
+          secure: process.env.MAIL_SECURE === 'true',
+          auth: {
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASSWORD,
+          },
+        };
+
     this.transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.MAIL_PORT || '465'),
-      secure: process.env.MAIL_SECURE === 'true', // true for 465, false for other ports
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASSWORD,
-      },
+      ...transportConfig,
       tls: {
-        // Essential for some cloud environments to handle certificate verification
         rejectUnauthorized: false,
       },
+      connectionTimeout: 30000, // Increase timeouts for cloud environments
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+      logger: true, // Log to console for better debugging on Railway
+      debug: true, // Include SMTP traffic in logs
     });
   }
 

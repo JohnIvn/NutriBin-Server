@@ -14,8 +14,9 @@ COPY index.html ./
 COPY src ./src
 COPY public ./public
 
-# Build the React/Vite app to ./dist
-RUN npm run build
+# Build the React/Vite app to ./dist with Railway backend URL
+ARG VITE_API_URL=http://nutribin-server.railway.internal:3000
+RUN VITE_API_URL=$VITE_API_URL npm run build
 
 # ---------- Runtime stage ----------
 FROM node:20-alpine AS runner

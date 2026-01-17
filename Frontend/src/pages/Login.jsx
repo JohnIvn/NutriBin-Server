@@ -19,9 +19,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
 import { useUser } from "@/contexts/UserContext";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import Requests from "@/utils/Requests";
 
 export function Login() {
   const [showPass, setShowPass] = useState(false);
@@ -45,10 +45,11 @@ export function Login() {
       setMfaMessage(null);
       const formData = values;
 
-      const response = await axios.post(
-        "nutribin-server.railway.internalstaff/signin",
-        formData
-      );
+      const response = await Requests({
+        url: "/staff/signin",
+        method: "POST",
+        data: formData,
+      });
       if (!response.data.ok) {
         setLoginError(response.data.error || "Login failed");
         return;
@@ -73,10 +74,11 @@ export function Login() {
       setLoginError(null);
       setMfaMessage(null);
 
-      const response = await axios.post(
-        "nutribin-server.railway.internalstaff/google-signin",
-        { credential: credentialResponse.credential }
-      );
+      const response = await Requests({
+        url: "/staff/google-signin",
+        method: "POST",
+        data: { credential: credentialResponse.credential },
+      });
 
       if (!response.data.ok) {
         setLoginError(response.data.error || "Google sign-in failed");

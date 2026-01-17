@@ -89,14 +89,18 @@ export class NodemailerService {
 
   private initializeTransporter() {
     // Configure your email transporter
-    // You can use environment variables for configuration
+    // Using port 465 with secure: true is generally more reliable for Gmail on cloud providers like Railway
     this.transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.MAIL_PORT || '587'),
+      port: parseInt(process.env.MAIL_PORT || '465'),
       secure: process.env.MAIL_SECURE === 'true', // true for 465, false for other ports
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD,
+      },
+      tls: {
+        // Essential for some cloud environments to handle certificate verification
+        rejectUnauthorized: false,
       },
     });
   }

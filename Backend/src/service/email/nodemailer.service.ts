@@ -90,7 +90,7 @@ export class NodemailerService {
   private initializeTransporter() {
     // Manual configuration is often more reliable on Railway than the 'service' shortcut
     // as it allows us to force IPv4 and specific TLS requirements.
-    this.transporter = nodemailer.createTransport({
+    const options: any = {
       host: 'smtp.gmail.com',
       port: 587,
       secure: false, // true for 465, false for other ports (like 587)
@@ -109,7 +109,9 @@ export class NodemailerService {
       socketTimeout: 20000,
       logger: true,
       debug: true,
-    });
+    };
+
+    this.transporter = nodemailer.createTransport(options);
   }
 
   /**

@@ -88,38 +88,27 @@ export class NodemailerService {
   }
 
   private initializeTransporter() {
-    const isGmail = (process.env.MAIL_HOST || '').includes('gmail.com');
-
-    // For Gmail, using their service preset is much more reliable on cloud platforms like Railway
-    // as it handles the correct ports, SSL/TLS handshakes, and timeouts automatically.
-    const transportConfig: any = isGmail
-      ? {
-          service: 'gmail',
-          auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASSWORD,
-          },
-        }
-      : {
-          host: process.env.MAIL_HOST || 'smtp.gmail.com',
-          port: parseInt(process.env.MAIL_PORT || '587'),
-          secure: process.env.MAIL_SECURE === 'true',
-          auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASSWORD,
-          },
-        };
-
+    // Manual configuration is often more reliable on Railway than the 'service' shortcut
+    // as it allows us to force IPv4 and specific TLS requirements.
     this.transporter = nodemailer.createTransport({
-      ...transportConfig,
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports (like 587)
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASSWORD,
+      },
       tls: {
         rejectUnauthorized: false,
+        // Force IPv4 as cloud providers sometimes have faulty IPv6 routing for SMTP
+        family: 4,
       },
-      connectionTimeout: 30000, // Increase timeouts for cloud environments
-      greetingTimeout: 30000,
-      socketTimeout: 30000,
-      logger: true, // Log to console for better debugging on Railway
-      debug: true, // Include SMTP traffic in logs
+      // Essential timeout settings for cloud environments
+      connectionTimeout: 20000,
+      greetingTimeout: 20000,
+      socketTimeout: 20000,
+      logger: true,
+      debug: true,
     });
   }
 

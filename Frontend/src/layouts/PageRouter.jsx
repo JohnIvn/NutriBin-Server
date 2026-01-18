@@ -1,6 +1,7 @@
 import Settings from "@/pages/Settings";
 import Analytics from "@/pages/Analytics";
 import Sales from "@/pages/Sales";
+import Firmware from "@/pages/Firmware";
 import Login from "@/pages/Login";
 import { VerifyMFA } from "@/pages/VerifyMFA";
 import Machines from "@/pages/Machines";
@@ -114,6 +115,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Machines />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/firmware"
+        element={
+          <ProtectedRoute>
+            <Firmware />
           </ProtectedRoute>
         }
       />

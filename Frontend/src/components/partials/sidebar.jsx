@@ -8,6 +8,7 @@ import {
   Cpu,
   Wrench,
   DollarSign,
+  HardDrive,
   Users as UsersIcon,
   UserCog,
   Archive,
@@ -129,6 +130,15 @@ export default function Sidebar() {
           active={isActive("/repair")}
           collapsed={shouldCollapse}
         />
+        {user?.role === "admin" && (
+          <NavItem
+            to="/firmware"
+            icon={HardDrive}
+            label="Firmware"
+            active={isActive("/firmware")}
+            collapsed={shouldCollapse}
+          />
+        )}
         <NavItem
           to="/sales"
           icon={DollarSign}

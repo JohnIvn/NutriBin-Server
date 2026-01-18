@@ -53,15 +53,11 @@ function Sales() {
     acc[r.region] = (acc[r.region] || 0) + r.amount;
     return acc;
   }, {});
-  const topRegion =
-    Object.entries(regionTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
 
   const productTotals = salesData.reduce((acc, r) => {
     acc[r.product] = (acc[r.product] || 0) + r.amount;
     return acc;
   }, {});
-  const topProduct =
-    Object.entries(productTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
 
   const chartConfig = {
     amount: { label: "Sales", color: "var(--color-nitrogen)" },

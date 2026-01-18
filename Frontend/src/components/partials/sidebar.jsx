@@ -10,6 +10,7 @@ import {
   DollarSign,
   HardDrive,
   Beaker,
+  Cloud,
   Megaphone,
   Users as UsersIcon,
   UserCog,
@@ -135,6 +136,13 @@ export default function Sidebar() {
           icon={Beaker}
           label="Fertilizer"
           active={isActive("/fertilizer")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/emissions"
+          icon={Cloud}
+          label="Emissions"
+          active={isActive("/emissions")}
           collapsed={shouldCollapse}
         />
         <NavItem

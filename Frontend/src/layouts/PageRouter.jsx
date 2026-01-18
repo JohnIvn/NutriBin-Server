@@ -20,6 +20,7 @@ import Socials from "@/pages/Socials";
 import Studies from "@/pages/Studies";
 import Guide from "@/pages/Guide";
 import Announcements from "@/pages/Announcements";
+import Emissions from "@/pages/Emissions";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -149,6 +150,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Announcements />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/emissions"
+        element={
+          <ProtectedRoute>
+            <Emissions />
           </ProtectedRoute>
         }
       />

@@ -24,6 +24,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { useUser } from "@/contexts/UserContext";
 
 export default function Announcements() {
@@ -140,146 +150,178 @@ export default function Announcements() {
           </div>
 
           {user?.role === "admin" && (
-            <Button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="bg-gradient-to-r from-[#4F6F52] to-[#3A4D39] hover:from-[#3A4D39] hover:to-[#2D3A2E] text-white shadow-md"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Announcement
-            </Button>
+            <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-[#4F6F52] to-[#3A4D39] hover:from-[#3A4D39] hover:to-[#2D3A2E] text-white shadow-md">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Announcement
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="sm:max-w-[650px] p-0 gap-0 overflow-hidden border-none shadow-2xl bg-white">
+                <div className="bg-[#4F6F52] p-6 text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Megaphone className="w-32 h-32" />
+                  </div>
+                  <DialogHeader className="relative z-10">
+                    <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                      <Bell className="h-6 w-6" />
+                      New Announcement
+                    </DialogTitle>
+                    <div className="text-orange-100/90">
+                      Publish messages and notify users across platforms
+                    </div>
+                  </DialogHeader>
+                </div>
+
+                <div className="p-6 max-h-[80vh] overflow-y-auto">
+                  <div className="space-y-4">
+                    {/* Announcement Details */}
+                    <div className="space-y-3">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <Megaphone className="w-3 h-3" /> Announcement Details
+                      </h3>
+
+                      <div className="space-y-1">
+                        <label className="text-sm font-semibold text-[#4F6F52]">
+                          Title
+                        </label>
+                        <div className="relative group">
+                          <Input
+                            placeholder="Enter announcement title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-sm font-semibold text-[#4F6F52]">
+                          Message
+                        </label>
+                        <div className="relative group">
+                          <Textarea
+                            placeholder="Enter announcement message"
+                            value={body}
+                            onChange={(e) => setBody(e.target.value)}
+                            rows={4}
+                            className="focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-sm font-semibold text-[#4F6F52]">
+                          Priority Level
+                        </label>
+                        <div className="flex gap-3">
+                          {["high", "medium", "low"].map((p) => (
+                            <label
+                              key={p}
+                              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 cursor-pointer transition-all ${
+                                priority === p
+                                  ? "border-[#4F6F52] bg-[#4F6F52]/10"
+                                  : "border-gray-200 hover:border-[#4F6F52]/50"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="priority"
+                                value={p}
+                                checked={priority === p}
+                                onChange={(e) => setPriority(e.target.value)}
+                                className="sr-only"
+                              />
+                              <span className="text-sm font-medium capitalize">
+                                {p}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notification Settings */}
+                    <div className="space-y-3">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                        <Bell className="w-3 h-3" /> Notification Targets
+                      </h3>
+
+                      <div className="grid grid-cols-1 gap-3">
+                        <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
+                          <Checkbox
+                            checked={notifyWebsite}
+                            onCheckedChange={(v) =>
+                              setNotifyWebsite(Boolean(v))
+                            }
+                          />
+                          <Globe className="h-4 w-4 text-[#4F6F52]" />
+                          <span className="text-sm font-medium">
+                            Notify Website Users
+                          </span>
+                        </label>
+
+                        <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
+                          <Checkbox
+                            checked={notifyApp}
+                            onCheckedChange={(v) => setNotifyApp(Boolean(v))}
+                          />
+                          <Smartphone className="h-4 w-4 text-[#4F6F52]" />
+                          <span className="text-sm font-medium">
+                            Notify Mobile App Users
+                          </span>
+                        </label>
+
+                        <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
+                          <Checkbox
+                            checked={notifyWebsite && notifyApp}
+                            onCheckedChange={(v) => {
+                              const checked = Boolean(v);
+                              setNotifyWebsite(checked);
+                              setNotifyApp(checked);
+                            }}
+                          />
+                          <Bell className="h-4 w-4 text-[#4F6F52]" />
+                          <span className="text-sm font-medium">
+                            Notify All Platforms
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Footer Buttons */}
+                    <div className="pt-4 flex flex-col gap-3">
+                      <Button
+                        onClick={handleCreate}
+                        className="w-full h-12 bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-bold text-lg cursor-pointer transition-all active:scale-95 shadow-md"
+                      >
+                        <Bell className="h-5 w-5 mr-2" />
+                        Publish Announcement
+                      </Button>
+
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setTitle("");
+                          setBody("");
+                          setPriority("medium");
+                          setNotifyWebsite(false);
+                          setNotifyApp(false);
+                          setShowCreateForm(false);
+                        }}
+                        variant="outline"
+                        className="w-full h-12 text-white bg-[#FF3838] hover:bg-[#DC0000] hover:text-[white] transition-all duration-200 cursor-pointer font-medium"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
-
-        {/* Create Announcement Form */}
-        {user?.role === "admin" && showCreateForm && (
-          <Card className="border-2 border-[#4F6F52]/20 shadow-lg rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-[#4F6F52]/5 to-[#ECE3CE]/20 border-b">
-              <CardTitle className="text-[#3A4D39] flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Create New Announcement
-              </CardTitle>
-              <CardDescription className="text-sm text-gray-600">
-                Publish messages and notify users across platforms
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-5">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-[#3A4D39]">
-                  Announcement Title
-                </label>
-                <Input
-                  placeholder="Enter a clear, concise title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="border-[#4F6F52]/30 focus:border-[#4F6F52] focus:ring-[#4F6F52]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-[#3A4D39]">
-                  Message Content
-                </label>
-                <Textarea
-                  placeholder="Provide detailed information about this announcement"
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  rows={4}
-                  className="border-[#4F6F52]/30 focus:border-[#4F6F52] focus:ring-[#4F6F52]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-[#3A4D39]">
-                  Priority Level
-                </label>
-                <div className="flex gap-3">
-                  {["high", "medium", "low"].map((p) => (
-                    <label
-                      key={p}
-                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 cursor-pointer transition-all ${
-                        priority === p
-                          ? "border-[#4F6F52] bg-[#4F6F52]/10"
-                          : "border-gray-200 hover:border-[#4F6F52]/50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="priority"
-                        value={p}
-                        checked={priority === p}
-                        onChange={(e) => setPriority(e.target.value)}
-                        className="sr-only"
-                      />
-                      <span className="text-sm font-medium capitalize">
-                        {p}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-[#3A4D39]">
-                  Notification Settings
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
-                    <Checkbox
-                      checked={notifyWebsite}
-                      onCheckedChange={(v) => setNotifyWebsite(Boolean(v))}
-                    />
-                    <Globe className="h-4 w-4 text-[#4F6F52]" />
-                    <span className="text-sm font-medium">Website</span>
-                  </label>
-                  <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
-                    <Checkbox
-                      checked={notifyApp}
-                      onCheckedChange={(v) => setNotifyApp(Boolean(v))}
-                    />
-                    <Smartphone className="h-4 w-4 text-[#4F6F52]" />
-                    <span className="text-sm font-medium">Mobile App</span>
-                  </label>
-                  <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
-                    <Checkbox
-                      checked={notifyWebsite && notifyApp}
-                      onCheckedChange={(v) => {
-                        const checked = Boolean(v);
-                        setNotifyWebsite(checked);
-                        setNotifyApp(checked);
-                      }}
-                    />
-                    <Bell className="h-4 w-4 text-[#4F6F52]" />
-                    <span className="text-sm font-medium">All Platforms</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <Button
-                  onClick={handleCreate}
-                  className="bg-gradient-to-r from-[#4F6F52] to-[#3A4D39] hover:from-[#3A4D39] hover:to-[#2D3A2E] text-white"
-                >
-                  <Bell className="h-4 w-4 mr-2" />
-                  Publish & Notify
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setTitle("");
-                    setBody("");
-                    setPriority("medium");
-                    setNotifyWebsite(false);
-                    setNotifyApp(false);
-                    setShowCreateForm(false);
-                  }}
-                  className="border-gray-300 hover:bg-gray-50"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Announcements List */}
         <div className="space-y-4">

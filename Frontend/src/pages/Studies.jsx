@@ -1,6 +1,18 @@
 import React from "react";
-import { BookOpenIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
+import {
+  BookOpenIcon,
+  ArrowTopRightOnSquareIcon,
+} from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
+import PageHeader from "@/components/ui/pageheader";
+import { BookMarked } from "lucide-react";
+
+const PageHeaderComponent = () => (
+  <PageHeader
+    title="Research & Studies"
+    icon={<BookMarked className="w-8 h-8 text-[#4F6F52]" />}
+  />
+);
 
 const researchData = [
   {
@@ -74,7 +86,7 @@ const StudyItem = ({ title, link }) => (
         </div>
         <ArrowTopRightOnSquareIcon className="w-5 h-5 text-[#739072] opacity-50 group-hover:opacity-100 group-hover:text-[#4F6F52] transition-all" />
       </div>
-      
+
       <h3 className="text-lg font-bold text-[#3A4D39] leading-snug group-hover:text-[#4F6F52] transition-colors line-clamp-4">
         {title}
       </h3>
@@ -82,35 +94,22 @@ const StudyItem = ({ title, link }) => (
 
     <div className="mt-6 pt-4 border-t border-[#ECE3CE] flex items-center gap-2 text-sm font-medium text-[#739072] group-hover:text-[#3A4D39] transition-colors">
       <span>Read Publication</span>
-      <span className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">→</span>
+      <span className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+        →
+      </span>
     </div>
   </motion.a>
 );
 
 const Studies = () => {
   return (
-    <div className="min-h-screen w-full bg-[#ECE3CE]/20 font-sans">
-      <div className="w-full max-w-7xl mx-auto px-6 py-16">
-        
-        {/* --- header --- */}
-        <motion.div 
-          className="mb-14 flex flex-col md:flex-row items-center md:items-start gap-4 text-center md:text-left border-b border-[#3A4D39]/10 pb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="p-3 bg-[#3A4D39] rounded-2xl shadow-lg shadow-[#3A4D39]/20 hidden md:block">
-            <BookOpenIcon className="w-8 h-8 text-[#ECE3CE]" />
-          </div>
-          <div>
-            <h1 className="text-4xl lg:text-5xl font-black text-[#3A4D39] tracking-tight">
-              Research Studies
-            </h1>
-            <p className="mt-2 text-[#4F6F52] text-lg font-medium max-w-2xl">
-              Scientific literature and case studies supporting sustainable composting and organic waste management.
-            </p>
-          </div>
-        </motion.div>
+    <div className="min-h-screen w-full bg-[#ECE3CE]/20 font-sans pt-6">
+      <div className="w-full max-w-7xl mx-auto px-6 py-12">
+        <PageHeaderComponent />
+        <p className="mt-4 text-[#4F6F52] text-lg font-medium max-w-2xl">
+          Scientific literature and case studies supporting sustainable
+          composting and organic waste management.
+        </p>
 
         {/* --- grid layout --- */}
         <motion.div
@@ -130,10 +129,10 @@ const Studies = () => {
               key={index}
               variants={{
                 hidden: { opacity: 0, y: 20 },
-                show: { 
-                  opacity: 1, 
-                  y: 0, 
-                  transition: { type: "spring", stiffness: 50, damping: 20 } 
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { type: "spring", stiffness: 50, damping: 20 },
                 },
               }}
               className="h-full"
@@ -144,17 +143,17 @@ const Studies = () => {
         </motion.div>
 
         {/* --- footer note --- */}
-        <motion.div 
+        <motion.div
           className="mt-16 text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
         >
           <p className="text-[#739072] text-sm">
-            Access to full papers may require academic credentials or subscription.
+            Access to full papers may require academic credentials or
+            subscription.
           </p>
         </motion.div>
-
       </div>
     </div>
   );

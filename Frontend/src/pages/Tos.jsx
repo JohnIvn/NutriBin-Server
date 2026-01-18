@@ -2,29 +2,20 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollText, Check, X } from "lucide-react";
+import PageHeader from "@/components/ui/pageheader";
 
 export default function Tos() {
   return (
-    <div className="min-h-screen bg-[#ECE3CE]/30 pb-12 font-sans text-[#3A4D39] overflow-x-hidden">
-      {/* header */}
-      <header className="bg-gradient-to-r from-[#3A4D39] to-[#4F6F52] pt-20 pb-32 px-10 text-center text-white shadow-md relative">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex justify-center mb-6">
-            <div className="bg-white/10 p-4 rounded-full backdrop-blur-sm shadow-inner border border-white/20">
-              <ScrollText className="w-10 h-10 text-white" />
-            </div>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight drop-shadow-sm">
-            Terms of Service
-          </h1>
-          <p className="text-[#ECE3CE] text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
-            NutriBin: Excess Food Composting and Fertilizer Monitoring System
-          </p>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#ECE3CE]/30 pb-12 font-sans text-[#3A4D39] overflow-x-hidden pt-6">
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <PageHeader
+          title="Terms of Service"
+          icon={<ScrollText className="w-8 h-8 text-[#4F6F52]" />}
+        />
+      </div>
 
       {/* main container */}
-      <main className="max-w-6xl mx-auto -mt-24 px-4 sm:px-6 relative z-10">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
         <Card className="bg-white shadow-2xl border-none overflow-hidden rounded-2xl">
           <CardContent className="p-8 md:p-16 space-y-16">
             {/* intro */}

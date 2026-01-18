@@ -141,12 +141,12 @@ function Account() {
       if (response.data.ok) {
         setMfaType(newMfaType);
         toast.success(
-          `MFA set to ${newMfaType === "N/A" ? "Disabled" : "Email"}`
+          `MFA set to ${newMfaType === "N/A" ? "Disabled" : "Email"}`,
         );
       }
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Failed to update MFA settings"
+        error.response?.data?.message || "Failed to update MFA settings",
       );
       console.error(error);
     } finally {
@@ -561,6 +561,7 @@ function Account() {
                 { label: "Terms of Service", link: "/policies" },
                 { label: "Socials", link: "/socials" },
                 { label: "Studies", link: "/studies" },
+                { label: "Guide", link: "/guide" },
               ].map((item) => (
                 <Button
                   key={item.label}

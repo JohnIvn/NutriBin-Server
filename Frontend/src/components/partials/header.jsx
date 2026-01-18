@@ -51,26 +51,62 @@ export default function Header() {
           </Link>
           {user ? (
             <nav className="flex flex-wrap gap-2 sm:gap-4 items-center">
-              <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-amber-700 w-24 justify-center"
+                }
+              >
                 <Link to={"/dashboard"}>Dashboard</Link>
               </Button>
-              <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-amber-700 w-24 justify-center"
+                }
+              >
                 <Link to={"/machine"}>Machines</Link>
               </Button>
               {user.role === "admin" && (
-                <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+                <Button
+                  asChild
+                  size="sm"
+                  className={
+                    "bg-transparent hover:bg-amber-700 w-24 justify-center"
+                  }
+                >
                   <Link to={"/staff"}>Staff</Link>
                 </Button>
               )}
-              <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-amber-700 w-24 justify-center"
+                }
+              >
                 <Link to={"users"}>Users</Link>
               </Button>
               {user.role === "admin" && (
-                <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+                <Button
+                  asChild
+                  size="sm"
+                  className={
+                    "bg-transparent hover:bg-amber-700 w-24 justify-center"
+                  }
+                >
                   <Link to={"/archives"}>Archives</Link>
                 </Button>
               )}
-              <Button asChild className={"bg-transparent hover:bg-amber-700"}>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-amber-700 w-24 justify-center"
+                }
+              >
                 <Link to={"/repair"}>Repairs</Link>
               </Button>
               <DropdownMenu>
@@ -110,17 +146,75 @@ export default function Header() {
             </nav>
           ) : (
             <nav className="flex flex-wrap gap-2 sm:gap-4 items-center">
-              <Button asChild className={"bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52]"}>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52] w-24 justify-center"
+                }
+              >
                 <Link to={"/login"}>Home</Link>
               </Button>
-              <Button asChild className={"bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52]"}>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52] w-24 justify-center"
+                }
+              >
                 <Link to={"/guide"}>Guide</Link>
               </Button>
-              {/* <Button asChild className={"bg-transparent hover:bg-amber-700"}>
-                  <Link to={'/register'}>
-                    Register
-                  </Link>
-                </Button> */}
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52] w-24 justify-center"
+                }
+              >
+                <Link to={"/FAQs"}>FAQs</Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52] w-24 justify-center"
+                }
+              >
+                <Link to={"/policies"}>TOS</Link>
+              </Button>
+              <Button
+                asChild
+                className={
+                  "bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52]"
+                }
+              ></Button>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52] w-24 justify-center"
+                }
+              >
+                <Link to={"/socials"}>Socials</Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52] w-24 justify-center"
+                }
+              >
+                <Link to={"/studies"}>Studies</Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className={
+                  "bg-transparent hover:bg-[#ECE3CE] hover:text-[#4F6F52] w-24 justify-center"
+                }
+              >
+                <Link to={"/about"}>About</Link>
+              </Button>
             </nav>
           )}
         </header>

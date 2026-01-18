@@ -15,6 +15,7 @@ import {
   Users as UsersIcon,
   Wrench,
   Activity,
+  Megaphone,
 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
 
@@ -304,9 +305,12 @@ function Analytics() {
 
           <Card className="p-4 rounded-xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-[#3A4D39]">Upcoming</CardTitle>
+              <div className="flex items-center gap-3">
+                <Megaphone className="h-5 w-5 text-[#4F6F52]" />
+                <CardTitle className="text-[#3A4D39]">Announcements</CardTitle>
+              </div>
               <CardDescription className="text-xs text-gray-500">
-                Scheduled items & rollouts
+                Latest messages & alerts
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-2 text-sm text-gray-600">
@@ -317,6 +321,9 @@ function Analytics() {
                       Repair: Mixer #02
                     </div>
                     <div className="text-xs text-gray-400">Tomorrow, 10:00</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Required: 1 technician
+                    </div>
                   </div>
                   <div className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
                     Scheduled
@@ -329,6 +336,9 @@ function Analytics() {
                       Firmware rollout: v1.2.3
                     </div>
                     <div className="text-xs text-gray-400">In progress</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Target: 70% devices updated
+                    </div>
                   </div>
                   <div className="text-xs font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
                     Pending

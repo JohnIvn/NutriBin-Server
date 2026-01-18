@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { FaCommentDots, FaPlus, FaMinus } from "react-icons/fa";
 import { motion } from "framer-motion";
+import PageHeader from "@/components/ui/pageheader";
 
 const faqsData = [
   {
@@ -62,7 +63,9 @@ const FaqItem = ({ question, answer }) => {
         </span>
         <div
           className={`flex-shrink-0 p-2 rounded-full transition-colors ${
-            isOpen ? "bg-[#3A4D39] text-[#ECE3CE]" : "bg-[#ECE3CE] text-[#3A4D39]"
+            isOpen
+              ? "bg-[#3A4D39] text-[#ECE3CE]"
+              : "bg-[#ECE3CE] text-[#3A4D39]"
           }`}
         >
           {isOpen ? <FaMinus size={12} /> : <FaPlus size={12} />}
@@ -92,29 +95,16 @@ const FaqItem = ({ question, answer }) => {
 
 export default function Faqs() {
   return (
-    <div className="w-full min-h-screen bg-[#ECE3CE]/30 font-sans">
+    <div className="w-full min-h-screen bg-[#ECE3CE]/30 font-sans pt-6">
       <div className="w-full max-w-5xl mx-auto px-6 py-16">
-        
-        {/* --- header section --- */}
-        <motion.div
-          className="mb-12 flex flex-col items-center md:items-start text-center md:text-left border-l-0 md:border-l-4 border-[#3A4D39] md:pl-6"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
-            <FaCommentDots className="text-[#739072] text-2xl" />
-            <span className="text-[#739072] font-bold uppercase tracking-widest text-sm">
-              Support Center
-            </span>
-          </div>
-          <h1 className="text-4xl lg:text-6xl font-black text-[#3A4D39]">
-            Frequently <br className="hidden md:block" /> Asked Questions.
-          </h1>
-          <p className="mt-4 text-[#4F6F52] text-lg max-w-xl mx-auto md:mx-0">
-            Everything you need to know about the compost system, maintenance, and monitoring.
-          </p>
-        </motion.div>
+        <PageHeader
+          title="FAQs"
+          icon={<FaCommentDots className="w-8 h-8 text-[#4F6F52]" />}
+        />
+        <p className="mt-4 text-[#4F6F52] text-lg max-w-xl">
+          Everything you need to know about the compost system, maintenance, and
+          monitoring.
+        </p>
 
         {/* --- FAQ grid --- */}
         <motion.div
@@ -146,7 +136,7 @@ export default function Faqs() {
         </motion.div>
 
         {/* --- footer note --- */}
-        <motion.div 
+        <motion.div
           className="mt-16 text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -154,12 +144,14 @@ export default function Faqs() {
         >
           <p className="text-[#739072] text-sm">
             Still have questions?{" "}
-            <a href="/contact" className="text-[#3A4D39] font-bold underline hover:text-[#4F6F52] transition-colors cursor-pointer">
+            <a
+              href="/contact"
+              className="text-[#3A4D39] font-bold underline hover:text-[#4F6F52] transition-colors cursor-pointer"
+            >
               Contact Support
             </a>
           </p>
         </motion.div>
-
       </div>
     </div>
   );

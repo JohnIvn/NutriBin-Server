@@ -10,6 +10,7 @@ import {
   DollarSign,
   HardDrive,
   Beaker,
+  Megaphone,
   Users as UsersIcon,
   UserCog,
   Archive,
@@ -168,6 +169,13 @@ export default function Sidebar() {
           icon={UsersIcon}
           label="Users"
           active={isActive("/users")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/announcements"
+          icon={Megaphone}
+          label="Announcements"
+          active={isActive("/announcements")}
           collapsed={shouldCollapse}
         />
         {user?.role === "admin" && (

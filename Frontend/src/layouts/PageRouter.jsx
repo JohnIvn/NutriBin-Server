@@ -19,6 +19,7 @@ import Tos from "@/pages/Tos";
 import Socials from "@/pages/Socials";
 import Studies from "@/pages/Studies";
 import Guide from "@/pages/Guide";
+import Announcements from "@/pages/Announcements";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -140,6 +141,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Sales />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/announcements"
+        element={
+          <ProtectedRoute>
+            <Announcements />
           </ProtectedRoute>
         }
       />

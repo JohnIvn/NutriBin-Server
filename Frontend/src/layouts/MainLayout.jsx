@@ -1,5 +1,6 @@
 import Sidebar from "@/components/partials/sidebar";
 import PageRouter from "./PageRouter";
+import Footer from "@/components/partials/footer";
 import { useUser } from "@/contexts/UserContext";
 
 function MainLayout() {
@@ -12,6 +13,7 @@ function MainLayout() {
         <div className="flex-1">
           <PageRouter />
         </div>
+        {!user && <Footer />}
       </div>
     </section>
   );

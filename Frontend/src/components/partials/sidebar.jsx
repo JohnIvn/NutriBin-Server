@@ -9,6 +9,7 @@ import {
   Wrench,
   DollarSign,
   HardDrive,
+  Beaker,
   Users as UsersIcon,
   UserCog,
   Archive,
@@ -114,6 +115,13 @@ export default function Sidebar() {
           icon={LayoutDashboard}
           label="Dashboard"
           active={isActive("/dashboard")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/fertilizer"
+          icon={Beaker}
+          label="Fertilizer"
+          active={isActive("/fertilizer")}
           collapsed={shouldCollapse}
         />
         <NavItem

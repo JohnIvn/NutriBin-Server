@@ -7,6 +7,7 @@ import {
   FaYoutube,
 } from "react-icons/fa";
 import { FaXTwitter, FaLink, FaArrowRight } from "react-icons/fa6";
+import { motion } from "framer-motion";
 
 export default function Socials() {
   const socials = [

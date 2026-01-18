@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { FaCommentDots, FaPlus, FaMinus } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const faqsData = [
   {

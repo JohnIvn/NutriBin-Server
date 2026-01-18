@@ -6,7 +6,6 @@ import { ScrollText, Check, X } from "lucide-react";
 export default function Tos() {
   return (
     <div className="min-h-screen bg-[#ECE3CE]/30 pb-12 font-sans text-[#3A4D39] overflow-x-hidden">
-      
       {/* header */}
       <header className="bg-gradient-to-r from-[#3A4D39] to-[#4F6F52] pt-20 pb-32 px-10 text-center text-white shadow-md relative">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -28,7 +27,6 @@ export default function Tos() {
       <main className="max-w-6xl mx-auto -mt-24 px-4 sm:px-6 relative z-10">
         <Card className="bg-white shadow-2xl border-none overflow-hidden rounded-2xl">
           <CardContent className="p-8 md:p-16 space-y-16">
-            
             {/* intro */}
             <div className="space-y-6 border-b pb-10 border-[#ECE3CE]">
               <div className="flex items-center justify-between flex-wrap gap-4">
@@ -51,19 +49,16 @@ export default function Tos() {
             <div className="relative">
               {/* timeline Line */}
               <div className="hidden md:block absolute left-[39px] top-4 bottom-4 w-0.5 bg-[#ECE3CE] -z-10" />
-              
+
               <div className="space-y-16">
-                
                 {/* 1 */}
-                <TosSection
-                  number="1"
-                  title="Purpose of the System"
-                >
+                <TosSection number="1" title="Purpose of the System">
                   <p>
                     NutriBin is designed to monitor and manage the composting of
                     soft or small biodegradable waste for fertilizer production.
-                    The System provides real-time sensor data, status monitoring,
-                    logging, and alerts related to compost quality and safety.
+                    The System provides real-time sensor data, status
+                    monitoring, logging, and alerts related to compost quality
+                    and safety.
                   </p>
                   <div className="mt-4 p-4 bg-[#ECE3CE]/30 rounded-lg border-l-4 border-[#3A4D39] text-[#4F6F52]">
                     <strong>Note:</strong> NutriBin is intended for educational,
@@ -73,38 +68,50 @@ export default function Tos() {
                 </TosSection>
 
                 {/* 2 */}
-                <TosSection
-                  number="2"
-                  title="User Roles"
-                >
-                  <p className="mb-4">The System supports the following user roles:</p>
+                <TosSection number="2" title="User Roles">
+                  <p className="mb-4">
+                    The System supports the following user roles:
+                  </p>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="bg-[#FAF9F6] p-5 rounded-xl border border-[#ECE3CE] hover:border-[#739072] transition-colors">
-                      <strong className="text-[#3A4D39] block mb-2">Admin</strong>
-                      <span className="text-sm text-[#739072]">Full access to system management, monitoring, calibration, and emergency handling.</span>
+                      <strong className="text-[#3A4D39] block mb-2">
+                        Admin
+                      </strong>
+                      <span className="text-sm text-[#739072]">
+                        Full access to system management, monitoring,
+                        calibration, and emergency handling.
+                      </span>
                     </div>
                     <div className="bg-[#FAF9F6] p-5 rounded-xl border border-[#ECE3CE] hover:border-[#739072] transition-colors">
-                      <strong className="text-[#3A4D39] block mb-2">Staff/User</strong>
-                      <span className="text-sm text-[#739072]">Can view compost status, sensor data, and fertilizer readiness.</span>
+                      <strong className="text-[#3A4D39] block mb-2">
+                        Staff/User
+                      </strong>
+                      <span className="text-sm text-[#739072]">
+                        Can view compost status, sensor data, and fertilizer
+                        readiness.
+                      </span>
                     </div>
                     <div className="bg-[#FAF9F6] p-5 rounded-xl border border-[#ECE3CE] hover:border-[#739072] transition-colors">
-                      <strong className="text-[#3A4D39] block mb-2">Guest</strong>
-                      <span className="text-sm text-[#739072]">Limited read-only access to selected system data.</span>
+                      <strong className="text-[#3A4D39] block mb-2">
+                        Guest
+                      </strong>
+                      <span className="text-sm text-[#739072]">
+                        Limited read-only access to selected system data.
+                      </span>
                     </div>
                   </div>
                   <p className="mt-4 text-xs italic text-[#739072] text-right">
-                    * Each user is responsible for maintaining the confidentiality of their credentials.
+                    * Each user is responsible for maintaining the
+                    confidentiality of their credentials.
                   </p>
                 </TosSection>
 
                 {/* 3 */}
-                <TosSection
-                  number="3"
-                  title="Acceptable Use"
-                >
+                <TosSection number="3" title="Acceptable Use">
                   <p className="mb-4">
-                    Users agree to use the System only for its intended purposes.
-                    You agree <span className="font-bold text-red-600">NOT</span> to:
+                    Users agree to use the System only for its intended
+                    purposes. You agree{" "}
+                    <span className="font-bold text-red-600">NOT</span> to:
                   </p>
                   <ul className="grid md:grid-cols-2 gap-3">
                     {[
@@ -114,34 +121,46 @@ export default function Tos() {
                       "Tamper with sensors or calibration settings",
                       "Attempt unauthorized access to admin features",
                     ].map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-[#4F6F52] bg-[#FAF9F6] p-3 rounded-lg border border-[#ECE3CE]">
+                      <li
+                        key={idx}
+                        className="flex items-start gap-3 text-[#4F6F52] bg-[#FAF9F6] p-3 rounded-lg border border-[#ECE3CE]"
+                      >
                         <span className="h-1.5 w-1.5 rounded-full bg-[#3A4D39] mt-2 shrink-0" />
                         {item}
                       </li>
                     ))}
                   </ul>
                   <p className="mt-4 text-red-600 font-bold text-sm bg-red-50 p-3 rounded-lg inline-block">
-                    Violation of acceptable use may result in immediate account suspension.
+                    Violation of acceptable use may result in immediate account
+                    suspension.
                   </p>
                 </TosSection>
 
                 {/* 4 */}
-                <TosSection
-                  number="4"
-                  title="Waste Handling Disclaimer"
-                >
+                <TosSection number="4" title="Waste Handling Disclaimer">
                   <div className="grid md:grid-cols-2 gap-8">
                     {/* allowed */}
                     <div className="space-y-3">
                       <h4 className="font-bold flex items-center gap-2 text-[#3A4D39]">
-                        <div className="bg-[#4F6F52] text-white p-1 rounded-full"><Check className="w-3 h-3" /></div>
+                        <div className="bg-[#4F6F52] text-white p-1 rounded-full">
+                          <Check className="w-3 h-3" />
+                        </div>
                         Supported Waste
                       </h4>
-                      <p className="text-sm text-[#739072] mb-2">Soft or small biodegradable items:</p>
+                      <p className="text-sm text-[#739072] mb-2">
+                        Soft or small biodegradable items:
+                      </p>
                       <ul className="space-y-2">
-                        {["Food scraps", "Fruit peels", "Vegetable leftovers"].map((item) =>(
-                          <li key={item} className="flex items-center gap-2 text-sm bg-[#4F6F52]/10 p-2 rounded-lg text-[#3A4D39] font-medium border border-[#4F6F52]/20">
-                             {item}
+                        {[
+                          "Food scraps",
+                          "Fruit peels",
+                          "Vegetable leftovers",
+                        ].map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-center gap-2 text-sm bg-[#4F6F52]/10 p-2 rounded-lg text-[#3A4D39] font-medium border border-[#4F6F52]/20"
+                          >
+                            {item}
                           </li>
                         ))}
                       </ul>
@@ -150,14 +169,25 @@ export default function Tos() {
                     {/* prohibited */}
                     <div className="space-y-3">
                       <h4 className="font-bold flex items-center gap-2 text-red-700">
-                        <div className="bg-red-600 text-white p-1 rounded-full"><X className="w-3 h-3" /></div>
-                         Prohibited Items
+                        <div className="bg-red-600 text-white p-1 rounded-full">
+                          <X className="w-3 h-3" />
+                        </div>
+                        Prohibited Items
                       </h4>
-                      <p className="text-sm text-gray-500 mb-2">Do not insert the following:</p>
+                      <p className="text-sm text-gray-500 mb-2">
+                        Do not insert the following:
+                      </p>
                       <ul className="space-y-2">
-                         {["Bones, shells, seeds, thick stems", "Plastics, metals, glass", "Non-biodegradable materials"].map((item) =>(
-                          <li key={item} className="flex items-center gap-2 text-sm bg-red-50 p-2 rounded-lg text-red-800 font-medium border border-red-100">
-                             {item}
+                        {[
+                          "Bones, shells, seeds, thick stems",
+                          "Plastics, metals, glass",
+                          "Non-biodegradable materials",
+                        ].map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-center gap-2 text-sm bg-red-50 p-2 rounded-lg text-red-800 font-medium border border-red-100"
+                          >
+                            {item}
                           </li>
                         ))}
                       </ul>
@@ -165,23 +195,22 @@ export default function Tos() {
                   </div>
 
                   <div className="mt-6 text-sm text-[#739072] bg-[#FAF9F6] p-4 rounded-xl text-center border border-[#ECE3CE]">
-                    Users are responsible for ensuring correct waste input. Improper waste may trigger emergency mode and require manual maintenance.
+                    Users are responsible for ensuring correct waste input.
+                    Improper waste may trigger emergency mode and require manual
+                    maintenance.
                   </div>
                 </TosSection>
-
               </div>
             </div>
 
             {/* ACCEPT / DECLINE - Paremove nalang clark pag na copy mona para sa user TOS modal */}
             <div className="pt-10 border-t border-[#ECE3CE] mt-12">
               <div className="flex flex-col sm:flex-row justify-center gap-6">
-                <Button 
-                  className="bg-[#3A4D39] hover:bg-[#4F6F52] text-white h-14 px-12 text-lg rounded-full font-bold shadow-lg shadow-[#3A4D39]/20 transition-all hover:-translate-y-1 cursor-pointer"
-                >
+                <Button className="bg-[#3A4D39] hover:bg-[#4F6F52] text-white h-14 px-12 text-lg rounded-full font-bold shadow-lg shadow-[#3A4D39]/20 transition-all hover:-translate-y-1 cursor-pointer">
                   <Check className="mr-2 h-6 w-6" /> I Accept the Terms
                 </Button>
-                
-                <Button 
+
+                <Button
                   variant="outline"
                   className="border-2 border-[#ECE3CE] text-[#739072] hover:text-[#3A4D39] hover:border-[#3A4D39] hover:bg-[#ECE3CE]/20 h-14 px-12 text-lg rounded-full font-bold transition-all cursor-pointer"
                 >
@@ -189,11 +218,10 @@ export default function Tos() {
                 </Button>
               </div>
             </div>
-
           </CardContent>
         </Card>
       </main>
-      
+
       {/* copyright */}
       <footer className="text-center text-[#739072] text-sm mt-12 pb-8 font-medium">
         &copy; 2026 NutriBin System. All rights reserved.
@@ -205,7 +233,6 @@ export default function Tos() {
 function TosSection({ number, title, children }) {
   return (
     <div className="relative flex flex-col md:flex-row gap-6 md:gap-12 group">
-      
       {/* number bubble */}
       <div className="flex-shrink-0">
         <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#3A4D39] group-hover:bg-[#4F6F52] transition-colors duration-300 text-[#ECE3CE] text-2xl md:text-3xl font-black shadow-lg ring-8 ring-white z-10 relative">

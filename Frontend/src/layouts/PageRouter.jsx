@@ -1,6 +1,7 @@
 import Settings from "@/pages/Settings";
 import Analytics from "@/pages/Analytics";
 import Sales from "@/pages/Sales";
+import Fertilizer from "@/pages/Fertilizer";
 import Firmware from "@/pages/Firmware";
 import Login from "@/pages/Login";
 import { VerifyMFA } from "@/pages/VerifyMFA";
@@ -83,6 +84,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/fertilizer"
+        element={
+          <ProtectedRoute>
+            <Fertilizer />
           </ProtectedRoute>
         }
       />

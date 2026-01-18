@@ -1,6 +1,16 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { Megaphone } from "lucide-react";
+import {
+  Megaphone,
+  Plus,
+  Bell,
+  Globe,
+  Smartphone,
+  Calendar,
+  Edit,
+  Trash2,
+  ChevronRight,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   Card,
@@ -13,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { useUser } from "@/contexts/UserContext";
 
 export default function Announcements() {
@@ -20,187 +31,378 @@ export default function Announcements() {
   const [announcements, setAnnouncements] = useState([
     {
       id: 1,
-      title: "Firmware v1.2.3 released",
+      title: "Firmware v1.2.3 Released",
       date: "2026-01-18",
-      body: "New firmware available for staged rollout.",
+      body: "New firmware available for staged rollout. This update includes performance improvements, bug fixes, and enhanced security features.",
+      priority: "high",
+      notified: ["website", "app"],
+      author: "System Admin",
     },
     {
       id: 2,
       title: "Maintenance: Mixer #02",
       date: "2026-01-19",
-      body: "Scheduled maintenance at 10:00 — brief downtime expected.",
+      body: "Scheduled maintenance at 10:00 — brief downtime expected. Please plan accordingly.",
+      priority: "medium",
+      notified: ["website"],
+      author: "Operations Team",
     },
     {
       id: 3,
-      title: "Holiday hours",
+      title: "Holiday Hours",
       date: "2026-02-01",
-      body: "Office closed for public holiday.",
+      body: "Office closed for public holiday. Emergency support will be available via email.",
+      priority: "low",
+      notified: ["website", "app"],
+      author: "HR Department",
     },
   ]);
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [priority, setPriority] = useState("medium");
   const [notifyWebsite, setNotifyWebsite] = useState(false);
   const [notifyApp, setNotifyApp] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const handleCreate = () => {
     if (!title || !body) return toast.error("Title and body are required");
+
+    const notified = [];
+    if (notifyWebsite) notified.push("website");
+    if (notifyApp) notified.push("app");
+
     const newAnnouncement = {
       id: Date.now(),
       title,
       date: new Date().toISOString().split("T")[0],
       body,
+      priority,
+      notified,
+      author: `${user.first_name} ${user.last_name}`,
     };
     setAnnouncements((s) => [newAnnouncement, ...s]);
-    toast.success("Announcement created");
+    toast.success("Announcement created successfully");
 
     // Simulate notifications
     if (notifyWebsite && notifyApp) {
-      toast.success("Notified: website + application (Notify All)");
+      toast.success("Notified: website + application");
     } else if (notifyWebsite) {
-      toast.success("Notified website");
+      toast.success("Notified website users");
     } else if (notifyApp) {
-      toast.success("Notified application");
+      toast.success("Notified app users");
     }
 
     // Reset form
     setTitle("");
     setBody("");
+    setPriority("medium");
     setNotifyWebsite(false);
     setNotifyApp(false);
+    setShowCreateForm(false);
+  };
+
+  const handleDelete = (id) => {
+    setAnnouncements((s) => s.filter((a) => a.id !== id));
+    toast.success("Announcement deleted");
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-700 border-red-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "low":
+        return "bg-green-100 text-green-700 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
   };
 
   return (
-    <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
-      <section className="flex flex-col w-full px-4 md:px-8 pt-6 space-y-6">
-        <div className="flex items-center gap-3 border-l-4 border-[#4F6F52] pl-6">
-          <Megaphone className="h-6 w-6 text-[#4F6F52]" />
-          <div>
-            <h1 className="text-3xl font-bold text-[#3A4D39]">Announcements</h1>
-            <p className="text-sm text-[#6B6F68] italic">
-              Company & system updates
-            </p>
+    <div className="w-full bg-gradient-to-br from-[#ECE3CE]/10 via-white to-[#ECE3CE]/5 min-h-screen">
+      <section className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-[#4F6F52] to-[#3A4D39] rounded-2xl shadow-lg">
+              <Megaphone className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-[#3A4D39] tracking-tight">
+                Announcements
+              </h1>
+              <p className="text-sm text-[#6B6F68] mt-1">
+                Company & system updates • {announcements.length} total
+              </p>
+            </div>
           </div>
+
+          {user?.role === "admin" && (
+            <Button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="bg-gradient-to-r from-[#4F6F52] to-[#3A4D39] hover:from-[#3A4D39] hover:to-[#2D3A2E] text-white shadow-md"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Announcement
+            </Button>
+          )}
         </div>
 
-        {user?.role === "admin" && (
-          <Card className="rounded-xl p-4">
-            <CardHeader>
-              <CardTitle className="text-[#3A4D39]">
-                Create Announcement
+        {/* Create Announcement Form */}
+        {user?.role === "admin" && showCreateForm && (
+          <Card className="border-2 border-[#4F6F52]/20 shadow-lg rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-[#4F6F52]/5 to-[#ECE3CE]/20 border-b">
+              <CardTitle className="text-[#3A4D39] flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Create New Announcement
               </CardTitle>
-              <CardDescription className="text-xs text-gray-500">
-                Publish messages and optionally notify users
+              <CardDescription className="text-sm text-gray-600">
+                Publish messages and notify users across platforms
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-2 space-y-3">
-              <Input
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <Textarea
-                placeholder="Message body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-              />
-
-              <div className="flex items-center gap-4">
-                <label className="inline-flex items-center gap-2">
-                  <Checkbox
-                    checked={notifyWebsite}
-                    onCheckedChange={(v) => setNotifyWebsite(Boolean(v))}
-                  />
-                  <span className="text-sm">Notify website</span>
+            <CardContent className="pt-6 space-y-5">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-[#3A4D39]">
+                  Announcement Title
                 </label>
-                <label className="inline-flex items-center gap-2">
-                  <Checkbox
-                    checked={notifyApp}
-                    onCheckedChange={(v) => setNotifyApp(Boolean(v))}
-                  />
-                  <span className="text-sm">Notify application</span>
-                </label>
-                <label className="inline-flex items-center gap-2">
-                  <Checkbox
-                    checked={notifyWebsite && notifyApp}
-                    onCheckedChange={(v) => {
-                      const checked = Boolean(v);
-                      setNotifyWebsite(checked);
-                      setNotifyApp(checked);
-                    }}
-                  />
-                  <span className="text-sm">Notify all</span>
-                </label>
+                <Input
+                  placeholder="Enter a clear, concise title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="border-[#4F6F52]/30 focus:border-[#4F6F52] focus:ring-[#4F6F52]"
+                />
               </div>
 
-              <div className="flex items-center gap-2">
-                <Button onClick={handleCreate} className="bg-[#4F6F52]">
-                  Create & Notify
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-[#3A4D39]">
+                  Message Content
+                </label>
+                <Textarea
+                  placeholder="Provide detailed information about this announcement"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  rows={4}
+                  className="border-[#4F6F52]/30 focus:border-[#4F6F52] focus:ring-[#4F6F52]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-[#3A4D39]">
+                  Priority Level
+                </label>
+                <div className="flex gap-3">
+                  {["high", "medium", "low"].map((p) => (
+                    <label
+                      key={p}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 cursor-pointer transition-all ${
+                        priority === p
+                          ? "border-[#4F6F52] bg-[#4F6F52]/10"
+                          : "border-gray-200 hover:border-[#4F6F52]/50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="priority"
+                        value={p}
+                        checked={priority === p}
+                        onChange={(e) => setPriority(e.target.value)}
+                        className="sr-only"
+                      />
+                      <span className="text-sm font-medium capitalize">
+                        {p}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-[#3A4D39]">
+                  Notification Settings
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
+                    <Checkbox
+                      checked={notifyWebsite}
+                      onCheckedChange={(v) => setNotifyWebsite(Boolean(v))}
+                    />
+                    <Globe className="h-4 w-4 text-[#4F6F52]" />
+                    <span className="text-sm font-medium">Website</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
+                    <Checkbox
+                      checked={notifyApp}
+                      onCheckedChange={(v) => setNotifyApp(Boolean(v))}
+                    />
+                    <Smartphone className="h-4 w-4 text-[#4F6F52]" />
+                    <span className="text-sm font-medium">Mobile App</span>
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
+                    <Checkbox
+                      checked={notifyWebsite && notifyApp}
+                      onCheckedChange={(v) => {
+                        const checked = Boolean(v);
+                        setNotifyWebsite(checked);
+                        setNotifyApp(checked);
+                      }}
+                    />
+                    <Bell className="h-4 w-4 text-[#4F6F52]" />
+                    <span className="text-sm font-medium">All Platforms</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={handleCreate}
+                  className="bg-gradient-to-r from-[#4F6F52] to-[#3A4D39] hover:from-[#3A4D39] hover:to-[#2D3A2E] text-white"
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Publish & Notify
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onClick={() => {
                     setTitle("");
                     setBody("");
+                    setPriority("medium");
                     setNotifyWebsite(false);
                     setNotifyApp(false);
+                    setShowCreateForm(false);
                   }}
+                  className="border-gray-300 hover:bg-gray-50"
                 >
-                  Clear
+                  Cancel
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        <div className="grid grid-cols-1 gap-4">
-          {announcements.map((a) => (
-            <Card key={a.id} className="rounded-xl">
-              <CardHeader>
-                <CardTitle className="text-[#3A4D39]">{a.title}</CardTitle>
-                <CardDescription className="text-xs text-gray-500">
-                  {a.date}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-sm text-gray-700">
-                <div className="mb-3">{a.body}</div>
-                {user?.role === "admin" && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        toast.success("Website notified (mock)");
-                      }}
-                    >
-                      Notify website
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        toast.success("Application notified (mock)");
-                      }}
-                    >
-                      Notify application
-                    </Button>
-                    <Button
-                      className="bg-[#4F6F52]"
-                      onClick={() => {
-                        toast.success("Notified all (mock)");
-                      }}
-                    >
-                      Notify all
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Announcements List */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-[#3A4D39]">
+            Recent Announcements
+          </h2>
+          <div className="grid grid-cols-1 gap-4">
+            {announcements.length === 0 ? (
+              <Card className="rounded-2xl border-dashed border-2 border-gray-300">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <Megaphone className="h-16 w-16 text-gray-300 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                    No Announcements Yet
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Create your first announcement to get started
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              announcements.map((a) => (
+                <Card
+                  key={a.id}
+                  className="rounded-2xl border shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                >
+                  <CardHeader className="bg-gradient-to-r from-[#FAF9F6] to-[#ECE3CE]/20 border-b pb-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <CardTitle className="text-xl text-[#3A4D39] group-hover:text-[#4F6F52] transition-colors">
+                            {a.title}
+                          </CardTitle>
+                          <Badge
+                            variant="outline"
+                            className={`${getPriorityColor(a.priority)} border capitalize`}
+                          >
+                            {a.priority}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(a.date).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </span>
+                          <span>•</span>
+                          <span>By {a.author}</span>
+                        </div>
+                      </div>
+                      {user?.role === "admin" && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 hover:bg-[#4F6F52]/10 hover:text-[#4F6F52]"
+                            onClick={() =>
+                              toast.info("Edit feature coming soon")
+                            }
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                            onClick={() => handleDelete(a.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-gray-700 leading-relaxed mb-4">
+                      {a.body}
+                    </p>
 
-        <div>
-          <Link to="/dashboard" className="text-sm text-[#4F6F52] font-medium">
-            Back to Dashboard →
-          </Link>
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-500">
+                          Notified:
+                        </span>
+                        {a.notified.map((platform) => (
+                          <Badge
+                            key={platform}
+                            variant="secondary"
+                            className="text-xs bg-[#4F6F52]/10 text-[#4F6F52] border-[#4F6F52]/20"
+                          >
+                            {platform === "website" && (
+                              <Globe className="h-3 w-3 mr-1" />
+                            )}
+                            {platform === "app" && (
+                              <Smartphone className="h-3 w-3 mr-1" />
+                            )}
+                            {platform}
+                          </Badge>
+                        ))}
+                      </div>
+                      {user?.role === "admin" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#4F6F52] hover:text-[#3A4D39] hover:bg-[#4F6F52]/10"
+                          onClick={() => {
+                            toast.success(
+                              "Re-notification sent to all platforms",
+                            );
+                          }}
+                        >
+                          <Bell className="h-3 w-3 mr-1" />
+                          Re-notify
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </div>
       </section>
     </div>

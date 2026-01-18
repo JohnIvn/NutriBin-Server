@@ -48,6 +48,15 @@ function NavItem({ to, icon, label, active, collapsed }) {
   );
 }
 
+function CategoryLabel({ label, collapsed }) {
+  if (collapsed) return null;
+  return (
+    <div className="px-3 pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+      {label}
+    </div>
+  );
+}
+
 export default function Sidebar() {
   const { user, logout } = useUser();
   const location = useLocation();
@@ -111,6 +120,7 @@ export default function Sidebar() {
       <nav
         className={`flex-1 overflow-y-auto py-3 space-y-1 ${shouldCollapse ? "px-1" : "px-3"} custom-scrollbar`}
       >
+        <CategoryLabel label="Overview" collapsed={shouldCollapse} />
         <NavItem
           to="/dashboard"
           icon={LayoutDashboard}
@@ -118,6 +128,8 @@ export default function Sidebar() {
           active={isActive("/dashboard")}
           collapsed={shouldCollapse}
         />
+
+        <CategoryLabel label="Operations" collapsed={shouldCollapse} />
         <NavItem
           to="/fertilizer"
           icon={Beaker}
@@ -139,15 +151,6 @@ export default function Sidebar() {
           active={isActive("/repair")}
           collapsed={shouldCollapse}
         />
-        {user?.role === "admin" && (
-          <NavItem
-            to="/firmware"
-            icon={HardDrive}
-            label="Firmware"
-            active={isActive("/firmware")}
-            collapsed={shouldCollapse}
-          />
-        )}
         <NavItem
           to="/sales"
           icon={DollarSign}
@@ -155,6 +158,8 @@ export default function Sidebar() {
           active={isActive("/sales")}
           collapsed={shouldCollapse}
         />
+
+        <CategoryLabel label="Management" collapsed={shouldCollapse} />
         {user?.role === "admin" && (
           <NavItem
             to="/staff"
@@ -178,14 +183,25 @@ export default function Sidebar() {
           active={isActive("/announcements")}
           collapsed={shouldCollapse}
         />
+
         {user?.role === "admin" && (
-          <NavItem
-            to="/archives"
-            icon={Archive}
-            label="Archives"
-            active={isActive("/archives")}
-            collapsed={shouldCollapse}
-          />
+          <>
+            <CategoryLabel label="System" collapsed={shouldCollapse} />
+            <NavItem
+              to="/firmware"
+              icon={HardDrive}
+              label="Firmware"
+              active={isActive("/firmware")}
+              collapsed={shouldCollapse}
+            />
+            <NavItem
+              to="/archives"
+              icon={Archive}
+              label="Archives"
+              active={isActive("/archives")}
+              collapsed={shouldCollapse}
+            />
+          </>
         )}
       </nav>
 

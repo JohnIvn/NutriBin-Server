@@ -180,14 +180,43 @@
   }
 }
 
-/* Custom scrollbar for containers that need a subtle, branded scrollbar */
-.custom-scrollbar {
+/* Global scrollbar styling for all scrollable elements */
+* {
   /* Firefox */
   scrollbar-width: thin;
   scrollbar-color: rgba(79, 111, 82, 0.85) transparent;
 }
 
 /* Webkit browsers */
+*::-webkit-scrollbar {
+  width: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(79, 111, 82, 0.85); /* #4F6F52 */
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(79, 111, 82, 1);
+}
+
+/* Dark mode tweaks */
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(79, 111, 82, 0.65);
+}
+.dark * {
+  scrollbar-color: rgba(79, 111, 82, 0.65) transparent;
+}
+
+/* Keep custom-scrollbar class for backwards compatibility */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79, 111, 82, 0.85) transparent;
+}
 .custom-scrollbar::-webkit-scrollbar {
   width: 10px;
 }
@@ -195,7 +224,7 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(79, 111, 82, 0.85); /* #4F6F52 */
+  background-color: rgba(79, 111, 82, 0.85);
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -203,8 +232,6 @@
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background-color: rgba(79, 111, 82, 1);
 }
-
-/* Dark mode tweaks */
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(79, 111, 82, 0.65);
 }

@@ -35,14 +35,23 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <nav className="hidden md:flex items-center gap-8 flex-1 justify-end pr-12">
             {navLinksLeft.map((link) => (
-              <NavLink key={link.name} href={link.href} scrolled={isScrolled}>
+              <NavLink
+                key={link.name}
+                href={link.href}
+                scrolled={isScrolled}
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
                 {link.name}
               </NavLink>
             ))}
           </nav>
 
           <div className="flex-shrink-0 relative z-10">
-            <Link to="/" className="group block text-center">
+            <Link
+              to="/"
+              className="group block text-center"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
               <h1
                 className={`text-2xl font-black tracking-tighter px-3 py-1 rounded-lg group-hover:transition-all duration-300 ${isScrolled ? "border-2 border-[#3A4D39] group-hover:bg-[#3A4D39] group-hover:text-[#ECE3CE]" : "border-2 border-[#ECE3CE] group-hover:bg-[#ECE3CE] group-hover:text-[#3A4D39]"}`}
               >
@@ -57,6 +66,9 @@ export default function Header() {
                 <Link
                   key={link.name}
                   to={link.href}
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
                   className={
                     isScrolled
                       ? "px-5 py-2 rounded-full bg-[#3A4D39] text-[#ECE3CE] font-bold text-sm hover:bg-[#4F6F52] hover:scale-105 transition-all duration-300 shadow-md shadow-[#3A4D39]/20"
@@ -66,7 +78,14 @@ export default function Header() {
                   {link.name}
                 </Link>
               ) : (
-                <NavLink key={link.name} href={link.href} scrolled={isScrolled}>
+                <NavLink
+                  key={link.name}
+                  href={link.href}
+                  scrolled={isScrolled}
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
+                >
                   {link.name}
                 </NavLink>
               ),
@@ -111,7 +130,10 @@ export default function Header() {
                   <Link
                     key={link.name}
                     to={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
                     className={`text-xl font-bold ${
                       link.isButton
                         ? "px-8 py-3 bg-[#3A4D39] text-[#ECE3CE] rounded-full mt-4 w-full shadow-lg"
@@ -130,12 +152,17 @@ export default function Header() {
   );
 }
 
-const NavLink = ({ href, children, scrolled }) => {
+const NavLink = ({ href, children, scrolled, onClick }) => {
   const textClass = scrolled ? "text-[#3A4D39]" : "text-[#ECE3CE]";
   const lineClass = scrolled ? "bg-[#3A4D39]" : "bg-[#ECE3CE]";
+  const handleClick = (e) => {
+    if (onClick) return onClick(e);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   return (
     <Link
       to={href}
+      onClick={handleClick}
       className={`relative group ${textClass} font-bold text-sm uppercase tracking-wider`}
     >
       {children}

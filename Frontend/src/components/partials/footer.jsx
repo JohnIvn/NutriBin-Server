@@ -6,7 +6,7 @@ export default function Footer() {
   const footerLinks = [
     { name: "About Us", path: "/about" },
     { name: "FAQs", path: "/faqs" },
-    { name: "Terms of Service", path: "/terms" },
+    { name: "Terms of Service", path: "/policies" },
     { name: "Socials", path: "/socials" },
     { name: "Studies", path: "/studies" },
   ];
@@ -16,7 +16,11 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 flex flex-col items-center">
         {/* logo */}
         <div className="mb-8">
-          <Link to="/" className="group inline-block text-center">
+          <Link
+            to="/"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="group inline-block text-center"
+          >
             <h2 className="text-3xl font-black tracking-tighter border-2 border-[#ECE3CE] px-4 py-1 rounded-lg group-hover:bg-[#ECE3CE] group-hover:text-[#3A4D39] transition-all duration-300">
               NutriBin
             </h2>
@@ -29,6 +33,7 @@ export default function Footer() {
             <Link
               key={link.name}
               to={link.path}
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               className="relative group text-sm font-bold uppercase tracking-wider text-[#ECE3CE]/80 hover:text-[#ECE3CE] transition-colors duration-300"
             >
               {link.name}

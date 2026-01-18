@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Cpu,
   Wrench,
+  DollarSign,
   Users as UsersIcon,
   UserCog,
   Archive,
@@ -23,7 +24,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 
 function NavItem({ to, icon, label, active, collapsed }) {
   const Icon = icon;
@@ -87,7 +87,9 @@ export default function Sidebar() {
         if (sidebarMode === "hover") setIsHovering(false);
       }}
     >
-      <div className={`flex-shrink-0 px-4 py-4 border-b ${shouldCollapse ? "px-2" : "px-4"}`}>
+      <div
+        className={`flex-shrink-0 px-4 py-4 border-b ${shouldCollapse ? "px-2" : "px-4"}`}
+      >
         <Link
           to={user ? "/dashboard" : "/login"}
           className={`flex items-center ${
@@ -103,7 +105,9 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      <nav className={`flex-1 overflow-y-auto py-3 space-y-1 ${shouldCollapse ? "px-1" : "px-3"} custom-scrollbar`}>
+      <nav
+        className={`flex-1 overflow-y-auto py-3 space-y-1 ${shouldCollapse ? "px-1" : "px-3"} custom-scrollbar`}
+      >
         <NavItem
           to="/dashboard"
           icon={LayoutDashboard}
@@ -123,6 +127,13 @@ export default function Sidebar() {
           icon={Wrench}
           label="Repairs"
           active={isActive("/repair")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/sales"
+          icon={DollarSign}
+          label="Sales"
+          active={isActive("/sales")}
           collapsed={shouldCollapse}
         />
         {user?.role === "admin" && (

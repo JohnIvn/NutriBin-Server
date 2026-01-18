@@ -23,6 +23,7 @@ export async function createUserStaffArchiveTable(client: Client) {
       password text NOT NULL,
       date_created timestamptz DEFAULT now(),
       last_updated timestamptz DEFAULT now(),
+      archive_date timestamptz DEFAULT now(),
       status user_staff_status DEFAULT 'active'
     );
   `);

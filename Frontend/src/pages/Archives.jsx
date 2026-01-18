@@ -261,6 +261,9 @@ function Archives() {
                     STATUS
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
+                    ARCHIVED AT
+                  </TableHead>
+                  <TableHead className="font-bold text-gray-700">
                     DATE CREATED
                   </TableHead>
                 </TableRow>
@@ -269,7 +272,7 @@ function Archives() {
                 {loading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={activeTab === "staff" ? 8 : 6}
+                      colSpan={activeTab === "staff" ? 9 : 7}
                       className="h-64 text-center"
                     >
                       <div className="flex flex-col items-center gap-3">
@@ -283,7 +286,7 @@ function Archives() {
                 ) : paginatedData.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={activeTab === "staff" ? 8 : 6}
+                      colSpan={activeTab === "staff" ? 9 : 7}
                       className="h-64 text-center text-gray-400 font-medium"
                     >
                       No archived records found.
@@ -326,21 +329,24 @@ function Archives() {
                               item.status === "active"
                                 ? "bg-green-100 text-green-700"
                                 : item.status === "inactive"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-red-100 text-red-700"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
                             }`}
                           >
                             <div
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              item.status === "active"
-                                ? "bg-green-500 animate-pulse"
-                                : item.status === "cancelled"
-                                ? "bg-red-500"
-                                : "bg-orange-500"
-                            }`}
-                          />
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                item.status === "active"
+                                  ? "bg-green-500 animate-pulse"
+                                  : item.status === "cancelled"
+                                    ? "bg-red-500"
+                                    : "bg-orange-500"
+                              }`}
+                            />
                             {item.status}
                           </span>
+                        </TableCell>
+                        <TableCell className="text-gray-600">
+                          {formatDate(item.archive_date)}
                         </TableCell>
                         <TableCell className="text-gray-600">
                           {formatDate(item.date_created)}

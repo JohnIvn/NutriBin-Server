@@ -11,6 +11,7 @@ type UserArchiveRow = {
   email: string;
   date_created: string;
   last_updated: string;
+  archive_date: string;
   status: string;
 };
 
@@ -25,6 +26,7 @@ type StaffArchiveRow = {
   email: string;
   date_created: string;
   last_updated: string;
+  archive_date: string;
   status: string;
 };
 
@@ -38,9 +40,9 @@ export class ArchiveManagementController {
 
     try {
       const result = await client.query<UserArchiveRow>(
-        `SELECT customer_id, first_name, last_name, contact_number, address, email, date_created, last_updated, status
+        `SELECT customer_id, first_name, last_name, contact_number, address, email, date_created, last_updated, archive_date, status
          FROM user_customer_archive
-         ORDER BY date_created DESC`,
+         ORDER BY archive_date DESC`,
       );
 
       return {
@@ -60,9 +62,9 @@ export class ArchiveManagementController {
 
     try {
       const result = await client.query<StaffArchiveRow>(
-        `SELECT staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status
+        `SELECT staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, archive_date, status
          FROM user_staff_archive
-         ORDER BY date_created DESC`,
+         ORDER BY archive_date DESC`,
       );
 
       return {

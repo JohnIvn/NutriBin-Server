@@ -585,8 +585,8 @@ export class StaffManagementController {
       // Move staff to archive table
       await client.query(
         `INSERT INTO user_staff_archive 
-         (staff_id, first_name, last_name, birthday, age, contact_number, address, email, password, date_created, last_updated, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+         (staff_id, first_name, last_name, birthday, age, contact_number, address, email, password, date_created, last_updated, archive_date, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), $12)`,
         [
           staff.staff_id,
           staff.first_name,

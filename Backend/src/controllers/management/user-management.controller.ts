@@ -546,8 +546,8 @@ export class UserManagementController {
       // Move user to archive table
       await client.query(
         `INSERT INTO user_customer_archive 
-         (customer_id, first_name, last_name, contact_number, address, email, password, date_created, last_updated, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+         (customer_id, first_name, last_name, contact_number, address, email, password, date_created, last_updated, archive_date, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10)`,
         [
           user.customer_id,
           user.first_name,

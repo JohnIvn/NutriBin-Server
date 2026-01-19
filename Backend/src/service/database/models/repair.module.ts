@@ -15,8 +15,6 @@ export async function createRepairTable(client: Client) {
       repair_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       machine_id uuid REFERENCES machines(machine_id) ON DELETE SET NULL,
       user_id uuid REFERENCES user_customer(customer_id) ON DELETE SET NULL,
-      first_name text,
-      last_name text,
       description text,
       C1 boolean DEFAULT false,
       C2 boolean DEFAULT false,

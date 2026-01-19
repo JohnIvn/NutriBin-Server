@@ -10,10 +10,10 @@ import { DatabaseService } from '../../service/database/database.service';
 
 type MachineRow = {
   machine_id: string;
-  customer_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
+  user_id: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
 };
 
 @Controller('management/machines')
@@ -26,15 +26,15 @@ export class MachineManagementController {
 
     try {
       const result = await client.query<MachineRow>(
-        `SELECT DISTINCT 
-          uc.machine_id,
-          uc.customer_id,
+        `SELECT 
+          m.machine_id,
+          m.user_id,
           uc.first_name,
           uc.last_name,
           uc.email
-         FROM user_customer uc
-         WHERE uc.machine_id IS NOT NULL AND uc.machine_id != ''
-         ORDER BY uc.machine_id`,
+         FROM machines m
+         LEFT JOIN user_customer uc ON m.user_id = uc.customer_id
+         ORDER BY m.machine_id`,
       );
 
       return {
@@ -54,13 +54,14 @@ export class MachineManagementController {
       // Get machine owner info
       const machineResult = await client.query(
         `SELECT 
-          uc.machine_id,
-          uc.customer_id,
+          m.machine_id,
+          m.user_id,
           uc.first_name,
           uc.last_name,
           uc.email
-         FROM user_customer uc
-         WHERE uc.machine_id = $1
+         FROM machines m
+         LEFT JOIN user_customer uc ON m.user_id = uc.customer_id
+         WHERE m.machine_id = $1
          LIMIT 1`,
         [machineId],
       );
@@ -71,10 +72,10 @@ export class MachineManagementController {
 
       const machineInfo = machineResult.rows[0] as {
         machine_id: string;
-        customer_id: string;
-        first_name: string;
-        last_name: string;
-        email: string;
+        user_id: string | null;
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
       };
 
       // Get fertilizer analytics (NPK data)
@@ -124,10 +125,10 @@ export class MachineManagementController {
           servo_motor,
           date_created
          FROM module_analytics
-         WHERE user_id = $1
-         ORDER BY date_created DESC
-         LIMIT 10`,
-        [machineInfo.customer_id],
+        WHERE user_id = $1
+        ORDER BY date_created DESC
+        LIMIT 10`,
+        [machineInfo.user_id],
       );
 
       // Calculate error rate from module analytics

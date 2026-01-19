@@ -80,9 +80,10 @@ export class RepairManagementController {
 
     try {
       const result = await client.query<RepairRow>(
-        `SELECT repair_id, user_id, machine_id, repair_status, date_created, first_name, last_name, description
-         FROM repair
-         ORDER BY date_created DESC`,
+        `SELECT r.repair_id, r.user_id, r.machine_id, r.repair_status, r.date_created, uc.first_name, uc.last_name, r.description
+         FROM repair r
+         LEFT JOIN user_customer uc ON r.user_id = uc.customer_id
+         ORDER BY r.date_created DESC`,
       );
 
       return {
@@ -100,9 +101,12 @@ export class RepairManagementController {
 
     try {
       const result = await client.query<RepairRow>(
-        `SELECT repair_id, user_id, machine_id, repair_status, date_created, first_name, last_name, description, ${repairComponentColumns.join(', ')}
-         FROM repair
-         WHERE repair_id = $1`,
+        `SELECT r.repair_id, r.user_id, r.machine_id, r.repair_status, r.date_created, uc.first_name, uc.last_name, r.description, ${repairComponentColumns.join(
+          ', ',
+        )}
+         FROM repair r
+         LEFT JOIN user_customer uc ON r.user_id = uc.customer_id
+         WHERE r.repair_id = $1`,
         [id],
       );
 

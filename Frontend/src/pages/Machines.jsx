@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   MoreHorizontalIcon,
   Search,
-  CheckCircle2,
+  Clock,
   Wrench,
   XCircle,
 } from "lucide-react";
@@ -78,12 +78,12 @@ function Machines() {
       let endpoint = "";
       let statusValue = "";
 
-      if (confirmInformation.mode === "Resolve") {
+      if (confirmInformation.mode === "Postpone") {
         endpoint = `/management/repair/${selectedRepair.repair_id}/status`;
-        statusValue = "active";
+        statusValue = "postponed";
       } else if (confirmInformation.mode === "Accept") {
         endpoint = `/management/repair/${selectedRepair.repair_id}/status`;
-        statusValue = "active";
+        statusValue = "accepted";
       } else if (confirmInformation.mode === "Reject") {
         endpoint = `/management/repair/${selectedRepair.repair_id}/status`;
         statusValue = "cancelled";
@@ -98,8 +98,13 @@ function Machines() {
         });
 
         if (response.data.ok) {
+          const pastTense = {
+            Accept: "accepted",
+            Postpone: "postponed",
+            Reject: "rejected",
+          };
           toast.success(
-            `Repair ${confirmInformation.mode.toLowerCase()}ed successfully`
+            `Repair ${pastTense[confirmInformation.mode] || "updated"} successfully`,
           );
           fetchRepairs();
         }
@@ -168,7 +173,7 @@ function Machines() {
 
   const paginatedRepairs = filteredRepairs.slice(
     (currentPage - 1) * entriesCount,
-    currentPage * entriesCount
+    currentPage * entriesCount,
   );
   const totalPages = Math.ceil(filteredRepairs.length / entriesCount);
 
@@ -348,8 +353,8 @@ function Machines() {
                             repair.repair_status === "active"
                               ? "bg-green-50 text-green-700 border border-green-100"
                               : repair.repair_status === "cancelled"
-                              ? "bg-red-50 text-red-700 border border-red-100"
-                              : "bg-orange-50 text-orange-700 border border-orange-100"
+                                ? "bg-red-50 text-red-700 border border-red-100"
+                                : "bg-orange-50 text-orange-700 border border-orange-100"
                           }`}
                         >
                           <div
@@ -357,8 +362,8 @@ function Machines() {
                               repair.repair_status === "active"
                                 ? "bg-green-500 animate-pulse"
                                 : repair.repair_status === "cancelled"
-                                ? "bg-red-500"
-                                : "bg-orange-500"
+                                  ? "bg-red-500"
+                                  : "bg-orange-500"
                             }`}
                           />
                           {repair.repair_status}
@@ -371,7 +376,8 @@ function Machines() {
                         className="text-right pr-6"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {repair.repair_status === "cancelled" ? (
+                        {repair.repair_status === "cancelled" ||
+                        repair.repair_status === "accepted" ? (
                           <span className="text-xs text-gray-400 italic">
                             No actions
                           </span>
@@ -397,16 +403,16 @@ function Machines() {
                                 <DropdownMenuItem
                                   onClick={() =>
                                     displayConfirm(
-                                      "Resolve",
-                                      "Resolve Report",
-                                      "Mark this repair request as resolved.",
-                                      repair
+                                      "Postpone",
+                                      "Postpone Report",
+                                      "Postpone this repair request to be handled later.",
+                                      repair,
                                     )
                                   }
-                                  className="group cursor-pointer focus:bg-green-600 focus:text-white font-medium rounded-md py-2 transition-colors mb-1"
+                                  className="group cursor-pointer focus:bg-orange-600 focus:text-white font-medium rounded-md py-2 transition-colors mb-1"
                                 >
-                                  <CheckCircle2 className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
-                                  Resolve
+                                  <Clock className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
+                                  Postpone
                                 </DropdownMenuItem>
 
                                 <DropdownMenuItem
@@ -415,7 +421,7 @@ function Machines() {
                                       "Accept",
                                       "Accepting Report",
                                       "Accept this repair request and begin work.",
-                                      repair
+                                      repair,
                                     )
                                   }
                                   className="group cursor-pointer focus:bg-[#4F6F52] focus:text-white font-medium rounded-md py-2 transition-colors mb-1"
@@ -430,7 +436,7 @@ function Machines() {
                                       "Reject",
                                       "Rejecting Report",
                                       "Reject this repair request.",
-                                      repair
+                                      repair,
                                     )
                                   }
                                   className="group cursor-pointer focus:bg-red-600 focus:text-white font-medium rounded-md py-2 transition-colors"

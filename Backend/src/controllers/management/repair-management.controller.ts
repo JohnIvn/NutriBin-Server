@@ -201,7 +201,7 @@ export class RepairManagementController {
     try {
       const { status } = statusData;
 
-      if (!['active', 'cancelled', 'postponed'].includes(status)) {
+      if (!['active', 'accepted', 'cancelled', 'postponed'].includes(status)) {
         throw new BadRequestException('Invalid status value');
       }
 

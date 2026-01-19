@@ -4,7 +4,7 @@ export async function createRepairTable(client: Client) {
   await client.query(`
     DO $$
     BEGIN
-      CREATE TYPE repair_status AS ENUM ('active', 'cancelled', 'postponed');
+      CREATE TYPE repair_status AS ENUM ('active', 'accepted', 'cancelled', 'postponed');
     EXCEPTION
       WHEN duplicate_object THEN NULL;
     END;

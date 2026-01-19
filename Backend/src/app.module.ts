@@ -8,6 +8,7 @@ import { ArchiveManagementController } from './controllers/management/archive-ma
 import { MachineManagementController } from './controllers/management/machine-management.controller';
 import { SettingsController } from './controllers/settings/settings.controller';
 import { AuthenticationController } from './controllers/settings/authentication.controller';
+import { AnnouncementsController } from './controllers/announcements.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
@@ -26,6 +27,7 @@ import { NodemailerService } from './service/email/nodemailer.service';
     MachineManagementController,
     SettingsController,
     AuthenticationController,
+    AnnouncementsController,
   ],
   providers: [AppService, DatabaseService, StaffAuthService, NodemailerService],
 })

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Megaphone,
   Plus,
@@ -35,38 +35,47 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useUser } from "@/contexts/UserContext";
+import Requests from "@/utils/Requests";
+import ConfirmBox from "@/components/partials/confirmBox";
 
 export default function Announcements() {
   const { user } = useUser();
-  const [announcements, setAnnouncements] = useState([
-    {
-      id: 1,
-      title: "Firmware v1.2.3 Released",
-      date: "2026-01-18",
-      body: "New firmware available for staged rollout. This update includes performance improvements, bug fixes, and enhanced security features.",
-      priority: "high",
-      notified: ["website", "app"],
-      author: "System Admin",
-    },
-    {
-      id: 2,
-      title: "Maintenance: Mixer #02",
-      date: "2026-01-19",
-      body: "Scheduled maintenance at 10:00 — brief downtime expected. Please plan accordingly.",
-      priority: "medium",
-      notified: ["website"],
-      author: "Operations Team",
-    },
-    {
-      id: 3,
-      title: "Holiday Hours",
-      date: "2026-02-01",
-      body: "Office closed for public holiday. Emergency support will be available via email.",
-      priority: "low",
-      notified: ["website", "app"],
-      author: "HR Department",
-    },
-  ]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchAnnouncements() {
+      try {
+        const res = await Requests({ url: "/announcements" });
+        const data = res?.data;
+        if (data?.ok && Array.isArray(data.announcements)) {
+          const mapped = data.announcements.map((a) => ({
+            id: a.announcement_id,
+            title: a.title,
+            date: (a.date_published || a.date_created || "").split("T")[0],
+            body: a.body,
+            priority: a.priority || "medium",
+            notified: a.notified || [],
+            author: a.author || "System",
+          }));
+
+          if (mounted) setAnnouncements(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load announcements", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchAnnouncements();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -74,6 +83,13 @@ export default function Announcements() {
   const [notifyWebsite, setNotifyWebsite] = useState(false);
   const [notifyApp, setNotifyApp] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [confirm, setConfirm] = useState({
+    show: false,
+    id: null,
+    title: "",
+    loading: false,
+  });
 
   const handleCreate = () => {
     if (!title || !body) return toast.error("Title and body are required");
@@ -82,39 +98,106 @@ export default function Announcements() {
     if (notifyWebsite) notified.push("website");
     if (notifyApp) notified.push("app");
 
-    const newAnnouncement = {
-      id: Date.now(),
-      title,
-      date: new Date().toISOString().split("T")[0],
-      body,
+    const payload = {
+      title: title.trim(),
+      body: body.trim(),
       priority,
       notified,
+      date_published: new Date().toISOString().split("T")[0],
       author: `${user.first_name} ${user.last_name}`,
     };
-    setAnnouncements((s) => [newAnnouncement, ...s]);
-    toast.success("Announcement created successfully");
 
-    // Simulate notifications
-    if (notifyWebsite && notifyApp) {
-      toast.success("Notified: website + application");
-    } else if (notifyWebsite) {
-      toast.success("Notified website users");
-    } else if (notifyApp) {
-      toast.success("Notified app users");
-    }
+    (async () => {
+      try {
+        let res;
+        if (editId) {
+          res = await Requests({
+            url: `/announcements/${editId}`,
+            method: "PATCH",
+            data: payload,
+          });
+        } else {
+          res = await Requests({
+            url: "/announcements",
+            method: "POST",
+            data: payload,
+          });
+        }
 
-    // Reset form
-    setTitle("");
-    setBody("");
-    setPriority("medium");
-    setNotifyWebsite(false);
-    setNotifyApp(false);
-    setShowCreateForm(false);
+        const d = res?.data;
+        if (d?.ok) {
+          const a = editId ? d.announcement : d.announcement;
+          const mapped = {
+            id: a.announcement_id,
+            title: a.title,
+            date: (a.date_published || a.date_created || "").split("T")[0],
+            body: a.body,
+            priority: a.priority || "medium",
+            notified: a.notified || [],
+            author: a.author || `${user.first_name} ${user.last_name}`,
+          };
+
+          if (editId) {
+            setAnnouncements((s) =>
+              s.map((it) => (it.id === editId ? mapped : it)),
+            );
+            toast.success("Announcement updated");
+          } else {
+            setAnnouncements((s) => [mapped, ...s]);
+            toast.success("Announcement created successfully");
+          }
+
+          if (notifyWebsite && notifyApp) {
+            toast.success("Notified: website + application");
+          } else if (notifyWebsite) {
+            toast.success("Notified website users");
+          } else if (notifyApp) {
+            toast.success("Notified app users");
+          }
+
+          // Reset form
+          setTitle("");
+          setBody("");
+          setPriority("medium");
+          setNotifyWebsite(false);
+          setNotifyApp(false);
+          setShowCreateForm(false);
+          setEditId(null);
+        } else {
+          toast.error(
+            editId
+              ? "Failed to update announcement"
+              : "Failed to create announcement",
+          );
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          editId
+            ? "Failed to update announcement"
+            : "Failed to create announcement",
+        );
+      }
+    })();
   };
 
-  const handleDelete = (id) => {
-    setAnnouncements((s) => s.filter((a) => a.id !== id));
-    toast.success("Announcement deleted");
+  const handleDelete = (id, title) => {
+    setConfirm({ show: true, id, title, loading: false });
+  };
+
+  const performDelete = async () => {
+    if (!confirm.id) return;
+    setConfirm((c) => ({ ...c, loading: true }));
+    try {
+      await Requests({ url: `/announcements/${confirm.id}`, method: "DELETE" });
+      setAnnouncements((s) => s.filter((a) => a.id !== confirm.id));
+      toast.success("Announcement deleted");
+      setConfirm({ show: false, id: null, title: "", loading: false });
+    } catch (err) {
+      console.error("Failed to delete announcement", err);
+      toast.error("Failed to delete announcement");
+      setConfirm((c) => ({ ...c, loading: false }));
+    }
   };
 
   const getPriorityColor = (priority) => {
@@ -152,7 +235,10 @@ export default function Announcements() {
           {user?.role === "admin" && (
             <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-[#4F6F52] to-[#3A4D39] hover:from-[#3A4D39] hover:to-[#2D3A2E] text-white shadow-md">
+                <Button
+                  onClick={() => setEditId(null)}
+                  className="bg-gradient-to-r from-[#4F6F52] to-[#3A4D39] hover:from-[#3A4D39] hover:to-[#2D3A2E] text-white shadow-md"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   New Announcement
                 </Button>
@@ -166,7 +252,7 @@ export default function Announcements() {
                   <DialogHeader className="relative z-10">
                     <DialogTitle className="text-2xl font-bold flex items-center gap-2">
                       <Bell className="h-6 w-6" />
-                      New Announcement
+                      {editId ? "Edit Announcement" : "New Announcement"}
                     </DialogTitle>
                     <div className="text-orange-100/90">
                       Publish messages and notify users across platforms
@@ -297,7 +383,7 @@ export default function Announcements() {
                         className="w-full h-12 bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-bold text-lg cursor-pointer transition-all active:scale-95 shadow-md"
                       >
                         <Bell className="h-5 w-5 mr-2" />
-                        Publish Announcement
+                        {editId ? "Save Changes" : "Publish Announcement"}
                       </Button>
 
                       <Button
@@ -309,6 +395,7 @@ export default function Announcements() {
                           setNotifyWebsite(false);
                           setNotifyApp(false);
                           setShowCreateForm(false);
+                          setEditId(null);
                         }}
                         variant="outline"
                         className="w-full h-12 text-white bg-[#FF3838] hover:bg-[#DC0000] hover:text-[white] transition-all duration-200 cursor-pointer font-medium"
@@ -380,9 +467,16 @@ export default function Announcements() {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 hover:bg-[#4F6F52]/10 hover:text-[#4F6F52]"
-                            onClick={() =>
-                              toast.info("Edit feature coming soon")
-                            }
+                            onClick={() => {
+                              // populate form for editing
+                              setTitle(a.title || "");
+                              setBody(a.body || "");
+                              setPriority(a.priority || "medium");
+                              setNotifyWebsite(a.notified?.includes("website"));
+                              setNotifyApp(a.notified?.includes("app"));
+                              setEditId(a.id);
+                              setShowCreateForm(true);
+                            }}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -390,7 +484,7 @@ export default function Announcements() {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
-                            onClick={() => handleDelete(a.id)}
+                            onClick={() => handleDelete(a.id, a.title)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -446,6 +540,18 @@ export default function Announcements() {
             )}
           </div>
         </div>
+        {confirm.show && (
+          <ConfirmBox
+            mode="reject"
+            title={`Delete announcement`}
+            description={`Are you sure you want to delete: "${confirm.title}"? This action can be undone by recreating the announcement.`}
+            confirm={performDelete}
+            cancel={() =>
+              setConfirm({ show: false, id: null, title: "", loading: false })
+            }
+            loading={confirm.loading}
+          />
+        )}
       </section>
     </div>
   );

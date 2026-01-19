@@ -13,6 +13,7 @@ import { createMachinesTable } from './models/machines.model';
 import { createModuleAnalyticsTable } from './models/module-analytics.model';
 import { createRepairTable } from './models/repair.module';
 import { createAnnouncementsTable } from './models/announcements.model';
+import { createSalesTable } from './models/sales.model';
 import { createUserStaffArchiveTable } from './models/user-staff-archive.model';
 import { createUserCustomerArchiveTable } from './models/user-customer-archive.model';
 import { createAuthenticationTable } from './models/authentication';
@@ -61,6 +62,7 @@ export class DatabaseService implements OnModuleInit {
     await createMachinesTable(this.client);
     await createModuleAnalyticsTable(this.client);
     await createAnnouncementsTable(this.client);
+    await createSalesTable(this.client);
     await createRepairTable(this.client);
     await createUserStaffArchiveTable(this.client);
     await createUserCustomerArchiveTable(this.client);

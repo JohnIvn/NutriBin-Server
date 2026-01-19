@@ -29,38 +29,160 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DollarSign, TrendingUp, Package } from "lucide-react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import Requests from "@/utils/Requests";
 
 function Sales() {
-  const salesData = [
-    { date: "2026-01-01", amount: 1200, region: "North", product: "NutriBin" },
-    { date: "2026-01-02", amount: 1850, region: "South", product: "NutriBin" },
-    { date: "2026-01-03", amount: 900, region: "East", product: "NutriBin" },
-    { date: "2026-01-04", amount: 2400, region: "West", product: "NutriBin" },
-    { date: "2026-01-05", amount: 1600, region: "North", product: "NutriBin" },
-  ];
+  const [salesData, setSalesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchSales() {
+      try {
+        const res = await Requests({ url: "/sales" });
+        const d = res?.data;
+        if (d?.ok && Array.isArray(d.sales)) {
+          const mapped = d.sales.map((s) => ({
+            date: s.sale_date || s.date_created || null,
+            amount: Number(s.amount) || 0,
+            region: s.region || "Unknown",
+            product: s.product || "Unknown",
+            quantity: s.quantity || 1,
+            customer_id: s.customer_id || "",
+            id: s.sale_id,
+          }));
+
+          if (mounted) setSalesData(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load sales", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchSales();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const barData = salesData.map((d) => ({
-    date: new Date(d.date).toLocaleDateString(),
+    date: d.date ? new Date(d.date).toLocaleDateString() : "—",
     amount: d.amount,
   }));
 
-  const totalSales = salesData.reduce((s, r) => s + r.amount, 0);
-  const avgSales = Math.round(
-    totalSales / new Set(salesData.map((s) => s.date)).size,
-  );
+  const totalSales = salesData.reduce((s, r) => s + (r.amount || 0), 0);
+  const avgSales = salesData.length
+    ? Math.round(totalSales / new Set(salesData.map((s) => s.date)).size)
+    : 0;
 
   const regionTotals = salesData.reduce((acc, r) => {
-    acc[r.region] = (acc[r.region] || 0) + r.amount;
+    acc[r.region] = (acc[r.region] || 0) + (r.amount || 0);
     return acc;
   }, {});
 
   const productTotals = salesData.reduce((acc, r) => {
-    acc[r.product] = (acc[r.product] || 0) + r.amount;
+    acc[r.product] = (acc[r.product] || 0) + (r.amount || 0);
     return acc;
   }, {});
 
   const chartConfig = {
     amount: { label: "Sales", color: "var(--color-nitrogen)" },
+  };
+
+  // KPI period comparisons (last 30 days vs previous 30 days)
+  const DAYS = 30;
+  const daysAgo = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return null;
+    return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const currentSales = salesData.filter((s) => {
+    const da = daysAgo(s.date);
+    return da !== null && da <= DAYS;
+  });
+
+  const prevSales = salesData.filter((s) => {
+    const da = daysAgo(s.date);
+    return da !== null && da > DAYS && da <= DAYS * 2;
+  });
+
+  const sumAmount = (arr) =>
+    arr.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+  const countOrders = (arr) => arr.length;
+
+  const currentTotalAmount = sumAmount(currentSales);
+  const prevTotalAmount = sumAmount(prevSales);
+
+  const currentOrders = countOrders(currentSales);
+  const prevOrders = countOrders(prevSales);
+
+  const currentAvg = currentOrders ? currentTotalAmount / currentOrders : 0;
+  const prevAvg = prevOrders ? prevTotalAmount / prevOrders : 0;
+
+  const percentChange = (curr, prev) => {
+    if (prev === 0) return curr === 0 ? 0 : 100;
+    return ((curr - prev) / Math.abs(prev)) * 100;
+  };
+
+  const ordersChange = percentChange(currentOrders, prevOrders);
+  const avgChange = percentChange(currentAvg, prevAvg);
+  const growthChange = percentChange(currentTotalAmount, prevTotalAmount);
+
+  const handleExport = () => {
+    if (!salesData || salesData.length === 0) {
+      toast.info("No sales to export");
+      return;
+    }
+
+    const headers = [
+      "Date",
+      "Amount",
+      "Region",
+      "Product",
+      "Quantity",
+      "Customer ID",
+    ];
+    const rows = salesData.map((s) => {
+      // Preserve original values as strings to avoid JS numeric precision loss
+      const date = s.date ? String(s.date) : "";
+      const amount =
+        s.amount !== undefined && s.amount !== null ? String(s.amount) : "";
+      const region = s.region || "";
+      const product = s.product || "";
+      const quantity =
+        s.quantity !== undefined && s.quantity !== null
+          ? String(s.quantity)
+          : "";
+      const customer = s.customer_id || "";
+
+      // If any field is complex (arrays/objects), JSON-stringify it to preserve structure
+      const fields = [date, amount, region, product, quantity, customer].map(
+        (f) => {
+          if (typeof f === "object") return JSON.stringify(f);
+          return String(f);
+        },
+      );
+
+      return fields.map((f) => `"${f.replace(/"/g, '""')}"`).join(",");
+    });
+
+    const csv = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sales-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast.success("Sales exported");
   };
 
   return (
@@ -114,7 +236,10 @@ function Sales() {
 
           <div className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-3">
             <div className="text-sm font-medium text-[#6B6F68]">Export</div>
-            <button className="ml-auto bg-[#4F6F52] text-white px-3 py-1 rounded-md text-sm">
+            <button
+              onClick={handleExport}
+              className="ml-auto bg-[#4F6F52] text-white px-3 py-1 rounded-md text-sm"
+            >
               Export
             </button>
           </div>
@@ -130,8 +255,11 @@ function Sales() {
               <div className="text-4xl font-extrabold text-[#3A4D39]">
                 {salesData.length.toLocaleString()}
               </div>
-              <div className="text-sm text-green-600 font-bold flex items-center gap-1">
-                ▲ 20%
+              <div
+                className={`text-sm font-bold flex items-center gap-1 ${ordersChange >= 0 ? "text-green-600" : "text-red-600"}`}
+              >
+                {ordersChange >= 0 ? "▲" : "▼"}{" "}
+                {Math.abs(ordersChange).toFixed(1)}%
               </div>
             </div>
             <div className="text-xs text-[#6B6F68] mt-2">
@@ -145,10 +273,13 @@ function Sales() {
             </div>
             <div className="flex items-center gap-3 mt-2">
               <div className="text-4xl font-extrabold text-[#3A4D39]">
-                {salesData.length}
+                {currentOrders}
               </div>
-              <div className="text-sm text-green-600 font-bold flex items-center gap-1">
-                ▲ 15
+              <div
+                className={`text-sm font-bold flex items-center gap-1 ${ordersChange >= 0 ? "text-green-600" : "text-red-600"}`}
+              >
+                {ordersChange >= 0 ? "▲" : "▼"}{" "}
+                {Math.abs(ordersChange).toFixed(1)}%
               </div>
             </div>
             <div className="text-xs text-[#6B6F68] mt-2">
@@ -162,10 +293,12 @@ function Sales() {
             </div>
             <div className="flex items-center gap-3 mt-2">
               <div className="text-4xl font-extrabold text-[#3A4D39]">
-                ${avgSales.toLocaleString()}
+                ${Math.round(currentAvg).toLocaleString()}
               </div>
-              <div className="text-sm text-green-600 font-bold flex items-center gap-1">
-                ▲ 7.3%
+              <div
+                className={`text-sm font-bold flex items-center gap-1 ${avgChange >= 0 ? "text-green-600" : "text-red-600"}`}
+              >
+                {avgChange >= 0 ? "▲" : "▼"} {Math.abs(avgChange).toFixed(1)}%
               </div>
             </div>
             <div className="text-xs text-[#6B6F68] mt-2">
@@ -179,10 +312,13 @@ function Sales() {
             </div>
             <div className="flex items-center gap-3 mt-2">
               <div className="text-4xl font-extrabold text-[#3A4D39]">
-                8.29%
+                {growthChange.toFixed(2)}%
               </div>
-              <div className="text-sm text-green-600 font-bold flex items-center gap-1">
-                ▲ 1.3%
+              <div
+                className={`text-sm font-bold flex items-center gap-1 ${growthChange >= 0 ? "text-green-600" : "text-red-600"}`}
+              >
+                {growthChange >= 0 ? "▲" : "▼"}{" "}
+                {Math.abs(growthChange).toFixed(1)}%
               </div>
             </div>
             <div className="text-xs text-[#6B6F68] mt-2">
@@ -305,7 +441,9 @@ function Sales() {
                           className="hover:bg-[#ECE3CE]/30 transition-all"
                         >
                           <TableCell className="text-[#6B6F68] font-medium italic">
-                            {new Date(s.date).toLocaleDateString()}
+                            {s.date
+                              ? new Date(s.date).toLocaleDateString()
+                              : "—"}
                           </TableCell>
                           <TableCell className="font-mono text-[#4F6F52] font-bold">
                             ${s.amount.toLocaleString()}

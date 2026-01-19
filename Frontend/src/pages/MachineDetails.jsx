@@ -23,6 +23,8 @@ function MachineDetails() {
   const [machineDetails, setMachineDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [machineHealth, setMachineHealth] = useState(null);
+  const [selectedDiag, setSelectedDiag] = useState(null);
+  const [showDiagModal, setShowDiagModal] = useState(false);
 
   useEffect(() => {
     fetchMachineDetails();
@@ -326,11 +328,16 @@ function MachineDetails() {
 
                 {/* Machine component diagnostics */}
                 <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm mt-6">
-                  <h3 className="font-bold text-[#3A4D39] mb-8 flex items-center gap-2 text-xl">
+                  <h3 className="font-bold text-[#3A4D39] mb-6 flex items-center gap-2 text-xl">
                     <Cpu className="h-6 w-6 text-[#4F6F52]" /> Machine
                     Diagnostics
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+                  <p className="text-sm text-gray-500 mb-4">
+                    Quick status overview — click a card for details.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {[
                       ["c1", "Arduino Q"],
                       ["c2", "ESP32 Filter"],
@@ -357,23 +364,62 @@ function MachineDetails() {
                       const val = machineDetails[key];
                       // reverse logic: truthy value indicates a problem on the machine
                       const ok = !(val === true || val === "true" || val === 1);
+                      const statusColor = ok ? "green" : "red";
+
                       return (
-                        <div
+                        <button
                           key={key}
-                          className={`px-5 py-4 rounded-xl border flex items-center justify-between transition-colors ${ok ? "bg-green-50/50 border-green-100 text-green-800 hover:bg-green-50" : "bg-red-50/50 border-red-100 text-red-800 hover:bg-red-50"}`}
+                          onClick={() => {
+                            setSelectedDiag({ key, label, value: val });
+                            setShowDiagModal(true);
+                          }}
+                          className={`text-left p-4 rounded-xl border shadow-sm transition transform hover:-translate-y-0.5 focus:outline-none flex flex-col justify-between items-start gap-3 ${
+                            ok
+                              ? "bg-green-50/60 border-green-100 text-green-800"
+                              : "bg-red-50/60 border-red-100 text-red-800"
+                          }`}
                         >
-                          <span className="text-sm font-bold uppercase tracking-wide truncate max-w-[80%]">
-                            {label}
-                          </span>
-                          {ok ? (
-                            <CheckCircle className="h-6 w-6 text-green-600" />
-                          ) : (
-                            <XCircle className="h-6 w-6 text-red-500" />
-                          )}
-                        </div>
+                          <div className="w-full flex items-center justify-between">
+                            <span className="text-sm font-bold uppercase tracking-wide truncate max-w-[75%]">
+                              {label}
+                            </span>
+                            <div
+                              className={`inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full ${ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                            >
+                              {ok ? (
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              )}
+                              <span className="uppercase tracking-wider">
+                                {ok ? "OK" : "Issue"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="text-xs text-gray-600">
+                            {typeof val === "boolean" ||
+                            val === null ||
+                            val === undefined
+                              ? ok
+                                ? "Operational"
+                                : "Fault detected"
+                              : String(val)}
+                          </div>
+                        </button>
                       );
                     })}
                   </div>
+
+                  {showDiagModal && selectedDiag && (
+                    <DiagModal
+                      diag={selectedDiag}
+                      onClose={() => {
+                        setShowDiagModal(false);
+                        setSelectedDiag(null);
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -460,6 +506,49 @@ function NutrientBar({ label, value, color, textColor }) {
           className={`h-full rounded-full shadow-sm ${color}`}
           style={{ width: `${value}%` }}
         ></div>
+      </div>
+    </div>
+  );
+}
+
+function DiagModal({ diag, onClose }) {
+  if (!diag) return null;
+  const { key, label, value } = diag;
+  const ok = !(value === true || value === "true" || value === 1);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl p-6 w-[min(600px,95%)] shadow-2xl z-10">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h4 className="text-lg font-bold">{label}</h4>
+            <p className="text-xs text-gray-500 mt-1">
+              Key: <span className="font-mono">{key}</span>
+            </p>
+          </div>
+          <div
+            className={`text-sm font-bold px-3 py-1 rounded-full ${ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+          >
+            {ok ? "OK" : "Issue"}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-sm text-gray-700">Raw value:</p>
+          <pre className="mt-2 p-3 bg-gray-50 rounded text-sm text-gray-800 overflow-x-auto">
+            {String(value)}
+          </pre>
+        </div>
+
+        <div className="mt-4 flex items-center justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-md border bg-white"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );

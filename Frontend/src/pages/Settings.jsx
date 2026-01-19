@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { adminAccount } from "@/schema/adminAccount";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useUser } from "@/contexts/UserContext";
 import Requests from "@/utils/Requests";
@@ -25,13 +25,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { User, Lock, AlertTriangle } from "lucide-react";
+import { User, Lock, AlertTriangle, Camera } from "lucide-react";
 
 function Account() {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
-  const { user, logout } = useUser();
+  const { user, logout, refreshUser } = useUser();
   const navigate = useNavigate();
   const [resetOpen, setResetOpen] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
@@ -47,6 +47,11 @@ function Account() {
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
   const [mfaType, setMfaType] = useState("N/A");
   const [mfaLoading, setMfaLoading] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [currentAvatar, setCurrentAvatar] = useState("");
+  const avatarInputRef = useRef(null);
 
   const form = useForm({
     resolver: zodResolver(adminAccount),
@@ -96,6 +101,15 @@ function Account() {
           number: staff.contact_number || "",
           gender: "male",
         });
+        // Set current avatar if provided by API (try several common field names)
+        setCurrentAvatar(
+          staff.avatar ||
+            staff.profile_photo ||
+            staff.profile_image ||
+            staff.photo ||
+            user?.avatar ||
+            "",
+        );
         setEmailShown(staff.email || user?.email || "");
       }
     } catch (error) {
@@ -257,6 +271,162 @@ function Account() {
                 <p className="text-xs text-gray-500">
                   Update your personal details here.
                 </p>
+              </div>
+            </div>
+
+            {/* Avatar Upload - redesigned */}
+            <div className="py-6 border-b border-gray-100">
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <label
+                    htmlFor="avatar-input"
+                    className="block w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50 cursor-pointer hover:opacity-90"
+                  >
+                    {previewUrl ? (
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : currentAvatar ? (
+                      <img
+                        src={currentAvatar}
+                        alt="Avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        No Photo
+                      </div>
+                    )}
+                    <div className="absolute right-0 bottom-0 -mb-1 -mr-1 bg-white rounded-full p-1 shadow">
+                      <Camera className="w-4 h-4 text-gray-600" />
+                    </div>
+                  </label>
+                  <input
+                    id="avatar-input"
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setSelectedPhoto(file);
+                        setPreviewUrl(URL.createObjectURL(file));
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-sm text-gray-700 font-medium">
+                    Profile Photo
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Upload a square image for best results. JPG, PNG up to 5MB.
+                  </p>
+
+                  <div className="flex items-center gap-3 mt-3">
+                    <Button
+                      type="button"
+                      disabled={!selectedPhoto || uploadingPhoto}
+                      className="h-9 px-3 bg-[#4F6F52] text-white"
+                      onClick={async () => {
+                        if (!selectedPhoto) return;
+                        const userId = user?.staff_id || user?.admin_id;
+                        if (!userId) {
+                          toast.error("No user id");
+                          return;
+                        }
+                        try {
+                          setUploadingPhoto(true);
+                          const fd = new FormData();
+                          fd.append("photo", selectedPhoto);
+
+                          const res = await Requests({
+                            url: `/settings/${userId}/photo`,
+                            method: "POST",
+                            data: fd,
+                            credentials: true,
+                          });
+
+                          if (res.data?.ok) {
+                            toast.success("Photo uploaded");
+                            fetchProfile();
+                            try {
+                              refreshUser?.();
+                            } catch (e) {}
+                            setSelectedPhoto(null);
+                            setPreviewUrl("");
+                          } else {
+                            toast.error(res.data?.message || "Upload failed");
+                          }
+                        } catch (err) {
+                          toast.error("Failed to upload photo");
+                          console.error(err);
+                        } finally {
+                          setUploadingPhoto(false);
+                        }
+                      }}
+                    >
+                      {uploadingPhoto ? "Uploading..." : "Upload Photo"}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      className="h-9 px-3 bg-[#4F6F52] hover:bg-[#3A523D] text-white"
+                      onClick={() => avatarInputRef.current?.click()}
+                    >
+                      Choose
+                    </Button>
+
+                    {(selectedPhoto || currentAvatar) && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-9 px-3 text-red-600"
+                        onClick={async () => {
+                          const userId = user?.staff_id || user?.admin_id;
+                          if (!userId) return toast.error("No user id");
+                          try {
+                            const res = await Requests({
+                              url: `/settings/${userId}/photo`,
+                              method: "DELETE",
+                              credentials: true,
+                            });
+                            if (res.data?.ok) {
+                              toast.success("Photo removed");
+                              setCurrentAvatar("");
+                              setSelectedPhoto(null);
+                              setPreviewUrl("");
+                              fetchProfile();
+                              try {
+                                refreshUser?.();
+                              } catch (e) {}
+                            } else {
+                              toast.error(
+                                res.data?.message || "Failed to remove photo",
+                              );
+                            }
+                          } catch (err) {
+                            toast.error("Failed to remove photo");
+                            console.error(err);
+                          }
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+
+                  {selectedPhoto && (
+                    <div className="mt-2 text-xs text-gray-600">
+                      Selected: {selectedPhoto.name} (
+                      {Math.round(selectedPhoto.size / 1024)} KB)
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

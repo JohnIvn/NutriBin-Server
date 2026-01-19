@@ -268,7 +268,16 @@ export default function Sidebar() {
             }
           >
             <Avatar className="size-9 border border-gray-200">
-              <AvatarImage alt={user.first_name} />
+              <AvatarImage
+                src={
+                  user.avatar ||
+                  user.profile_photo ||
+                  user.profile_image ||
+                  user.photo ||
+                  ""
+                }
+                alt={user.first_name}
+              />
               <AvatarFallback className="bg-[#4F6F52]/10 text-[#4F6F52] font-bold text-xs">
                 {getInitials(user.first_name, user.last_name)}
               </AvatarFallback>

@@ -1,5 +1,6 @@
 import Settings from "@/pages/Settings";
 import Analytics from "@/pages/Analytics";
+import Account from "@/pages/Account";
 import Sales from "@/pages/Sales";
 import Fertilizer from "@/pages/Fertilizer";
 import Firmware from "@/pages/Firmware";
@@ -71,6 +72,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <ProtectedRoute>
+            <Account />
           </ProtectedRoute>
         }
       />

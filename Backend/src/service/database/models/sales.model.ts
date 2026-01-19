@@ -9,7 +9,7 @@ export async function createSalesTable(client: Client) {
       region text,
       product text,
       quantity integer DEFAULT 1,
-      customer_id text,
+      customer_id uuid REFERENCES user_customer(customer_id) ON DELETE SET NULL,
       date_created timestamptz DEFAULT now()
     );
   `);

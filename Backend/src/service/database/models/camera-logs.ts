@@ -13,8 +13,8 @@ export async function createCameraLogsTable(client: Client) {
   await client.query(`
     CREATE TABLE IF NOT EXISTS camera_logs (
       camera_log_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      machine_id uuid,
-      user_id text,
+      machine_id uuid REFERENCES machines(machine_id) ON DELETE SET NULL,
+      user_id uuid REFERENCES user_customer(customer_id) ON DELETE SET NULL,
       details text,
       classification classification_type DEFAULT 'N/A',
       date_created timestamptz DEFAULT now()

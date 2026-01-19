@@ -416,7 +416,24 @@ export default function Announcements() {
             Recent Announcements
           </h2>
           <div className="grid grid-cols-1 gap-4">
-            {announcements.length === 0 ? (
+            {loading ? (
+              // loading skeletons
+              [1, 2, 3].map((i) => (
+                <Card
+                  key={i}
+                  className="rounded-2xl border shadow-sm overflow-hidden"
+                >
+                  <CardContent className="py-6">
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-6 bg-gray-200 rounded w-3/4" />
+                      <div className="h-4 bg-gray-200 rounded w-1/3" />
+                      <div className="h-3 bg-gray-200 rounded w-full" />
+                      <div className="h-3 bg-gray-200 rounded w-5/6" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : announcements.length === 0 ? (
               <Card className="rounded-2xl border-dashed border-2 border-gray-300">
                 <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                   <Megaphone className="h-16 w-16 text-gray-300 mb-4" />

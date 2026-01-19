@@ -246,86 +246,100 @@ function Sales() {
         </div>
 
         {/* KPI cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-          <Card className="bg-white rounded-xl shadow-md p-5">
-            <div className="text-sm font-bold text-[#6B6F68] uppercase">
-              Total Devices
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <div className="text-4xl font-extrabold text-[#3A4D39]">
-                {salesData.length.toLocaleString()}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="bg-white rounded-xl shadow-sm p-5">
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-1/3" />
+                  <div className="h-10 bg-gray-200 rounded w-1/2" />
+                  <div className="h-3 bg-gray-200 rounded w-2/3" />
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <Card className="bg-white rounded-xl shadow-md p-5">
+              <div className="text-sm font-bold text-[#6B6F68] uppercase">
+                Total Devices
               </div>
-              <div
-                className={`text-sm font-bold flex items-center gap-1 ${ordersChange >= 0 ? "text-green-600" : "text-red-600"}`}
-              >
-                {ordersChange >= 0 ? "▲" : "▼"}{" "}
-                {Math.abs(ordersChange).toFixed(1)}%
+              <div className="flex items-center gap-3 mt-2">
+                <div className="text-4xl font-extrabold text-[#3A4D39]">
+                  {salesData.length.toLocaleString()}
+                </div>
+                <div
+                  className={`text-sm font-bold flex items-center gap-1 ${ordersChange >= 0 ? "text-green-600" : "text-red-600"}`}
+                >
+                  {ordersChange >= 0 ? "▲" : "▼"}{" "}
+                  {Math.abs(ordersChange).toFixed(1)}%
+                </div>
               </div>
-            </div>
-            <div className="text-xs text-[#6B6F68] mt-2">
-              vs previous 30 days
-            </div>
-          </Card>
+              <div className="text-xs text-[#6B6F68] mt-2">
+                vs previous 30 days
+              </div>
+            </Card>
 
-          <Card className="bg-white rounded-xl shadow-md p-5">
-            <div className="text-sm font-bold text-[#6B6F68] uppercase">
-              Orders per Month
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <div className="text-4xl font-extrabold text-[#3A4D39]">
-                {currentOrders}
+            <Card className="bg-white rounded-xl shadow-md p-5">
+              <div className="text-sm font-bold text-[#6B6F68] uppercase">
+                Orders per Month
               </div>
-              <div
-                className={`text-sm font-bold flex items-center gap-1 ${ordersChange >= 0 ? "text-green-600" : "text-red-600"}`}
-              >
-                {ordersChange >= 0 ? "▲" : "▼"}{" "}
-                {Math.abs(ordersChange).toFixed(1)}%
+              <div className="flex items-center gap-3 mt-2">
+                <div className="text-4xl font-extrabold text-[#3A4D39]">
+                  {currentOrders}
+                </div>
+                <div
+                  className={`text-sm font-bold flex items-center gap-1 ${ordersChange >= 0 ? "text-green-600" : "text-red-600"}`}
+                >
+                  {ordersChange >= 0 ? "▲" : "▼"}{" "}
+                  {Math.abs(ordersChange).toFixed(1)}%
+                </div>
               </div>
-            </div>
-            <div className="text-xs text-[#6B6F68] mt-2">
-              vs previous 30 days
-            </div>
-          </Card>
+              <div className="text-xs text-[#6B6F68] mt-2">
+                vs previous 30 days
+              </div>
+            </Card>
 
-          <Card className="bg-white rounded-xl shadow-md p-5">
-            <div className="text-sm font-bold text-[#6B6F68] uppercase">
-              Average Order
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <div className="text-4xl font-extrabold text-[#3A4D39]">
-                ${Math.round(currentAvg).toLocaleString()}
+            <Card className="bg-white rounded-xl shadow-md p-5">
+              <div className="text-sm font-bold text-[#6B6F68] uppercase">
+                Average Order
               </div>
-              <div
-                className={`text-sm font-bold flex items-center gap-1 ${avgChange >= 0 ? "text-green-600" : "text-red-600"}`}
-              >
-                {avgChange >= 0 ? "▲" : "▼"} {Math.abs(avgChange).toFixed(1)}%
+              <div className="flex items-center gap-3 mt-2">
+                <div className="text-4xl font-extrabold text-[#3A4D39]">
+                  ${Math.round(currentAvg).toLocaleString()}
+                </div>
+                <div
+                  className={`text-sm font-bold flex items-center gap-1 ${avgChange >= 0 ? "text-green-600" : "text-red-600"}`}
+                >
+                  {avgChange >= 0 ? "▲" : "▼"} {Math.abs(avgChange).toFixed(1)}%
+                </div>
               </div>
-            </div>
-            <div className="text-xs text-[#6B6F68] mt-2">
-              vs previous 30 days
-            </div>
-          </Card>
+              <div className="text-xs text-[#6B6F68] mt-2">
+                vs previous 30 days
+              </div>
+            </Card>
 
-          <Card className="bg-white rounded-xl shadow-md p-5">
-            <div className="text-sm font-bold text-[#6B6F68] uppercase">
-              Growth Rate
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <div className="text-4xl font-extrabold text-[#3A4D39]">
-                {growthChange.toFixed(2)}%
+            <Card className="bg-white rounded-xl shadow-md p-5">
+              <div className="text-sm font-bold text-[#6B6F68] uppercase">
+                Growth Rate
               </div>
-              <div
-                className={`text-sm font-bold flex items-center gap-1 ${growthChange >= 0 ? "text-green-600" : "text-red-600"}`}
-              >
-                {growthChange >= 0 ? "▲" : "▼"}{" "}
-                {Math.abs(growthChange).toFixed(1)}%
+              <div className="flex items-center gap-3 mt-2">
+                <div className="text-4xl font-extrabold text-[#3A4D39]">
+                  {growthChange.toFixed(2)}%
+                </div>
+                <div
+                  className={`text-sm font-bold flex items-center gap-1 ${growthChange >= 0 ? "text-green-600" : "text-red-600"}`}
+                >
+                  {growthChange >= 0 ? "▲" : "▼"}{" "}
+                  {Math.abs(growthChange).toFixed(1)}%
+                </div>
               </div>
-            </div>
-            <div className="text-xs text-[#6B6F68] mt-2">
-              vs previous 30 days
-            </div>
-          </Card>
-        </div>
+              <div className="text-xs text-[#6B6F68] mt-2">
+                vs previous 30 days
+              </div>
+            </Card>
+          </div>
+        )}
 
         {/* main content */}
         <div className="flex flex-col lg:flex-row gap-6 w-full mt-2">

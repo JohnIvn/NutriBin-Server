@@ -15,7 +15,7 @@ import { SalesController } from './controllers/sales.controller';
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
 import { StaffAuthService } from './service/auth/staff-auth.service';
-import { NodemailerService } from './service/email/nodemailer.service';
+import { BrevoService } from './service/email/brevo.service';
 
 @Module({
   imports: [],
@@ -33,6 +33,6 @@ import { NodemailerService } from './service/email/nodemailer.service';
     AnnouncementsController,
     SalesController,
   ],
-  providers: [AppService, DatabaseService, StaffAuthService, NodemailerService],
+  providers: [AppService, DatabaseService, StaffAuthService, BrevoService],
 })
 export class AppModule {}

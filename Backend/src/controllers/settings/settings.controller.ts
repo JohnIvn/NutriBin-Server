@@ -17,7 +17,7 @@ import { memoryStorage } from 'multer';
 import { randomInt } from 'crypto';
 
 import { DatabaseService } from '../../service/database/database.service';
-import { NodemailerService } from '../../service/email/nodemailer.service';
+import { BrevoService } from '../../service/email/brevo.service';
 import supabaseService from '../../service/storage/supabase.service';
 
 type StaffPublicRow = {
@@ -54,7 +54,7 @@ function mapStaff(row: StaffPublicRow) {
 export class SettingsController {
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly mailer: NodemailerService,
+    private readonly mailer: BrevoService,
   ) {}
 
   private async resolveAvatarUrl(userId: string) {

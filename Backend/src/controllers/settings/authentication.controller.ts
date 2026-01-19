@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService } from '../../service/database/database.service';
-import { NodemailerService } from '../../service/email/nodemailer.service';
+import { BrevoService } from '../../service/email/brevo.service';
 
 @Controller('authentication')
 export class AuthenticationController {
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly mailer: NodemailerService,
+    private readonly mailer: BrevoService,
   ) {}
 
   @Get(':userId/mfa')

@@ -16,7 +16,7 @@ import { randomInt } from 'crypto';
 import * as bcrypt from 'bcryptjs';
 
 import { DatabaseService } from '../../service/database/database.service';
-import { NodemailerService } from '../../service/email/nodemailer.service';
+import { BrevoService } from '../../service/email/brevo.service';
 
 type UserPublicRow = {
   customer_id: string;
@@ -34,7 +34,7 @@ type UserPublicRow = {
 export class UserManagementController {
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly mailer: NodemailerService,
+    private readonly mailer: BrevoService,
   ) {}
 
   private async ensureVerificationTable() {

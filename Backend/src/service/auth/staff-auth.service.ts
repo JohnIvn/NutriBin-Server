@@ -9,7 +9,7 @@ import * as bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 
 import { DatabaseService } from '../database/database.service';
-import { NodemailerService } from '../email/nodemailer.service';
+import { BrevoService } from '../email/brevo.service';
 import type {
   StaffSignInDto,
   StaffSignUpDto,
@@ -41,7 +41,7 @@ export class StaffAuthService {
 
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly mailer: NodemailerService,
+    private readonly mailer: BrevoService,
   ) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     if (!clientId) {

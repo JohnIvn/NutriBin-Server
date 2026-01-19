@@ -101,11 +101,12 @@ export class RepairManagementController {
 
     try {
       const result = await client.query<RepairRow>(
-        `SELECT r.repair_id, r.user_id, r.machine_id, r.repair_status, r.date_created, uc.first_name, uc.last_name, r.description, ${repairComponentColumns.join(
-          ', ',
-        )}
+        `SELECT r.repair_id, r.user_id, r.machine_id, r.repair_status, r.date_created, uc.first_name, uc.last_name, r.description, ${repairComponentColumns
+          .map((c) => `m.${c}`)
+          .join(', ')}
          FROM repair r
          LEFT JOIN user_customer uc ON r.user_id = uc.customer_id
+         LEFT JOIN machines m ON r.machine_id = m.machine_id
          WHERE r.repair_id = $1`,
         [id],
       );

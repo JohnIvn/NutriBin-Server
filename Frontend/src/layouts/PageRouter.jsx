@@ -8,6 +8,7 @@ import { VerifyMFA } from "@/pages/VerifyMFA";
 import Machines from "@/pages/Machines";
 import MachinesGrid from "@/pages/MachinesGrid";
 import Modules from "@/pages/Modules";
+import MachineDetails from "@/pages/MachineDetails";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Staff from "@/pages/Staff";
 import Users from "@/pages/Users";
@@ -102,6 +103,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <MachinesGrid />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/machine/:machineId"
+        element={
+          <ProtectedRoute>
+            <MachineDetails />
           </ProtectedRoute>
         }
       />

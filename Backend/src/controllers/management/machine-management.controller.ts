@@ -58,7 +58,10 @@ export class MachineManagementController {
           m.user_id,
           uc.first_name,
           uc.last_name,
-          uc.email
+          uc.email,
+          m.c1, m.c2, m.c3, m.c4, m.c5,
+          m.s1, m.s2, m.s3, m.s4, m.s5, m.s6, m.s7, m.s8, m.s9,
+          m.m1, m.m2, m.m3, m.m4, m.m5, m.m6, m.m7
          FROM machines m
          LEFT JOIN user_customer uc ON m.user_id = uc.customer_id
          WHERE m.machine_id = $1

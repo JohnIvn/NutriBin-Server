@@ -22,6 +22,7 @@ function MachineDetails() {
   const navigate = useNavigate();
   const [machineDetails, setMachineDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [machineHealth, setMachineHealth] = useState(null);
 
   useEffect(() => {
     fetchMachineDetails();
@@ -37,11 +38,27 @@ function MachineDetails() {
       });
       if (response.data.ok) {
         setMachineDetails(response.data.machine);
+        fetchMachineHealth(response.data.machine.machine_id);
       }
     } catch (err) {
       toast.error("Failed to load machine details");
     } finally {
       setDetailsLoading(false);
+    }
+  };
+
+  const fetchMachineHealth = async (id) => {
+    try {
+      const res = await Requests({
+        url: `/management/machine-health/${id}`,
+        method: "GET",
+        credentials: true,
+      });
+      if (res.data?.ok && res.data.health) {
+        setMachineHealth(res.data.health);
+      }
+    } catch (err) {
+      // silently ignore health errors (keep existing display)
     }
   };
 
@@ -371,7 +388,7 @@ function MachineDetails() {
 
               <div className="flex flex-col items-center justify-center py-2 relative z-10">
                 <div className="text-6xl font-black text-[#3A4D39] tracking-tighter">
-                  {machineDetails.error_rate}
+                  {machineHealth?.error_rate ?? machineDetails.error_rate}
                   <span className="text-3xl text-gray-400">%</span>
                 </div>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.25em] mt-2">
@@ -381,12 +398,16 @@ function MachineDetails() {
 
               <div
                 className={`flex items-center justify-center gap-2 text-sm py-2.5 px-4 rounded-full font-bold border transition-colors relative z-10 ${
-                  Number(machineDetails.error_rate) > 0
+                  Number(
+                    machineHealth?.error_rate ?? machineDetails.error_rate,
+                  ) > 0
                     ? "bg-red-50 text-red-600 border-red-100"
                     : "bg-green-50 text-green-700 border-green-100"
                 }`}
               >
-                {Number(machineDetails.error_rate) > 0 ? (
+                {Number(
+                  machineHealth?.error_rate ?? machineDetails.error_rate,
+                ) > 0 ? (
                   <>
                     <AlertTriangle className="h-4 w-4" /> Attention Needed
                   </>

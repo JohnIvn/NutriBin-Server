@@ -6,6 +6,7 @@ import { UserManagementController } from './controllers/management/user-manageme
 import { RepairManagementController } from './controllers/management/repair-management.controller';
 import { ArchiveManagementController } from './controllers/management/archive-management.controller';
 import { MachineManagementController } from './controllers/management/machine-management.controller';
+import { MachineHealthController } from './controllers/management/machine-health.controller';
 import { SettingsController } from './controllers/settings/settings.controller';
 import { AuthenticationController } from './controllers/settings/authentication.controller';
 import { AnnouncementsController } from './controllers/announcements.controller';
@@ -26,6 +27,7 @@ import { NodemailerService } from './service/email/nodemailer.service';
     RepairManagementController,
     ArchiveManagementController,
     MachineManagementController,
+    MachineHealthController,
     SettingsController,
     AuthenticationController,
     AnnouncementsController,

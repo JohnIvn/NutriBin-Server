@@ -403,19 +403,17 @@ export class SettingsController {
 
       const staff = userResult.rows[0];
 
-      await this.ensureResetTable();
-
-      // Clear previous codes for this user
+      // Clear previous codes for this user and purpose
       await client.query(
-        'DELETE FROM staff_password_resets WHERE staff_id = $1',
+        `DELETE FROM codes WHERE user_id = $1 AND purpose = 'password_reset' AND used = false`,
         [staffId],
       );
 
       const code = String(randomInt(100000, 1000000));
 
       await client.query(
-        `INSERT INTO staff_password_resets (staff_id, token, expires_at)
-         VALUES ($1, $2, NOW() + INTERVAL '15 minutes')`,
+        `INSERT INTO codes (user_id, code, purpose, expires_at)
+         VALUES ($1, $2, 'password_reset', NOW() + INTERVAL '15 minutes')`,
         [staffId, code],
       );
 
@@ -479,32 +477,36 @@ export class SettingsController {
         throw new NotFoundException('Account not found');
       }
 
-      // Get latest reset record for this user
-      const reset = await client.query<{ token: string; expires_at: string }>(
-        `SELECT token, expires_at FROM staff_password_resets
-         WHERE staff_id = $1
+      // Get latest code record for this user and purpose
+      const codeResult = await client.query<{
+        code: string;
+        expires_at: string;
+        code_id: string;
+      }>(
+        `SELECT code, expires_at, code_id FROM codes
+         WHERE user_id = $1 AND purpose = 'password_reset' AND used = false
          ORDER BY created_at DESC
          LIMIT 1`,
         [staffId],
       );
 
-      if (!reset.rowCount) {
+      if (!codeResult.rowCount) {
         throw new BadRequestException('No password reset request found');
       }
 
-      const record = reset.rows[0];
+      const record = codeResult.rows[0];
       const now = new Date();
       const expiresAt = new Date(record.expires_at);
       if (expiresAt < now) {
         throw new BadRequestException('Verification code has expired');
       }
-      if (record.token !== code) {
-        throw new BadRequestException('Invalid verification code');
+      if (record.code !== code) {
+        throw new BadRequestException(
+          'The verification code you entered is incorrect.',
+        );
       }
 
       // Update password
-      // Use bcrypt without importing here; keep hashing in DB? We'll import bcrypt to be consistent
-      // But since this file doesn't have bcrypt yet, add it
       return await (async () => {
         const bcrypt = await import('bcryptjs');
         const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -522,10 +524,10 @@ export class SettingsController {
           );
         }
 
-        await client.query(
-          'DELETE FROM staff_password_resets WHERE staff_id = $1',
-          [staffId],
-        );
+        // Mark code as used
+        await client.query('UPDATE codes SET used = true WHERE code_id = $1', [
+          record.code_id,
+        ]);
         return { ok: true, message: 'Password has been reset successfully' };
       })();
     } catch (error) {

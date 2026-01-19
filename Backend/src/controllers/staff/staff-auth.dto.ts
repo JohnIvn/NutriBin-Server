@@ -7,6 +7,7 @@ export type StaffSignUpDto = {
   password: string;
   contact?: string;
   address?: string;
+  verificationCode?: string;
 };
 
 export type StaffSignInDto = {

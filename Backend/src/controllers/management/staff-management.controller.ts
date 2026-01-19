@@ -17,6 +17,7 @@ import * as bcrypt from 'bcryptjs';
 
 import { DatabaseService } from '../../service/database/database.service';
 import { BrevoService } from '../../service/email/brevo.service';
+import { StaffAuthService } from '../../service/auth/staff-auth.service';
 
 type StaffPublicRow = {
   staff_id: string;
@@ -37,6 +38,7 @@ export class StaffManagementController {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly mailer: BrevoService,
+    private readonly staffAuthService: StaffAuthService,
   ) {}
 
   private async ensureVerificationTable() {
@@ -113,6 +115,15 @@ export class StaffManagementController {
     } catch {
       throw new InternalServerErrorException('Failed to check phone number');
     }
+  }
+
+  @Post('google-signup')
+  async googleSignup(@Body() body: { credential: string }) {
+    if (!body || !body.credential) {
+      throw new BadRequestException('Google credential is required');
+    }
+
+    return this.staffAuthService.googleSignUp(body.credential);
   }
 
   @Post()

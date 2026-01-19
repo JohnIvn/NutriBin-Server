@@ -23,6 +23,7 @@ import { Form } from "../ui/form";
 import { Checkbox } from "../ui/checkbox";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import {
   User,
   Mail,
@@ -41,6 +42,7 @@ import {
 
 function AdminModal({ mode, cancel, staff, onSuccess }) {
   const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [user, setUser] = useState({});
   const [emailChecking, setEmailChecking] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState(null);
@@ -52,7 +54,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   // const [codeSent, setCodeSent] = useState(false);
   const [codeFormatValid, setCodeFormatValid] = useState(false);
   const [codeError, setCodeError] = useState("");
-  // const [googleError, setGoogleError] = useState("");
+  const [googleError, setGoogleError] = useState("");
 
   const isEdit = mode === "edit";
 
@@ -90,18 +92,20 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
 
   const birthday = form.watch("birthday");
   const email = form.watch("email");
-  // const password = form.watch("password");
+  const password = form.watch("password");
+  const confirmPassword = form.watch("confirmPassword");
   const contact = form.watch("contact");
   const emailVerificationCode = form.watch("emailVerificationCode");
   const emailChanged = isEdit && email !== originalEmail;
 
-  // const passwordChecks = {
-  //   minLength: password && password.length >= 8,
-  //   hasUppercase: password && /[A-Z]/.test(password),
-  //   hasLowercase: password && /[a-z]/.test(password),
-  //   hasNumber: password && /\d/.test(password),
-  //   hasSpecial: password && /[^A-Za-z0-9]/.test(password),
-  // };
+  const passwordChecks = {
+    minLength: password && password.length >= 8 && password.length <= 20,
+    hasUppercase: password && /[A-Z]/.test(password),
+    hasLowercase: password && /[a-z]/.test(password),
+    hasNumber: password && /\d/.test(password),
+    hasSpecial: password && /[^A-Za-z0-9]/.test(password),
+    match: password && confirmPassword && password === confirmPassword,
+  };
 
   useEffect(() => {
     if (!birthday) return;
@@ -234,6 +238,45 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     }
   }
 
+  async function handleGoogleSignup(credentialResponse) {
+    try {
+      setGoogleError("");
+      const response = await Requests({
+        url: "/management/staff/google-signup",
+        method: "POST",
+        data: { credential: credentialResponse.credential },
+        credentials: true,
+      });
+
+      if (response.data?.ok) {
+        toast.success("Staff account created successfully via Google!");
+        if (onSuccess) onSuccess();
+        cancel();
+      } else {
+        const errorMsg =
+          response.data?.error ||
+          response.data?.message ||
+          "Google signup failed";
+        setGoogleError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (error) {
+      const errorMsg =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Google signup failed";
+      setGoogleError(errorMsg);
+      toast.error(errorMsg);
+    }
+  }
+
+  function handleGoogleError() {
+    const errorMsg = "Google signup failed. Please try again.";
+    setGoogleError(errorMsg);
+    toast.error(errorMsg);
+  }
+
   const handleSendCode = async () => {
     if (!emailChanged && isEdit) {
       toast.info("Email unchanged");
@@ -293,279 +336,53 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   );
 
   return (
-    <Dialog open={true} onOpenChange={cancel}>
-      <DialogContent className="sm:max-w-[650px] p-0 gap-0 overflow-hidden border-none shadow-2xl bg-white">
-        <div className="bg-[#4F6F52] p-6 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <ShieldCheck className="w-32 h-32" />
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <Dialog open={true} onOpenChange={cancel}>
+        <DialogContent className="sm:max-w-[650px] p-0 gap-0 overflow-hidden border-none shadow-2xl bg-white">
+          <div className="bg-[#4F6F52] p-6 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <ShieldCheck className="w-32 h-32" />
+            </div>
+            <DialogHeader className="relative z-10">
+              <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                {isEdit ? "Edit Staff Profile" : "New Staff Registration"}
+              </DialogTitle>
+              <DialogDescription className="text-orange-100/90">
+                {isEdit
+                  ? `Currently editing: ${user.firstname || "user"}`
+                  : "Fill in the details below to create a new administrative account."}
+              </DialogDescription>
+            </DialogHeader>
           </div>
-          <DialogHeader className="relative z-10">
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-              {isEdit ? "Edit Staff Profile" : "New Staff Registration"}
-            </DialogTitle>
-            <DialogDescription className="text-orange-100/90">
-              {isEdit
-                ? `Currently editing: ${user.firstname || "user"}`
-                : "Fill in the details below to create a new administrative account."}
-            </DialogDescription>
-          </DialogHeader>
-        </div>
 
-        <div className="p-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* personal information */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <User className="w-3 h-3" /> Personal Information
-                </h3>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 items-start">
-                  <FormField
-                    control={form.control}
-                    name="firstname"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1 text-[#4F6F52]">
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                          <div className="relative group">
-                            <InputIcon icon={User} />
-                            <Input
-                              placeholder="Barry"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <div className="min-h-[1.25rem]">
-                          <FormMessage className="text-[11px]" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastname"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1 text-[#4F6F52]">
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                          <div className="relative group">
-                            <InputIcon icon={User} />
-                            <Input
-                              placeholder="Allen"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <div className="min-h-[1.25rem]">
-                          <FormMessage className="text-[11px]" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 items-start">
-                  <FormField
-                    control={form.control}
-                    name="birthday"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1 text-[#4F6F52]">
-                        <FormLabel>Birthday</FormLabel>
-                        <FormControl>
-                          <div className="relative group">
-                            <InputIcon icon={Calendar} />
-                            <Input
-                              type="date"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <div className="min-h-[1.25rem]">
-                          <FormMessage className="text-[11px]" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1 text-[#4F6F52]">
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                          <div className="relative group">
-                            <InputIcon icon={MapPin} />
-                            <Input
-                              placeholder="City, Country"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <div className="min-h-[1.25rem]">
-                          <FormMessage className="text-[11px]" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* contact information */}
-              <div className="space-y-3 pt-1">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <Phone className="w-3 h-3" /> Contact Details
-                </h3>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 items-start">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1 text-[#4F6F52]">
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                          <div className="relative group">
-                            <InputIcon icon={Mail} active={emailAvailable} />
-                            <Input
-                              placeholder="user@example.com"
-                              className={`pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] ${
-                                emailAvailable === false
-                                  ? "border-red-500 bg-red-50"
-                                  : "border-gray-200"
-                              }`}
-                              {...field}
-                            />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                              {emailChecking && (
-                                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                              )}
-                              {!emailChecking && emailAvailable === true && (
-                                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                              )}
-                            </div>
-                          </div>
-                        </FormControl>
-                        <div className="min-h-[1.25rem]">
-                          <FormMessage className="text-[11px]" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="contact"
-                    render={({ field }) => (
-                      <FormItem className="space-y-1 text-[#4F6F52]">
-                        <FormLabel>Mobile Number</FormLabel>
-                        <FormControl>
-                          <div className="relative group">
-                            <InputIcon icon={Phone} active={phoneAvailable} />
-                            <Input
-                              placeholder="09..."
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <div className="min-h-[1.25rem]">
-                          <FormMessage className="text-[11px]" />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* verification */}
-                {(!isEdit || emailChanged) && (
-                  <div className="p-4 border border-[#4F6F52]/30 bg-[#4F6F52]/5 rounded-lg mt-2 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-[#4F6F52] font-bold">
-                        Verify Email
-                      </Label>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={handleSendCode}
-                        disabled={
-                          sendingCode || emailAvailable === false || !email
-                        }
-                        className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#A34906]"
-                      >
-                        {sendingCode ? "Sending..." : "Send Code"}
-                      </Button>
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="emailVerificationCode"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <div className="relative">
-                            <InputIcon
-                              icon={KeyRound}
-                              active={codeFormatValid}
-                            />
-                            <Input
-                              placeholder="6-digit code"
-                              maxLength={6}
-                              className="pl-10 h-10 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(
-                                  e.target.value.replace(/[^0-9]/g, "")
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="min-h-[1rem]">
-                            {codeError && (
-                              <p className="text-[11px] text-red-500">
-                                {codeError}
-                              </p>
-                            )}
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* password */}
-              {!isEdit && (
-                <div className="space-y-3 pt-1">
+          <div className="p-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                {/* personal information */}
+                <div className="space-y-3">
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                    <Lock className="w-3 h-3" /> Security
+                    <User className="w-3 h-3" /> Personal Information
                   </h3>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 items-start">
                     <FormField
                       control={form.control}
-                      name="password"
+                      name="firstname"
                       render={({ field }) => (
                         <FormItem className="space-y-1 text-[#4F6F52]">
-                          <FormLabel>Password</FormLabel>
-                          <div className="relative group">
-                            <InputIcon icon={Lock} />
-                            <Input
-                              type={showPass ? "text" : "password"}
-                              placeholder="••••••••"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPass(!showPass)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
-                            >
-                              {showPass ? (
-                                <EyeOff size={16} />
-                              ) : (
-                                <Eye size={16} />
-                              )}
-                            </button>
-                          </div>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <InputIcon icon={User} />
+                              <Input
+                                placeholder="Barry"
+                                className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
                           <div className="min-h-[1.25rem]">
                             <FormMessage className="text-[11px]" />
                           </div>
@@ -574,19 +391,67 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     />
                     <FormField
                       control={form.control}
-                      name="confirmPassword"
+                      name="lastname"
                       render={({ field }) => (
                         <FormItem className="space-y-1 text-[#4F6F52]">
-                          <FormLabel>Confirm</FormLabel>
-                          <div className="relative group">
-                            <InputIcon icon={Lock} />
-                            <Input
-                              type={showPass ? "text" : "password"}
-                              placeholder="••••••••"
-                              className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
-                              {...field}
-                            />
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <InputIcon icon={User} />
+                              <Input
+                                placeholder="Allen"
+                                className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <div className="min-h-[1.25rem]">
+                            <FormMessage className="text-[11px]" />
                           </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 items-start">
+                    <FormField
+                      control={form.control}
+                      name="birthday"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1 text-[#4F6F52]">
+                          <FormLabel>Birthday</FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <InputIcon icon={Calendar} />
+                              <Input
+                                type="date"
+                                className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <div className="min-h-[1.25rem]">
+                            <FormMessage className="text-[11px]" />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1 text-[#4F6F52]">
+                          <FormLabel>Address</FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <InputIcon icon={MapPin} />
+                              <Input
+                                placeholder="City, Country"
+                                className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
                           <div className="min-h-[1.25rem]">
                             <FormMessage className="text-[11px]" />
                           </div>
@@ -595,71 +460,414 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                     />
                   </div>
                 </div>
-              )}
 
-              {/* footer */}
-              <div className="pt-6 flex flex-col gap-3">
-                <Button
-                  type="submit"
-                  className="w-full h-12 bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-bold text-lg cursor-pointer transition-all active:scale-95 shadow-md"
-                >
-                  {isEdit ? "Save Changes" : "Create Account"}
-                </Button>
+                {/* contact information */}
+                <div className="space-y-3 pt-1">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <Phone className="w-3 h-3" /> Contact Details
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 items-start">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1 text-[#4F6F52]">
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <InputIcon icon={Mail} active={emailAvailable} />
+                              <Input
+                                placeholder="user@example.com"
+                                className={`pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52] ${
+                                  emailAvailable === false
+                                    ? "border-red-500 bg-red-50"
+                                    : "border-gray-200"
+                                }`}
+                                {...field}
+                              />
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {emailChecking && (
+                                  <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                                )}
+                                {!emailChecking && emailAvailable === true && (
+                                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                )}
+                              </div>
+                            </div>
+                          </FormControl>
+                          <div className="min-h-[1.25rem]">
+                            <FormMessage className="text-[11px]" />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="contact"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1 text-[#4F6F52]">
+                          <FormLabel>Mobile Number</FormLabel>
+                          <FormControl>
+                            <div className="relative group">
+                              <InputIcon icon={Phone} active={phoneAvailable} />
+                              <Input
+                                placeholder="09..."
+                                className="pl-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <div className="min-h-[1.25rem]">
+                            <FormMessage className="text-[11px]" />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                <Button
-                  type="button"
-                  onClick={cancel}
-                  variant="outline"
-                  className="w-full h-12 text-white bg-[#FF3838] hover:bg-[#DC0000] hover:text-[white] transition-all duration-200 cursor-pointer font-medium"
-                >
-                  Cancel
-                </Button>
-
-                {!isEdit && (
-                  <>
-                    <div className="relative py-2">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-gray-100" />
+                  {/* verification */}
+                  {(!isEdit || emailChanged) && (
+                    <div className="p-4 border border-[#4F6F52]/30 bg-[#4F6F52]/5 rounded-lg mt-2 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[#4F6F52] font-bold">
+                          Verify Email
+                        </Label>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleSendCode}
+                          disabled={
+                            sendingCode || emailAvailable === false || !email
+                          }
+                          className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#A34906]"
+                        >
+                          {sendingCode ? "Sending..." : "Send Code"}
+                        </Button>
                       </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-gray-400">
-                          Or continue with
-                        </span>
-                      </div>
+                      <FormField
+                        control={form.control}
+                        name="emailVerificationCode"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1">
+                            <div className="relative">
+                              <InputIcon
+                                icon={KeyRound}
+                                active={codeFormatValid}
+                              />
+                              <Input
+                                placeholder="6-digit code"
+                                maxLength={6}
+                                className="pl-10 h-10 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    e.target.value.replace(/[^0-9]/g, ""),
+                                  )
+                                }
+                              />
+                            </div>
+                            <div className="min-h-[1rem]">
+                              {codeError && (
+                                <p className="text-[11px] text-red-500">
+                                  {codeError}
+                                </p>
+                              )}
+                            </div>
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full h-12 border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <svg className="h-5 w-5" viewBox="0 0 24 24">
-                        <path
-                          fill="#4285F4"
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        />
-                        <path
-                          fill="#EA4335"
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        />
-                      </svg>
-                      Google
-                    </Button>
-                  </>
+                  )}
+                </div>
+
+                {/* password */}
+                {!isEdit && (
+                  <div className="space-y-3 pt-1">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                      <Lock className="w-3 h-3" /> Security
+                    </h3>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 items-start">
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1 text-[#4F6F52]">
+                            <FormLabel>Password</FormLabel>
+                            <div className="relative group">
+                              <InputIcon icon={Lock} />
+                              <Input
+                                type={showPass ? "text" : "password"}
+                                placeholder="••••••••"
+                                className="pl-10 pr-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPass(!showPass)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#4F6F52] cursor-pointer transition-colors"
+                              >
+                                {showPass ? (
+                                  <EyeOff size={16} />
+                                ) : (
+                                  <Eye size={16} />
+                                )}
+                              </button>
+                            </div>
+                            <div className="min-h-[1.25rem]">
+                              <FormMessage className="text-[11px]" />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1 text-[#4F6F52]">
+                            <FormLabel>Confirm</FormLabel>
+                            <div className="relative group">
+                              <InputIcon icon={Lock} />
+                              <Input
+                                type={showConfirmPass ? "text" : "password"}
+                                placeholder="••••••••"
+                                className="pl-10 pr-10 h-11 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setShowConfirmPass(!showConfirmPass)
+                                }
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#4F6F52] cursor-pointer transition-colors"
+                              >
+                                {showConfirmPass ? (
+                                  <EyeOff size={16} />
+                                ) : (
+                                  <Eye size={16} />
+                                )}
+                              </button>
+                            </div>
+                            <div className="min-h-[1.25rem]">
+                              <FormMessage className="text-[11px]" />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Password Strength Indicators */}
+                    {password && (
+                      <div className="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <p className="text-xs font-semibold text-gray-700 mb-2">
+                          Password must contain:
+                        </p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                          <div className="flex items-center gap-2 text-xs">
+                            <div
+                              className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                                passwordChecks.minLength
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            >
+                              {passwordChecks.minLength && (
+                                <span className="text-white text-[10px]">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className={
+                                passwordChecks.minLength
+                                  ? "text-green-700"
+                                  : "text-gray-600"
+                              }
+                            >
+                              8-20 characters
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <div
+                              className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                                passwordChecks.hasUppercase
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            >
+                              {passwordChecks.hasUppercase && (
+                                <span className="text-white text-[10px]">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className={
+                                passwordChecks.hasUppercase
+                                  ? "text-green-700"
+                                  : "text-gray-600"
+                              }
+                            >
+                              One uppercase
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <div
+                              className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                                passwordChecks.hasLowercase
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            >
+                              {passwordChecks.hasLowercase && (
+                                <span className="text-white text-[10px]">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className={
+                                passwordChecks.hasLowercase
+                                  ? "text-green-700"
+                                  : "text-gray-600"
+                              }
+                            >
+                              One lowercase
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <div
+                              className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                                passwordChecks.hasNumber
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            >
+                              {passwordChecks.hasNumber && (
+                                <span className="text-white text-[10px]">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className={
+                                passwordChecks.hasNumber
+                                  ? "text-green-700"
+                                  : "text-gray-600"
+                              }
+                            >
+                              One number
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <div
+                              className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                                passwordChecks.hasSpecial
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            >
+                              {passwordChecks.hasSpecial && (
+                                <span className="text-white text-[10px]">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className={
+                                passwordChecks.hasSpecial
+                                  ? "text-green-700"
+                                  : "text-gray-600"
+                              }
+                            >
+                              One special char
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <div
+                              className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                                passwordChecks.match
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
+                              }`}
+                            >
+                              {passwordChecks.match && (
+                                <span className="text-white text-[10px]">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className={
+                                passwordChecks.match
+                                  ? "text-green-700"
+                                  : "text-gray-600"
+                              }
+                            >
+                              Passwords match
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
-              </div>
-            </form>
-          </Form>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+                {/* footer */}
+                <div className="pt-6 flex flex-col gap-3">
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-bold text-lg cursor-pointer transition-all active:scale-95 shadow-md"
+                  >
+                    {isEdit ? "Save Changes" : "Create Account"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={cancel}
+                    variant="outline"
+                    className="w-full h-12 text-white bg-[#FF3838] hover:bg-[#DC0000] hover:text-[white] transition-all duration-200 cursor-pointer font-medium"
+                  >
+                    Cancel
+                  </Button>
+
+                  {!isEdit && (
+                    <>
+                      <div className="relative py-2">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-gray-100" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-white px-2 text-gray-400">
+                            Or continue with
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex justify-center">
+                        <GoogleLogin
+                          onSuccess={handleGoogleSignup}
+                          onError={handleGoogleError}
+                          useOneTap
+                          theme="outline"
+                          size="large"
+                          text="signup_with"
+                          shape="rectangular"
+                          width="100%"
+                        />
+                      </div>
+                      {googleError && (
+                        <div className="p-2 bg-red-50 border border-red-200 rounded-md text-red-600 text-xs text-center">
+                          {googleError}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </form>
+            </Form>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </GoogleOAuthProvider>
   );
 }
 

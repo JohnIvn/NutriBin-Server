@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { User, Lock, AlertTriangle, Camera } from "lucide-react";
+import { User, Lock, AlertTriangle, Camera, Eye, EyeOff } from "lucide-react";
 
 function Account() {
   const [editMode, setEditMode] = useState(false);
@@ -51,6 +51,8 @@ function Account() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [currentAvatar, setCurrentAvatar] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const avatarInputRef = useRef(null);
 
   const form = useForm({
@@ -178,13 +180,22 @@ function Account() {
   }, [resetCode]);
 
   const passwordChecks = {
-    minLength: newPassword && newPassword.length >= 8,
+    minLength:
+      newPassword && newPassword.length >= 8 && newPassword.length <= 20,
     hasUppercase: newPassword && /[A-Z]/.test(newPassword),
     hasLowercase: newPassword && /[a-z]/.test(newPassword),
     hasNumber: newPassword && /\d/.test(newPassword),
     hasSpecial: newPassword && /[^A-Za-z0-9]/.test(newPassword),
     match: newPassword && confirmPassword && newPassword === confirmPassword,
   };
+
+  const allPasswordRequirementsMet =
+    passwordChecks.minLength &&
+    passwordChecks.hasUppercase &&
+    passwordChecks.hasLowercase &&
+    passwordChecks.hasNumber &&
+    passwordChecks.hasSpecial &&
+    passwordChecks.match;
 
   const handleSubmission = async () => {
     const userId = user?.staff_id || user?.admin_id;
@@ -750,7 +761,22 @@ function Account() {
       {/* === Dialogs === */}
 
       {/* Password Reset Dialog */}
-      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+      <Dialog
+        open={resetOpen}
+        onOpenChange={(open) => {
+          setResetOpen(open);
+          if (!open) {
+            // Reset form when dialog closes
+            setResetCode("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setResetSent(false);
+            setCodeError("");
+            setShowNewPassword(false);
+            setShowConfirmPassword(false);
+          }
+        }}
+      >
         <DialogContent className="bg-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-[#4F6F52]">
@@ -826,25 +852,194 @@ function Account() {
                   <label className="text-xs font-semibold text-gray-600">
                     New Password
                   </label>
-                  <Input
-                    type="password"
-                    className="border-gray-200 focus-visible:border-[#4F6F52]"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showNewPassword ? "text" : "password"}
+                      className="border-gray-200 focus-visible:border-[#4F6F52] pr-10"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#4F6F52] cursor-pointer"
+                      tabIndex={-1}
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-gray-600">
                     Confirm
                   </label>
-                  <Input
-                    type="password"
-                    className="border-gray-200 focus-visible:border-[#4F6F52]"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="border-gray-200 focus-visible:border-[#4F6F52] pr-10"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#4F6F52] cursor-pointer"
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {/* Password Strength Requirements */}
+              {newPassword && (
+                <div className="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">
+                    Password must contain:
+                  </p>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                          passwordChecks.minLength
+                            ? "bg-green-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {passwordChecks.minLength && (
+                          <span className="text-white text-[10px]">✓</span>
+                        )}
+                      </div>
+                      <span
+                        className={
+                          passwordChecks.minLength
+                            ? "text-green-700"
+                            : "text-gray-600"
+                        }
+                      >
+                        8-20 characters
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                          passwordChecks.hasUppercase
+                            ? "bg-green-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {passwordChecks.hasUppercase && (
+                          <span className="text-white text-[10px]">✓</span>
+                        )}
+                      </div>
+                      <span
+                        className={
+                          passwordChecks.hasUppercase
+                            ? "text-green-700"
+                            : "text-gray-600"
+                        }
+                      >
+                        One uppercase letter
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                          passwordChecks.hasLowercase
+                            ? "bg-green-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {passwordChecks.hasLowercase && (
+                          <span className="text-white text-[10px]">✓</span>
+                        )}
+                      </div>
+                      <span
+                        className={
+                          passwordChecks.hasLowercase
+                            ? "text-green-700"
+                            : "text-gray-600"
+                        }
+                      >
+                        One lowercase letter
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                          passwordChecks.hasNumber
+                            ? "bg-green-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {passwordChecks.hasNumber && (
+                          <span className="text-white text-[10px]">✓</span>
+                        )}
+                      </div>
+                      <span
+                        className={
+                          passwordChecks.hasNumber
+                            ? "text-green-700"
+                            : "text-gray-600"
+                        }
+                      >
+                        One number
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                          passwordChecks.hasSpecial
+                            ? "bg-green-500"
+                            : "bg-gray-300"
+                        }`}
+                      >
+                        {passwordChecks.hasSpecial && (
+                          <span className="text-white text-[10px]">✓</span>
+                        )}
+                      </div>
+                      <span
+                        className={
+                          passwordChecks.hasSpecial
+                            ? "text-green-700"
+                            : "text-gray-600"
+                        }
+                      >
+                        One special character
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                          passwordChecks.match ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      >
+                        {passwordChecks.match && (
+                          <span className="text-white text-[10px]">✓</span>
+                        )}
+                      </div>
+                      <span
+                        className={
+                          passwordChecks.match
+                            ? "text-green-700"
+                            : "text-gray-600"
+                        }
+                      >
+                        Passwords match
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -852,10 +1047,25 @@ function Account() {
               type="button"
               className="w-full bg-[#4F6F52] hover:bg-[#3A523D]"
               disabled={
-                resetSubmitting || !codeFormatValid || !passwordChecks.match
+                resetSubmitting ||
+                !codeFormatValid ||
+                !allPasswordRequirementsMet
               }
               onClick={async () => {
                 const userId = user?.staff_id || user?.admin_id;
+
+                // Validate all password requirements are met
+                if (!allPasswordRequirementsMet) {
+                  toast.error("Please meet all password requirements");
+                  return;
+                }
+
+                // Validate code format
+                if (!codeFormatValid) {
+                  toast.error("Please enter a valid 6-digit code");
+                  return;
+                }
+
                 try {
                   setResetSubmitting(true);
                   const res = await Requests({
@@ -865,11 +1075,25 @@ function Account() {
                     credentials: true,
                   });
                   if (res.data?.ok) {
-                    toast.success("Password changed!");
+                    toast.success("Password changed successfully!");
                     setResetOpen(false);
+                    // Reset form
+                    setResetCode("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    setResetSent(false);
+                    setShowNewPassword(false);
+                    setShowConfirmPassword(false);
+                  } else {
+                    toast.error(
+                      res.data?.message || "Failed to change password",
+                    );
                   }
-                } catch {
-                  toast.error("Failed to change password");
+                } catch (error) {
+                  toast.error(
+                    error.response?.data?.message ||
+                      "Failed to change password",
+                  );
                 } finally {
                   setResetSubmitting(false);
                 }

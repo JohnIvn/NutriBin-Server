@@ -601,7 +601,7 @@ export class StaffAuthService {
       if (adminResult.rowCount) {
         return {
           ok: false,
-          error: 'An admin account with this email already exists',
+          error: `Email ${email} already exists as an admin account`,
         };
       }
 
@@ -614,7 +614,7 @@ export class StaffAuthService {
       if (staffResult.rowCount) {
         return {
           ok: false,
-          error: 'A staff account with this email already exists',
+          error: `Email ${email} already exists as a staff account`,
         };
       }
 

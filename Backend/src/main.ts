@@ -13,6 +13,7 @@ async function bootstrap() {
       'http://nutribin-server-frontend.railway.internal:3000',
       'http://nutribin-server-frontend.railway.app',
       'https://nutribin-server-frontend-production.up.railway.app',
+      'https://nutribin-admin.up.railway.app',
     ],
     credentials: true,
   });

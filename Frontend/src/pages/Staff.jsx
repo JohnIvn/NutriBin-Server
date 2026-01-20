@@ -139,6 +139,16 @@ function Staff() {
           toast.success("Staff member banned successfully");
           fetchStaff();
         }
+      } else if (confirmInformation.mode === "Enable") {
+        const response = await Requests({
+          url: `/management/staff/${selectedStaff.staff_id}/enable`,
+          method: "PATCH",
+          credentials: true,
+        });
+        if (response.data.ok) {
+          toast.success("Staff member enabled successfully");
+          fetchStaff();
+        }
       } else if (confirmInformation.mode === "Delete") {
         const response = await Requests({
           url: `/management/staff/${selectedStaff.staff_id}`,
@@ -184,7 +194,7 @@ function Staff() {
 
   const paginatedStaff = filteredStaff.slice(
     (currentPage - 1) * entriesCount,
-    currentPage * entriesCount
+    currentPage * entriesCount,
   );
   const totalPages = Math.ceil(filteredStaff.length / entriesCount);
 
@@ -396,6 +406,39 @@ function Staff() {
                                   Edit Profile
                                 </DropdownMenuItem>
                               )}
+
+                              {staff.status === "active" ? (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    displayConfirm(
+                                      "Disable",
+                                      "Restrict Access",
+                                      "This user will immediately lose access to the staff portal.",
+                                      staff,
+                                    )
+                                  }
+                                  className="group cursor-pointer focus:bg-amber-600 focus:text-white rounded-md py-2 transition-colors"
+                                >
+                                  <ShieldAlert className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
+                                  Disable Account
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    displayConfirm(
+                                      "Enable",
+                                      "Restore Access",
+                                      "This staff member will regain access to their account.",
+                                      staff,
+                                    )
+                                  }
+                                  className="group cursor-pointer focus:bg-green-600 focus:text-white rounded-md py-2 transition-colors"
+                                >
+                                  <UserCheck className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
+                                  Enable Account
+                                </DropdownMenuItem>
+                              )}
+
                               {staff.status !== "banned" && (
                                 <DropdownMenuItem
                                   onClick={() =>
@@ -403,7 +446,7 @@ function Staff() {
                                       "Ban",
                                       "Ban Staff Account",
                                       "This staff member will be permanently blocked from logging in.",
-                                      staff
+                                      staff,
                                     )
                                   }
                                   className="group cursor-pointer focus:bg-red-700 focus:text-white rounded-md py-2 transition-colors"
@@ -412,27 +455,14 @@ function Staff() {
                                   Ban Account
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  displayConfirm(
-                                    "Disable",
-                                    "Restrict Access",
-                                    "This user will immediately lose access to the staff portal.",
-                                    staff
-                                  )
-                                }
-                                className="group cursor-pointer focus:bg-amber-600 focus:text-white rounded-md py-2 transition-colors"
-                              >
-                                <ShieldAlert className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
-                                Disable Account
-                              </DropdownMenuItem>
+
                               <DropdownMenuItem
                                 onClick={() =>
                                   displayConfirm(
                                     "Delete",
                                     "Permanently Remove",
                                     "Warning: This action cannot be undone.",
-                                    staff
+                                    staff,
                                   )
                                 }
                                 className="group cursor-pointer focus:bg-red-600 focus:text-white rounded-md py-2 transition-colors"

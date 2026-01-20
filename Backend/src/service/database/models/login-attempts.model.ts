@@ -8,6 +8,7 @@ export async function createLoginAttemptsTable(client: Client) {
       admin_id text,
       customer_id uuid,
       user_type user_type DEFAULT 'N/A',
+      site_visited text,
       ip_address text,
       success boolean DEFAULT true,
       date_created timestamptz DEFAULT now()

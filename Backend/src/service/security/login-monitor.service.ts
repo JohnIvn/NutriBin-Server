@@ -15,6 +15,7 @@ export class LoginMonitorService {
     adminId?: string;
     customerId?: string;
     userType?: 'customer' | 'staff' | 'admin' | string;
+    siteVisited?: string;
     ip?: string;
     success?: boolean;
   }) {
@@ -25,17 +26,32 @@ export class LoginMonitorService {
       customerId,
       userType = 'N/A',
       ip,
+      // siteVisited may be undefined; we'll infer below if missing
+      siteVisited,
       success = true,
     } = params;
 
+    // If siteVisited is not provided, infer from userType
+    let siteVisitedValue = siteVisited;
+    if (!siteVisitedValue) {
+      if (userType === 'admin' || userType === 'staff') {
+        siteVisitedValue = 'admin/staff portal';
+      } else if (userType === 'customer') {
+        siteVisitedValue = 'user website';
+      } else {
+        siteVisitedValue = 'unknown';
+      }
+    }
+
     try {
       await client.query(
-        `INSERT INTO login_attempts (staff_id, admin_id, customer_id, user_type, ip_address, success) VALUES ($1, $2, $3, $4, $5, $6)`,
+        `INSERT INTO login_attempts (staff_id, admin_id, customer_id, user_type, site_visited, ip_address, success) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           staffId || null,
           adminId || null,
           customerId || null,
           userType,
+          siteVisitedValue || null,
           ip || null,
           success,
         ],

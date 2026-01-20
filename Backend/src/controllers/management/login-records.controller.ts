@@ -18,6 +18,7 @@ export class LoginRecordsController {
         la.admin_id,
         la.customer_id,
         la.user_type,
+        la.site_visited,
         la.ip_address,
         la.success,
         la.date_created,

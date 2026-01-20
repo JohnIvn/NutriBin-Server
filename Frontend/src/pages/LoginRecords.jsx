@@ -88,7 +88,8 @@ export default function LoginRecords() {
         .toString()
         .toLowerCase()
         .includes(term) ||
-      (r.ip_address || "").toLowerCase().includes(term)
+      (r.ip_address || "").toLowerCase().includes(term) ||
+      (r.site_visited || "").toLowerCase().includes(term)
     );
   });
 
@@ -184,6 +185,9 @@ export default function LoginRecords() {
                     IDENTIFIER
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
+                    SITE
+                  </TableHead>
+                  <TableHead className="font-bold text-gray-700">
                     IP ADDRESS
                   </TableHead>
                   <TableHead className="text-right font-bold text-gray-700 pr-6">
@@ -194,7 +198,7 @@ export default function LoginRecords() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-64 text-center">
+                    <TableCell colSpan={6} className="h-64 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
                         <p className="text-gray-400 font-medium">
@@ -206,7 +210,7 @@ export default function LoginRecords() {
                 ) : paginated.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="h-64 text-center text-gray-400 font-medium"
                     >
                       No records found.
@@ -241,6 +245,9 @@ export default function LoginRecords() {
                             {r.email || "—"}
                           </span>
                         </div>
+                      </TableCell>
+                      <TableCell className="text-gray-600 font-medium">
+                        {r.site_visited || "-"}
                       </TableCell>
                       <TableCell className="text-gray-600 font-medium italic">
                         {r.ip_address || "-"}

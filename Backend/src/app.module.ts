@@ -12,12 +12,14 @@ import { AuthenticationController } from './controllers/settings/authentication.
 import { CodesController } from './controllers/codes.controller';
 import { AnnouncementsController } from './controllers/announcements.controller';
 import { SalesController } from './controllers/sales.controller';
+import { LoginMonitorController } from './controllers/management/login-monitor.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
 import { StaffAuthService } from './service/auth/staff-auth.service';
 import { BrevoService } from './service/email/brevo.service';
 import { TwilioService } from './service/twilio/twilio.service';
+import { LoginMonitorService } from './service/security/login-monitor.service';
 
 @Module({
   imports: [],
@@ -32,6 +34,7 @@ import { TwilioService } from './service/twilio/twilio.service';
     MachineHealthController,
     SettingsController,
     AuthenticationController,
+    LoginMonitorController,
     CodesController,
     AnnouncementsController,
     SalesController,
@@ -40,6 +43,7 @@ import { TwilioService } from './service/twilio/twilio.service';
     AppService,
     DatabaseService,
     StaffAuthService,
+    LoginMonitorService,
     BrevoService,
     TwilioService,
   ],

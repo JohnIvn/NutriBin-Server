@@ -11,6 +11,7 @@ import { OAuth2Client } from 'google-auth-library';
 
 import { DatabaseService } from '../database/database.service';
 import { BrevoService } from '../email/brevo.service';
+import { LoginMonitorService } from '../security/login-monitor.service';
 import type {
   StaffSignInDto,
   StaffSignUpDto,
@@ -54,6 +55,7 @@ export class StaffAuthService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly mailer: BrevoService,
+    private readonly loginMonitor: LoginMonitorService,
   ) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     if (!clientId) {
@@ -161,6 +163,16 @@ export class StaffAuthService {
       const matches = await bcrypt.compare(password, admin.password);
 
       if (!matches) {
+        try {
+          await this.loginMonitor.recordLogin({
+            adminId: admin.id,
+            userType: 'admin',
+            success: false,
+          });
+        } catch (err) {
+          /* swallow monitor errors */
+        }
+
         return {
           ok: false,
           error: 'Wrong password',
@@ -255,6 +267,16 @@ export class StaffAuthService {
         role: 'admin',
       };
 
+      try {
+        await this.loginMonitor.recordLogin({
+          adminId: admin.id,
+          userType: 'admin',
+          success: true,
+        });
+      } catch (err) {
+        /* swallow monitor errors */
+      }
+
       return {
         ok: true,
         staff: safeAdmin,
@@ -281,6 +303,16 @@ export class StaffAuthService {
 
     const matches = await bcrypt.compare(password, staff.password);
     if (!matches) {
+      try {
+        await this.loginMonitor.recordLogin({
+          staffId: staff.staff_id,
+          userType: 'staff',
+          success: false,
+        });
+      } catch (err) {
+        /* swallow monitor errors */
+      }
+
       return {
         ok: false,
         error: 'Wrong password',
@@ -374,6 +406,16 @@ export class StaffAuthService {
       status: staff.status,
       role: 'staff' as const,
     };
+
+    try {
+      await this.loginMonitor.recordLogin({
+        staffId: staff.staff_id,
+        userType: 'staff',
+        success: true,
+      });
+    } catch (err) {
+      /* swallow monitor errors */
+    }
 
     return {
       ok: true,

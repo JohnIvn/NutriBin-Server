@@ -404,7 +404,16 @@ export class SettingsController {
         [staffId, code],
       );
 
-      await this.mailer.sendPasswordResetCodeEmail(staff.email, code);
+      try {
+        await this.mailer.sendPasswordResetCodeEmail(staff.email, code);
+      } catch (mailErr) {
+        // Log the detailed mail error for production debugging
+        console.error('password reset email error:', mailErr);
+        // Throw a clearer error so the client sees a specific failure
+        throw new InternalServerErrorException(
+          'Failed to send password reset email',
+        );
+      }
 
       return {
         ok: true,

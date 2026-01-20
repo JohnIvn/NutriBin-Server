@@ -17,6 +17,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import Requests from "@/utils/Requests";
 import {
   TrendingUp,
   Activity,
@@ -346,23 +347,25 @@ function ActiveMachinesDisplay() {
 
   useEffect(() => {
     let mounted = true;
-    const base = import.meta.env.VITE_API_URL || "http://localhost:3000";
-    const url = `${base.replace(/\/$/, "")}/management/status/active-machines`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((json) => {
+    (async () => {
+      try {
+        const res = await Requests({
+          url: "/management/status/active-machines",
+          method: "GET",
+        });
         if (!mounted) return;
+        const json = res?.data;
         if (json && json.ok && json.status) {
           setData({ ...json.status, loading: false });
         } else {
           setData((s) => ({ ...s, loading: false }));
         }
-      })
-      .catch(() => {
+      } catch (e) {
         if (!mounted) return;
         setData((s) => ({ ...s, loading: false }));
-      });
+      }
+    })();
 
     return () => {
       mounted = false;

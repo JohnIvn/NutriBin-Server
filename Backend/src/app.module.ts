@@ -13,6 +13,7 @@ import { CodesController } from './controllers/codes.controller';
 import { AnnouncementsController } from './controllers/announcements.controller';
 import { SalesController } from './controllers/sales.controller';
 import { LoginMonitorController } from './controllers/management/login-monitor.controller';
+import { LoginRecordsController } from './controllers/management/login-records.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
@@ -35,6 +36,7 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
     SettingsController,
     AuthenticationController,
     LoginMonitorController,
+    LoginRecordsController,
     CodesController,
     AnnouncementsController,
     SalesController,

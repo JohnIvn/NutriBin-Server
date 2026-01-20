@@ -25,6 +25,7 @@ import Guide from "@/pages/Guide";
 import Announcements from "@/pages/Announcements";
 import Emissions from "@/pages/Emissions";
 import Home from "@/pages/Home";
+import LoginRecords from "@/pages/LoginRecords";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -185,6 +186,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Emissions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/login-records"
+        element={
+          <ProtectedRoute>
+            <LoginRecords />
           </ProtectedRoute>
         }
       />

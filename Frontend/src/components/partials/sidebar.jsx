@@ -12,6 +12,7 @@ import {
   Beaker,
   Cloud,
   Megaphone,
+  Activity,
   Users as UsersIcon,
   UserCog,
   Archive,
@@ -207,6 +208,13 @@ export default function Sidebar() {
               icon={Archive}
               label="Archives"
               active={isActive("/archives")}
+              collapsed={shouldCollapse}
+            />
+            <NavItem
+              to="/login-records"
+              icon={Activity}
+              label="Login Records"
+              active={isActive("/login-records")}
               collapsed={shouldCollapse}
             />
           </>

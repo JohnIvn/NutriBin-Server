@@ -71,6 +71,28 @@ export class UserManagementController {
     }
   }
 
+  @Get(':id')
+  async getUser(@Param('id') customerId: string) {
+    const client = this.databaseService.getClient();
+
+    try {
+      const result = await client.query(
+        `SELECT customer_id, first_name, last_name, contact_number, address, email, date_created, last_updated, status
+         FROM user_customer WHERE customer_id = $1 LIMIT 1`,
+        [customerId],
+      );
+
+      if (!result.rowCount) {
+        throw new NotFoundException('User not found');
+      }
+
+      return { ok: true, user: result.rows[0] };
+    } catch (err) {
+      if (err instanceof NotFoundException) throw err;
+      throw new InternalServerErrorException('Failed to fetch user');
+    }
+  }
+
   @Get('check-email/:email')
   async checkEmailAvailability(@Param('email') email: string) {
     const client = this.databaseService.getClient();

@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 
 import { DatabaseService } from '../database/database.service';
@@ -17,6 +18,16 @@ import type {
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+function generateRandomPassword(length = 12): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()-_=+';
+  const buf = randomBytes(length);
+  let out = '';
+  for (let i = 0; i < length; i++) {
+    out += chars[buf[i] % chars.length];
+  }
+  return out;
 }
 
 type StaffPublicRow = {
@@ -502,19 +513,16 @@ export class StaffAuthService {
         };
       }
 
-      // Create new staff account
+      // Generate a temporary password, hash it, and store the hash in DB
+      const tempPassword = generateRandomPassword(12);
+      const passwordHash = await bcrypt.hash(tempPassword, 10);
+
+      // Create new staff account (store hashed password)
       const newStaff = await client.query<StaffPublicRow>(
         `INSERT INTO user_staff (first_name, last_name, email, password, birthday, age)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING staff_id, first_name, last_name, contact_number, address, email, date_created, last_updated, status`,
-        [
-          firstName,
-          lastName,
-          email,
-          '', // Empty password for Google sign-in users
-          '1990-01-01', // Default birthday
-          0, // Default age
-        ],
+        [firstName, lastName, email, passwordHash, '1990-01-01', 0],
       );
 
       const staff = newStaff.rows[0];
@@ -522,6 +530,14 @@ export class StaffAuthService {
         throw new InternalServerErrorException(
           'Failed to create staff account',
         );
+      }
+
+      // Email the temporary password to the new staff member
+      try {
+        await this.mailer.sendStaffWelcomeWithPassword(email, firstName || '', tempPassword);
+      } catch (mailErr) {
+        console.error('Failed to send welcome email with password:', mailErr);
+        // don't block account creation if email sending fails; just log
       }
 
       const safeStaff = {

@@ -56,6 +56,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   const [codeError, setCodeError] = useState("");
   const [codeVerified, setCodeVerified] = useState(false);
   const [googleError, setGoogleError] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const isEdit = mode === "edit";
 
@@ -245,6 +246,10 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   }, [contact, mode, originalPhone, isEdit, form]);
 
   async function onSubmit(values) {
+    if (!isEdit && !acceptedTerms) {
+      toast.error("You must accept the Terms and Conditions");
+      return;
+    }
     try {
       const formData = { ...values };
       if (isEdit) {
@@ -297,6 +302,12 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   }
 
   async function handleGoogleSignup(credentialResponse) {
+    if (!acceptedTerms) {
+      const msg = "You must accept the Terms and Conditions";
+      setGoogleError(msg);
+      toast.error(msg);
+      return;
+    }
     try {
       setGoogleError("");
       const response = await Requests({
@@ -902,9 +913,36 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
 
                 {/* footer */}
                 <div className="pt-6 flex flex-col gap-3">
+                  {!isEdit && (
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="accept-terms"
+                        checked={acceptedTerms}
+                        onCheckedChange={(v) => setAcceptedTerms(!!v)}
+                        className="data-[state=checked]:bg-[#4F6F52] data-[state=checked]:border-[#4F6F52] focus-visible:ring-[#4F6F52]/50"
+                      />
+                      <Label htmlFor="accept-terms" className="text-xs">
+                        I accept the{" "}
+                        <a
+                          href="/policies"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline"
+                        >
+                          Terms and Conditions
+                        </a>
+                      </Label>
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-bold text-lg cursor-pointer transition-all active:scale-95 shadow-md"
+                    disabled={!isEdit && !acceptedTerms}
+                    className={`w-full h-12 bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-bold text-lg transition-all active:scale-95 shadow-md ${
+                      !isEdit && !acceptedTerms
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                   >
                     {isEdit ? "Save Changes" : "Create Account"}
                   </Button>

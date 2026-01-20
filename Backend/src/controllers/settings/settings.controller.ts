@@ -417,6 +417,10 @@ export class SettingsController {
       ) {
         throw error;
       }
+
+      // Log the underlying error so it's visible in server logs for debugging
+      console.error('requestPasswordReset error:', error);
+
       throw new InternalServerErrorException(
         'Failed to request password reset',
       );

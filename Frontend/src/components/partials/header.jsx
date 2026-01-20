@@ -28,9 +28,9 @@ export default function Header() {
       <header
         className={`sticky top-0 w-full z-50 transition-all duration-300 ${
           isScrolled
-            ? "bg-[#ECE3CE]/90 backdrop-blur-md shadow-sm py-3 text-[#3A4D39]"
-            : "bg-[#3A4D39] py-5 text-[#ECE3CE]"
-        }`}
+            ? "bg-[#ECE3CE]/90 backdrop-blur-md shadow-sm text-[#3A4D39]"
+            : "bg-[#3A4D39] text-[#ECE3CE]"
+        } py-3`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <nav className="hidden md:flex items-center gap-8 flex-1 justify-end pr-12">

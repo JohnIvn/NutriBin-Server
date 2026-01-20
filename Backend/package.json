@@ -33,10 +33,11 @@
     "dotenv": "^17.2.3",
     "google-auth-library": "^10.5.0",
     "multer": "^2.0.2",
-    "sib-api-v3-sdk": "^8.2.0",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "sib-api-v3-sdk": "^8.2.0",
+    "twilio": "^5.11.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

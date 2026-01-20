@@ -17,6 +17,7 @@ import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
 import { StaffAuthService } from './service/auth/staff-auth.service';
 import { BrevoService } from './service/email/brevo.service';
+import { TwilioService } from './service/twilio/twilio.service';
 
 @Module({
   imports: [],
@@ -35,6 +36,12 @@ import { BrevoService } from './service/email/brevo.service';
     AnnouncementsController,
     SalesController,
   ],
-  providers: [AppService, DatabaseService, StaffAuthService, BrevoService],
+  providers: [
+    AppService,
+    DatabaseService,
+    StaffAuthService,
+    BrevoService,
+    TwilioService,
+  ],
 })
 export class AppModule {}

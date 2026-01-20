@@ -13,9 +13,15 @@ import { adminAccount } from "@/schema/adminAccount";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useUser } from "@/contexts/UserContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function Account() {
   const [editMode, setEditMode] = useState(false);
+  const { user } = useUser();
+
+  const getInitials = (first, last) =>
+    `${first?.[0] || ""}${last?.[0] || ""}`.toUpperCase();
 
   const form = useForm({
     resolver: zodResolver(adminAccount),
@@ -46,6 +52,32 @@ function Account() {
               <p className="text-sm text-gray-500">
                 Manage your personal information and contact details.
               </p>
+            </div>
+
+            <div className="flex items-center gap-4 pt-3">
+              <Avatar className="size-16 border border-gray-200">
+                <AvatarImage
+                  src={
+                    user?.avatar ||
+                    user?.profile_photo ||
+                    user?.profile_image ||
+                    user?.photo ||
+                    ""
+                  }
+                  alt={user?.first_name}
+                />
+                <AvatarFallback className="bg-[#4F6F52]/10 text-[#4F6F52] font-bold text-xl">
+                  {getInitials(user?.first_name, user?.last_name)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="text-sm font-bold text-[#3A4D39]">
+                  {user?.first_name} {user?.last_name}
+                </div>
+                <div className="text-[12px] text-gray-500">
+                  {user?.email}
+                </div>
+              </div>
             </div>
 
             <hr className="border-gray-100" />

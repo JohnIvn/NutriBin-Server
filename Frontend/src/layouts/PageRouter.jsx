@@ -5,6 +5,7 @@ import Sales from "@/pages/Sales";
 import Fertilizer from "@/pages/Fertilizer";
 import Firmware from "@/pages/Firmware";
 import Login from "@/pages/Login";
+import PasswordReset from "@/pages/PasswordReset";
 import { VerifyMFA } from "@/pages/VerifyMFA";
 import Machines from "@/pages/Machines";
 import MachinesGrid from "@/pages/MachinesGrid";
@@ -38,6 +39,12 @@ function LoginRoute() {
   return <Login />;
 }
 
+function PasswordResetRoute() {
+  const { user } = useUser();
+  if (user) return <Navigate replace to="/dashboard" />;
+  return <PasswordReset />;
+}
+
 function FallbackRoute() {
   const { user } = useUser();
   return <Navigate replace to={user ? "/dashboard" : "/login"} />;
@@ -49,6 +56,7 @@ function PageRouter() {
       <Route path="*" element={<FallbackRoute />} />
       <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<LoginRoute />} />
+      <Route path="/password-reset" element={<PasswordResetRoute />} />
       <Route path="/verify-mfa" element={<VerifyMFA />} />
 
       <Route

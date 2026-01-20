@@ -478,21 +478,11 @@ export class StaffManagementController {
         [staffId, normalizedEmail, code],
       );
 
-      await this.mailer.sendMail({
-        to: normalizedEmail,
-        subject: 'Verify your new NutriBin staff email',
-        html: `
-          <h2>Email Change Verification</h2>
-          <p>Hello ${staff.first_name},</p>
-          <p>Use the verification code below to confirm your new email address for your staff profile.</p>
-          <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${code}</p>
-          <p>This code expires in 10 minutes.</p>
-          <p>If you did not request this change, please ignore this email.</p>
-          <br />
-          <p>Thanks,</p>
-          <p>NutriBin Team</p>
-        `,
-      });
+      await this.mailer.sendStaffChangeVerification(
+        normalizedEmail,
+        staff.first_name,
+        code,
+      );
 
       return {
         ok: true,
@@ -546,16 +536,7 @@ export class StaffManagementController {
         [userId, code, 'email_verification', expiresAt],
       );
 
-      await this.mailer.sendMail({
-        to: normalizedEmail,
-        subject: 'Verify your NutriBin staff email',
-        html: `
-          <h2>Email Verification</h2>
-          <p>Use the verification code below to confirm your email address for your staff profile.</p>
-          <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${code}</p>
-          <p>This code expires in 10 minutes.</p>
-        `,
-      });
+      await this.mailer.sendStaffVerificationCode(normalizedEmail, code);
 
       return {
         ok: true,

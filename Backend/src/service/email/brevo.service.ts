@@ -148,6 +148,78 @@ export class BrevoService {
   }
 
   /**
+   * Send an MFA verification email using the branded template
+   */
+  async sendMfaVerificationEmail(
+    to: string,
+    firstName: string,
+    verificationLink: string,
+  ) {
+    const subject = 'NutriBin - Verify Your Login';
+    const content = `
+      <h2 style="margin: 0 0 20px 0; color: #4F6F52; font-size: 24px;">Verify Your Login 🔐</h2>
+      <p style="margin: 0 0 15px 0;">Hello <strong>${firstName}</strong>,</p>
+      <p style="margin: 0 0 20px 0;">A login attempt was made to your NutriBin account. To complete the sign-in process, please verify your identity by clicking the button below.</p>
+      <div style="text-align: center; margin: 35px 0;">
+        <a href="${verificationLink}" style="display: inline-block; background-color: #4F6F52; color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 6px 12px rgba(79, 111, 82, 0.16);">Verify Login</a>
+      </div>
+      <div style="background-color: #F0F7EE; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #4F6F52;">⏱️ Time Sensitive</p>
+        <p style="margin: 0; color: #666; font-size: 14px;">This verification link will expire in <strong>24 hours</strong>.</p>
+      </div>
+      <div style="background-color: #F7FBF7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #86C166;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #3A4D39;">⚠️ Security Alert</p>
+        <p style="margin: 0; color: #666; font-size: 14px;">If you didn't attempt to log in, please ignore this email and ensure your account password is secure.</p>
+      </div>
+    `;
+    const html = this.getEmailTemplate(content, 'Multi-Factor Authentication');
+    return this.sendHtmlEmail(to, subject, html);
+  }
+
+  /**
+   * Send a simple staff email verification code (used for signup)
+   */
+  async sendStaffVerificationCode(to: string, code: string) {
+    const subject = 'Verify your NutriBin staff email';
+    const content = `
+      <h2 style="margin: 0 0 12px 0; color: #4F6F52; font-size: 20px;">Email Verification</h2>
+      <p style="margin: 0 0 10px 0; color: #333; font-size: 15px;">Use the verification code below to confirm your email address for your staff profile.</p>
+      <div style="text-align: center; margin: 18px 0;">
+        <p style="font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #4F6F52; margin: 0;">${code}</p>
+      </div>
+      <p style="margin: 12px 0 0 0; color: #666; font-size: 14px;">This code expires in 10 minutes.</p>
+    `;
+    const html = this.getEmailTemplate(content, 'Email Verification');
+    return this.sendHtmlEmail(to, subject, html);
+  }
+
+  /**
+   * Send a staff new-email verification code (includes recipient name)
+   */
+  async sendStaffChangeVerification(
+    to: string,
+    firstName: string,
+    code: string,
+  ) {
+    const subject = 'Verify your new NutriBin staff email';
+    const content = `
+      <h2 style="margin: 0 0 12px 0; color: #4F6F52; font-size: 20px;">Email Change Verification</h2>
+      <p style="margin: 0 0 10px 0; color: #333; font-size: 15px;">Hello ${firstName},</p>
+      <p style="margin: 0 0 12px 0; color: #333; font-size: 15px;">Use the verification code below to confirm your new email address for your staff profile.</p>
+      <div style="text-align: center; margin: 18px 0;">
+        <p style="font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #4F6F52; margin: 0;">${code}</p>
+      </div>
+      <p style="margin: 12px 0 0 0; color: #666; font-size: 14px;">This code expires in 10 minutes.</p>
+      <p style="margin: 12px 0 0 0; color: #666; font-size: 14px;">If you did not request this change, please ignore this email.</p>
+      <br />
+      <p style="margin: 8px 0 0 0; color: #333; font-size: 14px;">Thanks,</p>
+      <p style="margin: 0 0 0 0; color: #333; font-size: 14px;">NutriBin Team</p>
+    `;
+    const html = this.getEmailTemplate(content, 'Email Change Verification');
+    return this.sendHtmlEmail(to, subject, html);
+  }
+
+  /**
    * Branded HTML email wrapper
    */
   private getEmailTemplate(content: string, title?: string): string {
@@ -159,15 +231,15 @@ export class BrevoService {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${title || 'NutriBin'}</title>
       </head>
-      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #FFF5E4;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #FFF5E4; padding: 40px 20px;">
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #F0F7EE;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F0F7EE; padding: 40px 20px;">
           <tr>
             <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06); overflow: hidden;">
                 <tr>
-                  <td style="background: linear-gradient(135deg, #CD5C08 0%, #A34906 100%); padding: 30px 40px; text-align: center;">
+                  <td style="background: linear-gradient(135deg, #4F6F52 0%, #3A4D39 100%); padding: 30px 40px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold; letter-spacing: 1px;">NutriBin</h1>
-                    ${title ? `<p style="margin: 8px 0 0 0; color: #FFF5E4; font-size: 14px; font-weight: 500;">${title}</p>` : ''}
+                    ${title ? `<p style="margin: 8px 0 0 0; color: #F0F7EE; font-size: 14px; font-weight: 500;">${title}</p>` : ''}
                   </td>
                 </tr>
                 <tr>
@@ -176,7 +248,7 @@ export class BrevoService {
                   </td>
                 </tr>
                 <tr>
-                  <td style="background-color: #FFF5E4; padding: 30px 40px; text-align: center; border-top: 2px solid #CD5C08;">
+                  <td style="background-color: #F0F7EE; padding: 30px 40px; text-align: center; border-top: 2px solid #4F6F52;">
                     <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px;"><strong>NutriBin</strong> - Smart Nutrition Management</p>
                     <p style="margin: 0; color: #999999; font-size: 12px;">This is an automated message. Please do not reply to this email.</p>
                     <p style="margin: 15px 0 0 0; color: #999999; font-size: 12px;">© ${new Date().getFullYear()} NutriBin. All rights reserved.</p>
@@ -195,14 +267,14 @@ export class BrevoService {
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
     const subject = 'Password Reset Request - NutriBin';
     const content = `
-      <h2 style="margin: 0 0 20px 0; color: #CD5C08; font-size: 24px;">Reset Your Password 🔐</h2>
+      <h2 style="margin: 0 0 20px 0; color: #4F6F52; font-size: 24px;">Reset Your Password 🔐</h2>
       <p style="margin: 0 0 15px 0;">We received a request to reset the password for your NutriBin account.</p>
       <p style="margin: 0 0 20px 0;">Click the button below to create a new password:</p>
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${resetUrl}" style="display: inline-block; background-color: #CD5C08; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: bold; font-size: 16px;">Reset Password</a>
+        <a href="${resetUrl}" style="display: inline-block; background-color: #4F6F52; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: bold; font-size: 16px;">Reset Password</a>
       </div>
-      <div style="background-color: #FFF5E4; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <p style="margin: 0 0 10px 0; font-weight: bold; color: #CD5C08;">⚠️ Security Note</p>
+      <div style="background-color: #F0F7EE; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #4F6F52;">⚠️ Security Note</p>
         <p style="margin: 0; color: #666; font-size: 14px;">This link will expire in <strong>1 hour</strong> for your security.</p>
       </div>
       <p style="margin: 20px 0 0 0; color: #666; font-size: 14px;">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
@@ -214,14 +286,14 @@ export class BrevoService {
   async sendPasswordResetCodeEmail(to: string, code: string) {
     const subject = 'Your NutriBin Password Reset Code';
     const content = `
-      <h2 style="margin: 0 0 20px 0; color: #CD5C08; font-size: 24px;">Your Verification Code 🔑</h2>
+      <h2 style="margin: 0 0 20px 0; color: #4F6F52; font-size: 24px;">Your Verification Code 🔑</h2>
       <p style="margin: 0 0 20px 0;">Use the verification code below to reset your NutriBin account password.</p>
-      <div style="background: linear-gradient(135deg, #FFF5E4 0%, #FFE8CC 100%); padding: 30px; border-radius: 12px; text-align: center; margin: 30px 0; border: 2px solid #CD5C08;">
+      <div style="background: linear-gradient(135deg, #F0F7EE 0%, #E6F2E6 100%); padding: 30px; border-radius: 12px; text-align: center; margin: 30px 0; border: 2px solid #4F6F52;">
         <p style="margin: 0; color: #666; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Verification Code</p>
-        <p style="margin: 15px 0 0 0; font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #CD5C08; font-family: 'Courier New', monospace;">${code}</p>
+        <p style="margin: 15px 0 0 0; font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #4F6F52; font-family: 'Courier New', monospace;">${code}</p>
       </div>
-      <div style="background-color: #FFF5E4; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <p style="margin: 0 0 10px 0; font-weight: bold; color: #CD5C08;">⏱️ Time Sensitive</p>
+      <div style="background-color: #F0F7EE; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #4F6F52;">⏱️ Time Sensitive</p>
         <p style="margin: 0; color: #666; font-size: 14px;">This code will expire in <strong>15 minutes</strong>.</p>
       </div>
       <p style="margin: 20px 0 0 0; color: #666; font-size: 14px;">If you did not request a password reset, please ignore this email and your password will remain secure.</p>
@@ -241,18 +313,18 @@ export class BrevoService {
   ) {
     const subject = `Repair Notification - Machine ${repairDetails.machineId}`;
     const statusColors: Record<string, string> = {
-      pending: '#FFA500',
-      'in-progress': '#0066CC',
-      completed: '#00AA00',
+      pending: '#86C166',
+      'in-progress': '#4F6F52',
+      completed: '#16A34A',
       cancelled: '#CC0000',
     };
     const statusColor =
-      statusColors[repairDetails.status.toLowerCase()] || '#CD5C08';
+      statusColors[repairDetails.status.toLowerCase()] || '#4F6F52';
     const content = `
-      <h2 style="margin: 0 0 20px 0; color: #CD5C08; font-size: 24px;">Repair Status Update 🔧</h2>
+      <h2 style="margin: 0 0 20px 0; color: #4F6F52; font-size: 24px;">Repair Status Update 🔧</h2>
       <p style="margin: 0 0 20px 0;">A repair request for Machine <strong>${repairDetails.machineId}</strong> has been <strong>${repairDetails.status}</strong>.</p>
-      <div style="background-color: #FFF5E4; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid ${statusColor};">
-        <h3 style="margin: 0 0 15px 0; color: #CD5C08; font-size: 18px;">Repair Details</h3>
+      <div style="background-color: #F0F7EE; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid ${statusColor};">
+        <h3 style="margin: 0 0 15px 0; color: #4F6F52; font-size: 18px;">Repair Details</h3>
         <table width="100%" cellpadding="8" cellspacing="0">
           <tr>
             <td style="padding: 8px 0; color: #666; font-weight: 600; width: 140px;">Machine ID:</td>

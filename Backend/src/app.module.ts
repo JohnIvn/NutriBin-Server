@@ -7,6 +7,7 @@ import { RepairManagementController } from './controllers/management/repair-mana
 import { ArchiveManagementController } from './controllers/management/archive-management.controller';
 import { MachineManagementController } from './controllers/management/machine-management.controller';
 import { MachineHealthController } from './controllers/management/machine-health.controller';
+import { StatusController } from './controllers/management/status.controller';
 import { SettingsController } from './controllers/settings/settings.controller';
 import { AuthenticationController } from './controllers/settings/authentication.controller';
 import { CodesController } from './controllers/codes.controller';
@@ -34,6 +35,7 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
     ArchiveManagementController,
     MachineManagementController,
     MachineHealthController,
+    StatusController,
     SettingsController,
     AuthenticationController,
     LoginMonitorController,

@@ -11,6 +11,7 @@ import {
   ReferenceLine,
   LabelList,
 } from "recharts";
+import { useEffect, useState } from "react";
 import {
   ChartContainer,
   ChartTooltip,
@@ -264,22 +265,8 @@ function Fertilizer() {
                     Status Check
                   </p>
 
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <h3 className="text-4xl font-black text-[#3A4D39]">05</h3>
-                    <span className="text-sm font-medium text-gray-400">
-                      / 10
-                    </span>
-                  </div>
-                  <span className="text-xs font-bold text-gray-500 uppercase mt-1">
-                    Active Machines
-                  </span>
-
-                  <div className="mt-4 w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                    <div className="bg-[#4F6F52] h-full w-[50%] rounded-full" />
-                  </div>
-                  <p className="text-[10px] text-gray-400 mt-2 font-medium">
-                    System healthy and operational.
-                  </p>
+                  {/* Active machines fetched from backend */}
+                  <ActiveMachinesDisplay />
                 </CardContent>
               </Card>
 
@@ -341,50 +328,73 @@ function Fertilizer() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* bottom card */}
-              <Card className="bg-white border-none shadow-md rounded-xl">
-                <CardHeader className="pb-2 pt-5 px-5">
-                  <CardTitle className="text-[11px] uppercase tracking-wider text-gray-400 font-bold flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-                    Machine Status List
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-5 pb-5 space-y-4">
-                  <div className="flex items-center justify-between text-sm border-b border-gray-100 pb-2">
-                    <span className="text-[#3A4D39] font-medium">
-                      #01 Digester
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />{" "}
-                      Online
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm border-b border-gray-100 pb-2">
-                    <span className="text-[#3A4D39] font-medium">
-                      #02 Mixer
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />{" "}
-                      Online
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[#3A4D39] font-medium">
-                      #04 Calibrator
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />{" "}
-                      Maintenance
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>
       </section>
     </div>
+  );
+}
+
+function ActiveMachinesDisplay() {
+  const [data, setData] = useState({
+    active_machines: 0,
+    total_machines: 0,
+    percent_active: 0,
+    loading: true,
+  });
+
+  useEffect(() => {
+    let mounted = true;
+    const base = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    const url = `${base.replace(/\/$/, "")}/management/status/active-machines`;
+
+    fetch(url)
+      .then((res) => res.json())
+      .then((json) => {
+        if (!mounted) return;
+        if (json && json.ok && json.status) {
+          setData({ ...json.status, loading: false });
+        } else {
+          setData((s) => ({ ...s, loading: false }));
+        }
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setData((s) => ({ ...s, loading: false }));
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const { active_machines, total_machines, percent_active, loading } = data;
+
+  return (
+    <>
+      <div className="flex items-baseline gap-1 mt-1">
+        <h3 className="text-4xl font-black text-[#3A4D39]">
+          {loading ? "—" : String(active_machines).padStart(2, "0")}
+        </h3>
+        <span className="text-sm font-medium text-gray-400">
+          / {loading ? "—" : total_machines}
+        </span>
+      </div>
+      <span className="text-xs font-bold text-gray-500 uppercase mt-1">
+        Active Machines
+      </span>
+
+      <div className="mt-4 w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+        <div
+          className="bg-[#4F6F52] h-full"
+          style={{ width: loading ? "0%" : `${percent_active}%` }}
+        />
+      </div>
+      <p className="text-[10px] text-gray-400 mt-2 font-medium">
+        {loading ? "Loading status..." : "System healthy and operational."}
+      </p>
+    </>
   );
 }
 

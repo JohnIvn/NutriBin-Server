@@ -15,12 +15,10 @@ export default function Header() {
 
   const navLinksLeft = [
     { name: "Home", href: "/" },
-    { name: "Guide", href: "/guide" },
   ];
 
   const navLinksRight = [
     { name: "Login", href: "/login" },
-    { name: "Register", href: "/register", isButton: true },
   ];
 
   return (

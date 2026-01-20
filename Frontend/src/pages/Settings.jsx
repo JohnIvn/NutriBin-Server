@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { User, Lock, AlertTriangle, Camera, Eye, EyeOff } from "lucide-react";
 
 function Account() {
@@ -66,6 +67,9 @@ function Account() {
       number: "",
     },
   });
+
+  const getInitials = (first, last) =>
+    `${first?.[0] || ""}${last?.[0] || ""}`.toUpperCase();
 
   useEffect(() => {
     const userId = user?.staff_id || user?.admin_id;
@@ -293,23 +297,20 @@ function Account() {
                     htmlFor="avatar-input"
                     className="block w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50 cursor-pointer hover:opacity-90"
                   >
-                    {previewUrl ? (
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : currentAvatar ? (
-                      <img
-                        src={currentAvatar}
-                        alt="Avatar"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        No Photo
-                      </div>
-                    )}
+                    <Avatar className="w-full h-full">
+                      {previewUrl ? (
+                        <AvatarImage src={previewUrl} alt="Preview" />
+                      ) : currentAvatar ? (
+                        <AvatarImage src={currentAvatar} alt="Avatar" />
+                      ) : (
+                        <AvatarFallback className="bg-[#4F6F52]/10 text-[#4F6F52] font-bold text-xl">
+                          {getInitials(
+                            form.getValues().firstname || user?.first_name,
+                            form.getValues().lastname || user?.last_name,
+                          )}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
                     <div className="absolute right-0 bottom-0 -mb-1 -mr-1 bg-white rounded-full p-1 shadow">
                       <Camera className="w-4 h-4 text-gray-600" />
                     </div>

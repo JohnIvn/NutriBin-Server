@@ -22,7 +22,10 @@ export class LoginMonitorController {
     // Derive siteVisited from headers if not explicitly provided.
     let derivedSite: string | undefined = body.siteVisited;
     try {
-      const origin = (headers?.origin || headers?.referer || headers?.host || '') as string;
+      const origin = (headers?.origin ||
+        headers?.referer ||
+        headers?.host ||
+        '') as string;
       if (!derivedSite && origin) {
         if (
           origin.includes('nutribin-admin.up.railway.app') ||

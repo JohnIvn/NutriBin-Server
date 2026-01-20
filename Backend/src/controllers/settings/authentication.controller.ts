@@ -158,7 +158,9 @@ export class AuthenticationController {
       }
 
       const record = result.rows[0];
-      console.log(`[MFA] Record mfa_token: ${record.mfa_token}, Provided: ${body.token}`);
+      console.log(
+        `[MFA] Record mfa_token: ${record.mfa_token}, Provided: ${body.token}`,
+      );
 
       // Determine if this authentication row belongs to an admin
       const isAdmin = record.admin_id === userId;
@@ -171,7 +173,10 @@ export class AuthenticationController {
         throw new BadRequestException('Invalid MFA token');
       }
 
-      if (record.mfa_token_expiry && new Date(record.mfa_token_expiry) < new Date()) {
+      if (
+        record.mfa_token_expiry &&
+        new Date(record.mfa_token_expiry) < new Date()
+      ) {
         throw new BadRequestException('MFA token has expired');
       }
 
@@ -216,13 +221,14 @@ export class AuthenticationController {
       };
 
       // Determine which column matched for clearing the token
-      const matchedColumn = record.admin_id === userId ? 'admin_id' : 'staff_id';
+      const matchedColumn =
+        record.admin_id === userId ? 'admin_id' : 'staff_id';
 
       // Clear the token AFTER fetching user data (don't await, let it clear in background)
       const updateQuery = `UPDATE authentication SET mfa_token = NULL, mfa_token_expiry = NULL WHERE ${matchedColumn} = $1`;
-      client.query(updateQuery, [userId]).catch((err) =>
-        console.error('Error clearing MFA token:', err),
-      );
+      client
+        .query(updateQuery, [userId])
+        .catch((err) => console.error('Error clearing MFA token:', err));
 
       return {
         ok: true,

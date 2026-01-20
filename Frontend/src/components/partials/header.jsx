@@ -13,13 +13,9 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinksLeft = [
-    { name: "Home", href: "/" },
-  ];
+  const navLinksLeft = [{ name: "Help", href: "/guide" }];
 
-  const navLinksRight = [
-    { name: "Login", href: "/login" },
-  ];
+  const navLinksRight = [{ name: "Login", href: "/login" }];
 
   return (
     <>
@@ -46,7 +42,7 @@ export default function Header() {
 
           <div className="flex-shrink-0 relative z-10">
             <Link
-              to="/"
+              to="/home"
               className="group block text-center"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >

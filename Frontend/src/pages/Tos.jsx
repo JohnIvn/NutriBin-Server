@@ -194,21 +194,7 @@ export default function Tos() {
               </div>
             </div>
 
-            {/* ACCEPT / DECLINE - Paremove nalang clark pag na copy mona para sa user TOS modal */}
-            <div className="pt-10 border-t border-[#ECE3CE] mt-12">
-              <div className="flex flex-col sm:flex-row justify-center gap-6">
-                <Button className="bg-[#3A4D39] hover:bg-[#4F6F52] text-white h-14 px-12 text-lg rounded-full font-bold shadow-lg shadow-[#3A4D39]/20 transition-all hover:-translate-y-1 cursor-pointer">
-                  <Check className="mr-2 h-6 w-6" /> I Accept the Terms
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="border-2 border-[#ECE3CE] text-[#739072] hover:text-[#3A4D39] hover:border-[#3A4D39] hover:bg-[#ECE3CE]/20 h-14 px-12 text-lg rounded-full font-bold transition-all cursor-pointer"
-                >
-                  Decline
-                </Button>
-              </div>
-            </div>
+            {/* Accept/Decline buttons removed for policies page */}
           </CardContent>
         </Card>
       </main>

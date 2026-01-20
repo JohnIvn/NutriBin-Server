@@ -24,6 +24,7 @@ import Studies from "@/pages/Studies";
 import Guide from "@/pages/Guide";
 import Announcements from "@/pages/Announcements";
 import Emissions from "@/pages/Emissions";
+import Home from "@/pages/Home";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -193,6 +194,7 @@ function PageRouter() {
       <Route path="/socials" element={<Socials />} />
       <Route path="/studies" element={<Studies />} />
       <Route path="/guide" element={<Guide />} />
+      <Route path="/home" element={<Home />} />
       <Route path="/guides" element={<Guide />} />
     </Routes>
   );

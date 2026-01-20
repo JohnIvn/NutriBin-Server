@@ -9,6 +9,7 @@ import { MachineManagementController } from './controllers/management/machine-ma
 import { MachineHealthController } from './controllers/management/machine-health.controller';
 import { SettingsController } from './controllers/settings/settings.controller';
 import { AuthenticationController } from './controllers/settings/authentication.controller';
+import { CodesController } from './controllers/codes.controller';
 import { AnnouncementsController } from './controllers/announcements.controller';
 import { SalesController } from './controllers/sales.controller';
 
@@ -30,6 +31,7 @@ import { BrevoService } from './service/email/brevo.service';
     MachineHealthController,
     SettingsController,
     AuthenticationController,
+    CodesController,
     AnnouncementsController,
     SalesController,
   ],

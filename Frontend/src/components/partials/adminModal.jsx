@@ -54,6 +54,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   // const [codeSent, setCodeSent] = useState(false);
   const [codeFormatValid, setCodeFormatValid] = useState(false);
   const [codeError, setCodeError] = useState("");
+  const [codeVerified, setCodeVerified] = useState(false);
   const [googleError, setGoogleError] = useState("");
 
   const isEdit = mode === "edit";
@@ -121,6 +122,54 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     setCodeFormatValid(/^\d{6}$/.test(emailVerificationCode.trim()));
     setCodeError("");
   }, [emailVerificationCode]);
+
+  useEffect(() => {
+    if (!codeFormatValid) {
+      setCodeVerified(false);
+      return;
+    }
+
+    // Only verify when email is present and it's either a create or an edited email
+    if (!email) return;
+    if (isEdit && !emailChanged) return;
+    if (emailAvailable === false) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await Requests({
+          url: "/codes/check",
+          method: "POST",
+          data: {
+            email: email.trim().toLowerCase(),
+            code: emailVerificationCode.trim(),
+            purpose: "email_verification",
+          },
+          credentials: true,
+        });
+        if (response.data?.valid) {
+          setCodeVerified(true);
+          setCodeError("");
+          form.clearErrors("emailVerificationCode");
+        } else {
+          setCodeVerified(false);
+          setCodeError(response.data?.message || "Invalid code");
+        }
+      } catch (err) {
+        setCodeVerified(false);
+        setCodeError("Failed to verify code");
+      }
+    }, 600);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    codeFormatValid,
+    emailVerificationCode,
+    email,
+    emailAvailable,
+    isEdit,
+    emailChanged,
+    form,
+  ]);
 
   useEffect(() => {
     if (!email || email.length < 3) {
@@ -198,14 +247,23 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   async function onSubmit(values) {
     try {
       const formData = { ...values };
-      if (emailChanged) {
+      if (isEdit) {
+        if (emailChanged) {
+          if (!values.emailVerificationCode?.trim()) {
+            toast.error("Enter verification code");
+            return;
+          }
+          formData.emailVerificationCode = values.emailVerificationCode.trim();
+        } else {
+          delete formData.emailVerificationCode;
+        }
+      } else {
+        // Creating new staff: require verification code
         if (!values.emailVerificationCode?.trim()) {
           toast.error("Enter verification code");
           return;
         }
         formData.emailVerificationCode = values.emailVerificationCode.trim();
-      } else {
-        delete formData.emailVerificationCode;
       }
 
       if (isEdit && staff) {
@@ -565,11 +623,41 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                                   )
                                 }
                               />
+
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                                {!codeFormatValid && (
+                                  <span className="text-gray-400 text-xs">
+                                    •••
+                                  </span>
+                                )}
+                                {codeFormatValid &&
+                                  !codeVerified &&
+                                  !codeError && (
+                                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                                  )}
+                                {codeVerified && (
+                                  <CheckCircle2
+                                    className="w-4 h-4 text-green-500"
+                                    title="Code verified"
+                                  />
+                                )}
+                                {codeError && (
+                                  <XCircle
+                                    className="w-4 h-4 text-red-500"
+                                    title={codeError}
+                                  />
+                                )}
+                              </div>
                             </div>
                             <div className="min-h-[1rem]">
                               {codeError && (
                                 <p className="text-[11px] text-red-500">
                                   {codeError}
+                                </p>
+                              )}
+                              {codeVerified && (
+                                <p className="text-[11px] text-green-600">
+                                  Code verified
                                 </p>
                               )}
                             </div>

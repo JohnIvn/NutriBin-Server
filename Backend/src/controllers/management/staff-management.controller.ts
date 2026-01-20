@@ -12,7 +12,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { randomInt } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import * as bcrypt from 'bcryptjs';
 
 import { DatabaseService } from '../../service/database/database.service';
@@ -138,6 +138,7 @@ export class StaffManagementController {
       contact?: string;
       address?: string;
       password?: string;
+      emailVerificationCode?: string;
     },
   ) {
     const client = this.databaseService.getClient();
@@ -165,6 +166,15 @@ export class StaffManagementController {
         throw new BadRequestException('Password is required');
       }
 
+      if (
+        !createData.emailVerificationCode ||
+        !/^[0-9]{6}$/.test(String(createData.emailVerificationCode).trim())
+      ) {
+        throw new BadRequestException(
+          'Email verification code is required and must be a 6-digit number',
+        );
+      }
+
       if (!birthday) {
         throw new BadRequestException('Birthday is required');
       }
@@ -184,6 +194,39 @@ export class StaffManagementController {
 
       if (existing.rows.length > 0) {
         throw new ConflictException('Email already exists');
+      }
+
+      // Verify email verification code using codes table (same approach as password reset)
+      try {
+        const codeResult = await client.query<{
+          code_id: string;
+          code: string;
+          expires_at: string;
+        }>(
+          `SELECT code_id, code, expires_at FROM codes
+           WHERE code = $1 AND purpose = 'email_verification' AND used = false
+           ORDER BY created_at DESC LIMIT 1`,
+          [String(createData.emailVerificationCode).trim()],
+        );
+
+        if (!codeResult.rowCount) {
+          throw new BadRequestException('Invalid or expired verification code');
+        }
+
+        const record = codeResult.rows[0];
+        const now = new Date();
+        const expiresAt = new Date(record.expires_at);
+        if (expiresAt < now) {
+          throw new BadRequestException('Verification code has expired');
+        }
+
+        // mark code as used
+        await client.query('UPDATE codes SET used = true WHERE code_id = $1', [
+          record.code_id,
+        ]);
+      } catch (err) {
+        if (err instanceof BadRequestException) throw err;
+        throw err;
       }
 
       // Hash password
@@ -464,6 +507,68 @@ export class StaffManagementController {
         throw error;
       }
 
+      throw new InternalServerErrorException(
+        'Failed to send verification code',
+      );
+    }
+  }
+
+  @Post('email-verification')
+  async sendEmailVerificationForSignup(@Body('newEmail') newEmail: string) {
+    const client = this.databaseService.getClient();
+
+    if (!newEmail?.trim()) {
+      throw new BadRequestException('Email is required');
+    }
+
+    const normalizedEmail = newEmail.trim().toLowerCase();
+
+    try {
+      // Ensure email is not already used
+      const existingEmail = await client.query(
+        'SELECT staff_id FROM user_staff WHERE email = $1 LIMIT 1',
+        [normalizedEmail],
+      );
+
+      if (existingEmail.rowCount) {
+        throw new ConflictException('Email already exists');
+      }
+
+      const code = String(randomInt(100000, 1000000));
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+      // For non-existing users, generate a transient user id so code can be stored
+      const userId = randomUUID();
+
+      await client.query(
+        `INSERT INTO codes (user_id, code, purpose, expires_at, used)
+         VALUES ($1, $2, $3, $4, false)`,
+        [userId, code, 'email_verification', expiresAt],
+      );
+
+      await this.mailer.sendMail({
+        to: normalizedEmail,
+        subject: 'Verify your NutriBin staff email',
+        html: `
+          <h2>Email Verification</h2>
+          <p>Use the verification code below to confirm your email address for your staff profile.</p>
+          <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${code}</p>
+          <p>This code expires in 10 minutes.</p>
+        `,
+      });
+
+      return {
+        ok: true,
+        message: 'Verification code sent to the email address',
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
       throw new InternalServerErrorException(
         'Failed to send verification code',
       );

@@ -21,7 +21,8 @@ function normalizeEmail(email: string): string {
 }
 
 function generateRandomPassword(length = 12): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()-_=+';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()-_=+';
   const buf = randomBytes(length);
   let out = '';
   for (let i = 0; i < length; i++) {
@@ -206,7 +207,7 @@ export class StaffAuthService {
         );
 
         // Send verification email
-        const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-mfa?token=${mfaToken}&adminId=${admin.id}`;
+        const verificationLink = `https://nutribin-admin.up.railway.app/verify-mfa?token=${mfaToken}&adminId=${admin.id}`;
         await this.mailer.sendMfaVerificationEmail(
           admin.email,
           admin.first_name,
@@ -306,7 +307,7 @@ export class StaffAuthService {
       );
 
       // Send verification email
-      const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-mfa?token=${mfaToken}&staffId=${staff.staff_id}`;
+      const verificationLink = `https://nutribin-admin.up.railway.app/verify-mfa?token=${mfaToken}&staffId=${staff.staff_id}`;
       await this.mailer.sendMfaVerificationEmail(
         staff.email,
         staff.first_name,
@@ -534,7 +535,11 @@ export class StaffAuthService {
 
       // Email the temporary password to the new staff member
       try {
-        await this.mailer.sendStaffWelcomeWithPassword(email, firstName || '', tempPassword);
+        await this.mailer.sendStaffWelcomeWithPassword(
+          email,
+          firstName || '',
+          tempPassword,
+        );
       } catch (mailErr) {
         console.error('Failed to send welcome email with password:', mailErr);
         // don't block account creation if email sending fails; just log

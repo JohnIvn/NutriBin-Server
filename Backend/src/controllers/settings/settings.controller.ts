@@ -423,6 +423,13 @@ export class SettingsController {
     }
   }
 
+  @Get(':staffId/password-reset')
+  async requestPasswordResetGet(@Param('staffId') staffId: string) {
+    // Compatibility: allow GET requests in deployment environments
+    // that might be invoking this endpoint via a browser or proxy.
+    return this.requestPasswordReset(staffId);
+  }
+
   @Post(':staffId/password-reset/verify')
   async verifyPasswordReset(
     @Param('staffId') staffId: string,

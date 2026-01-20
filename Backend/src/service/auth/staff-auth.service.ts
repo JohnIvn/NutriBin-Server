@@ -205,14 +205,34 @@ export class StaffAuthService {
            ON CONFLICT (admin_id) DO UPDATE SET mfa_token = $2, mfa_token_expiry = $3`,
           [admin.id, mfaToken, tokenExpiry],
         );
+        // Log the authentication row to verify token persisted
+        try {
+          const check = await client.query(
+            `SELECT mfa_token, mfa_token_expiry FROM authentication WHERE admin_id = $1 LIMIT 1`,
+            [admin.id],
+          );
+          console.log(
+            '[MFA DEBUG] authentication row (admin) after upsert:',
+            check.rows[0],
+          );
+        } catch (err) {
+          console.error(
+            '[MFA DEBUG] failed to read authentication row (admin):',
+            err,
+          );
+        }
 
         // Send verification email
         const verificationLink = `https://nutribin-admin.up.railway.app/verify-mfa?token=${mfaToken}&adminId=${admin.id}`;
-        await this.mailer.sendMfaVerificationEmail(
-          admin.email,
-          admin.first_name,
-          verificationLink,
-        );
+        try {
+          await this.mailer.sendMfaVerificationEmail(
+            admin.email,
+            admin.first_name,
+            verificationLink,
+          );
+        } catch (err) {
+          console.error('Failed to send MFA verification email (admin):', err);
+        }
 
         return {
           ok: true,
@@ -305,14 +325,34 @@ export class StaffAuthService {
          ON CONFLICT (staff_id) DO UPDATE SET mfa_token = $2, mfa_token_expiry = $3`,
         [staff.staff_id, mfaToken, tokenExpiry],
       );
+      // Log the authentication row to verify token persisted
+      try {
+        const check = await client.query(
+          `SELECT mfa_token, mfa_token_expiry FROM authentication WHERE staff_id = $1 LIMIT 1`,
+          [staff.staff_id],
+        );
+        console.log(
+          '[MFA DEBUG] authentication row (staff) after upsert:',
+          check.rows[0],
+        );
+      } catch (err) {
+        console.error(
+          '[MFA DEBUG] failed to read authentication row (staff):',
+          err,
+        );
+      }
 
       // Send verification email
       const verificationLink = `https://nutribin-admin.up.railway.app/verify-mfa?token=${mfaToken}&staffId=${staff.staff_id}`;
-      await this.mailer.sendMfaVerificationEmail(
-        staff.email,
-        staff.first_name,
-        verificationLink,
-      );
+      try {
+        await this.mailer.sendMfaVerificationEmail(
+          staff.email,
+          staff.first_name,
+          verificationLink,
+        );
+      } catch (err) {
+        console.error('Failed to send MFA verification email (staff):', err);
+      }
 
       return {
         ok: true,

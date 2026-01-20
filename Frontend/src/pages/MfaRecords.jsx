@@ -6,17 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Users, UserCog } from "lucide-react";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Requests from "@/utils/Requests";
 import {
@@ -28,11 +22,12 @@ import {
 } from "@/components/ui/pagination";
 import { useForm } from "react-hook-form";
 
-export default function LoginRecords() {
+export default function MfaRecords() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("customers");
 
   const filterForm = useForm({ defaultValues: { count: "10", term: "" } });
 
@@ -42,7 +37,7 @@ export default function LoginRecords() {
       try {
         setLoading(true);
         const res = await Requests({
-          url: "/management/login-records",
+          url: "/management/mfa-records",
           method: "GET",
           credentials: true,
         });
@@ -78,18 +73,32 @@ export default function LoginRecords() {
     }
   };
 
-  const filtered = records.filter((r) => {
-    const term = filterForm.watch("term").toLowerCase();
+  const term = filterForm.watch("term").toLowerCase();
+
+  const customers = records.filter(
+    (r) => (r.user_type || "").toLowerCase() === "customer",
+  );
+  const staff = records.filter(
+    (r) => (r.user_type || "").toLowerCase() === "staff",
+  );
+  const admins = records.filter(
+    (r) => (r.user_type || "").toLowerCase() === "admin",
+  );
+
+  const currentData =
+    activeTab === "customers"
+      ? customers
+      : activeTab === "staff"
+        ? staff
+        : admins;
+
+  const filtered = currentData.filter((r) => {
     if (!term) return true;
     return (
-      (r.attempt_id || "").toLowerCase().includes(term) ||
-      (r.user_type || "").toLowerCase().includes(term) ||
-      (r.admin_id || r.staff_id || r.customer_id || "")
-        .toString()
-        .toLowerCase()
-        .includes(term) ||
-      (r.ip_address || "").toLowerCase().includes(term) ||
-      (r.site_visited || "").toLowerCase().includes(term)
+      (r.full_name || "").toLowerCase().includes(term) ||
+      (r.email || "").toLowerCase().includes(term) ||
+      (r.identifier || "").toLowerCase().includes(term) ||
+      (r.authentication_type || "").toLowerCase().includes(term)
     );
   });
 
@@ -105,15 +114,51 @@ export default function LoginRecords() {
         <div className="flex items-center justify-between border-l-4 border-[#4F6F52] pl-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
-              Login Records
+              MFA Records
             </h1>
             <p className="text-sm text-muted-foreground italic mt-1">
-              Recent login attempts and metadata
+              Multi-factor authentication records for all users
             </p>
           </div>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-xl overflow-hidden w-full">
+          <div className="flex gap-3 px-5 pt-5">
+            <Button
+              variant={activeTab === "customers" ? "default" : "outline"}
+              onClick={() => {
+                setActiveTab("customers");
+                setCurrentPage(1);
+              }}
+              className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 ${activeTab === "customers" ? "bg-[#4F6F52] text-white" : "bg-white border-gray-200 text-gray-700"}`}
+            >
+              <Users size={16} />
+              <span className="font-semibold">Customers</span>
+            </Button>
+            <Button
+              variant={activeTab === "staff" ? "default" : "outline"}
+              onClick={() => {
+                setActiveTab("staff");
+                setCurrentPage(1);
+              }}
+              className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 ${activeTab === "staff" ? "bg-[#4F6F52] text-white" : "bg-white border-gray-200 text-gray-700"}`}
+            >
+              <UserCog size={16} />
+              <span className="font-semibold">Staff</span>
+            </Button>
+            <Button
+              variant={activeTab === "admins" ? "default" : "outline"}
+              onClick={() => {
+                setActiveTab("admins");
+                setCurrentPage(1);
+              }}
+              className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 ${activeTab === "admins" ? "bg-[#4F6F52] text-white" : "bg-white border-gray-200 text-gray-700"}`}
+            >
+              <UserCog size={16} />
+              <span className="font-semibold">Admins</span>
+            </Button>
+          </div>
+
           <div className="p-5 border-b border-gray-50 flex flex-col md:flex-row gap-4 items-center justify-between bg-white">
             <Form {...filterForm}>
               <div className="flex flex-col md:flex-row gap-4 items-center w-full">
@@ -126,7 +171,7 @@ export default function LoginRecords() {
                       <FormItem className="w-full">
                         <FormControl>
                           <Input
-                            placeholder="Filter by id, type, ip or identifier..."
+                            placeholder="Filter by name, email or mfa..."
                             className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] text-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-11"
                             {...field}
                           />
@@ -145,21 +190,15 @@ export default function LoginRecords() {
                     name="count"
                     render={({ field }) => (
                       <FormItem>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value.toString()}
+                        <select
+                          onChange={(e) => field.onChange(e.target.value)}
+                          value={field.value}
+                          className="w-20 h-11 border-gray-200 text-[#4F6F52] font-bold"
                         >
-                          <FormControl>
-                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52] font-bold text-[#4F6F52] cursor-pointer">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="25">25</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <option value="10">10</option>
+                          <option value="25">25</option>
+                          <option value="50">50</option>
+                        </select>
                       </FormItem>
                     )}
                   />
@@ -176,31 +215,35 @@ export default function LoginRecords() {
               <TableHeader className="bg-gray-50/50">
                 <TableRow className="hover:bg-transparent border-b border-gray-100">
                   <TableHead className="font-bold text-gray-700 py-4 pl-6">
-                    TIMESTAMP
+                    {activeTab === "customers"
+                      ? "CUSTOMER ID"
+                      : activeTab === "staff"
+                        ? "STAFF ID"
+                        : "ADMIN ID"}
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
-                    USER TYPE
+                    FULL NAME
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
-                    IDENTIFIER
+                    EMAIL
                   </TableHead>
+                  <TableHead className="font-bold text-gray-700">MFA</TableHead>
                   <TableHead className="font-bold text-gray-700">
-                    SITE
+                    ENABLED
                   </TableHead>
-                  {/* IP ADDRESS column hidden for now */}
                   <TableHead className="text-right font-bold text-gray-700 pr-6">
-                    STATUS
+                    CREATED
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-64 text-center">
+                    <TableCell colSpan={6} className="h-64 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
                         <p className="text-gray-400 font-medium">
-                          Fetching login records...
+                          Fetching MFA records...
                         </p>
                       </div>
                     </TableCell>
@@ -208,54 +251,40 @@ export default function LoginRecords() {
                 ) : paginated.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="h-64 text-center text-gray-400 font-medium"
                     >
                       No records found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginated.map((r) => (
+                  paginated.map((r, idx) => (
                     <TableRow
-                      key={r.attempt_id}
+                      key={`${r.user_type}-${r.identifier}-${idx}`}
                       className="hover:bg-gray-50/30 transition-all"
                     >
-                      <TableCell className="font-mono text-[#4F6F52] font-bold pl-6">
-                        {formatDate(r.date_created)}
+                      <TableCell className="pl-6 font-mono text-xs text-gray-500">
+                        {(r.identifier || "").slice
+                          ? (r.identifier || "").slice(0, 8) + "..."
+                          : r.identifier}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col py-2">
-                          <span className="font-semibold text-gray-900 leading-none mb-1">
-                            {r.user_type || "-"}
-                          </span>
-                        </div>
+                      <TableCell className="font-semibold text-gray-800">
+                        {r.full_name || "-"}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col py-2">
-                          <span className="font-semibold text-gray-900 leading-none mb-1">
-                            {r.full_name ||
-                              r.admin_id ||
-                              r.staff_id ||
-                              r.customer_id ||
-                              "-"}
-                          </span>
-                          <span className="text-xs text-gray-500 font-medium">
-                            {r.email || "—"}
-                          </span>
-                        </div>
+                      <TableCell className="text-gray-600">
+                        {r.email || "—"}
                       </TableCell>
-                      <TableCell className="text-gray-600 font-medium">
-                        {r.site_visited || "-"}
+                      <TableCell className="text-gray-600">
+                        {r.authentication_type &&
+                        r.authentication_type !== "N/A"
+                          ? r.authentication_type
+                          : "nothing"}
                       </TableCell>
-                      <TableCell className="text-right pr-6">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter ${r.success ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100"}`}
-                        >
-                          <div
-                            className={`${r.success ? "w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" : "w-1.5 h-1.5 rounded-full bg-red-500"}`}
-                          />
-                          {r.success ? "Success" : "Failed"}
-                        </span>
+                      <TableCell className="text-gray-600">
+                        {r.enabled ? "Yes" : "No"}
+                      </TableCell>
+                      <TableCell className="text-gray-600 text-right pr-6">
+                        {formatDate(r.auth_date_created || r.date_created)}
                       </TableCell>
                     </TableRow>
                   ))

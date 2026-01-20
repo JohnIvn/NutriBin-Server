@@ -13,9 +13,11 @@ import {
   Cloud,
   Megaphone,
   Activity,
+  LogIn,
   Users as UsersIcon,
   UserCog,
   Archive,
+  Key,
   Settings,
   LogOut,
   ChevronDown,
@@ -192,6 +194,20 @@ export default function Sidebar() {
           active={isActive("/announcements")}
           collapsed={shouldCollapse}
         />
+        <NavItem
+          to="/login-records"
+          icon={LogIn}
+          label="Login Records"
+          active={isActive("/login-records")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/mfa-records"
+          icon={Key}
+          label="MFA Records"
+          active={isActive("/mfa-records")}
+          collapsed={shouldCollapse}
+        />
 
         {user?.role === "admin" && (
           <>
@@ -208,13 +224,6 @@ export default function Sidebar() {
               icon={Archive}
               label="Archives"
               active={isActive("/archives")}
-              collapsed={shouldCollapse}
-            />
-            <NavItem
-              to="/login-records"
-              icon={Activity}
-              label="Login Records"
-              active={isActive("/login-records")}
               collapsed={shouldCollapse}
             />
           </>

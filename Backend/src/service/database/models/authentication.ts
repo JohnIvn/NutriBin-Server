@@ -13,7 +13,7 @@ export async function createAuthenticationTable(client: Client) {
   await client.query(`
     DO $$
     BEGIN
-      CREATE TYPE user_type AS ENUM ('N/A', 'staff', 'admin');
+      CREATE TYPE user_type AS ENUM ('N/A', 'staff', 'admin', 'customer');
     EXCEPTION
       WHEN duplicate_object THEN NULL;
     END;
@@ -24,6 +24,7 @@ export async function createAuthenticationTable(client: Client) {
       authentication_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       staff_id text,
       admin_id text,
+      customer_id uuid REFERENCES user_customer(customer_id) ON DELETE SET NULL,
       user_type user_type DEFAULT 'N/A',
       authentication_type authentication_type DEFAULT 'N/A',
       enabled boolean DEFAULT false,

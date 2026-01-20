@@ -78,19 +78,6 @@ export class SettingsController {
     );
   }
 
-  private async ensureResetTable() {
-    const client = this.databaseService.getClient();
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS staff_password_resets (
-        reset_id SERIAL PRIMARY KEY,
-        staff_id UUID NOT NULL,
-        token VARCHAR(128) NOT NULL,
-        expires_at TIMESTAMPTZ NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `);
-  }
-
   @Get(':staffId')
   async getProfile(@Param('staffId') staffId: string) {
     if (!staffId) {

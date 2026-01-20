@@ -51,7 +51,7 @@ function Account() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [currentAvatar, setCurrentAvatar] = useState("");
+  const [currentAvatar, setCurrentAvatar] = useState(undefined);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const avatarInputRef = useRef(null);
@@ -114,7 +114,7 @@ function Account() {
             staff.profile_image ||
             staff.photo ||
             user?.avatar ||
-            "",
+            undefined,
         );
         setEmailShown(staff.email || user?.email || "");
       }
@@ -298,18 +298,18 @@ function Account() {
                     className="block w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50 cursor-pointer hover:opacity-90"
                   >
                     <Avatar className="w-full h-full">
-                      {previewUrl ? (
-                        <AvatarImage src={previewUrl} alt="Preview" />
-                      ) : currentAvatar ? (
-                        <AvatarImage src={currentAvatar} alt="Avatar" />
-                      ) : (
-                        <AvatarFallback className="bg-[#4F6F52]/10 text-[#4F6F52] font-bold text-xl">
-                          {getInitials(
-                            form.getValues().firstname || user?.first_name,
-                            form.getValues().lastname || user?.last_name,
-                          )}
-                        </AvatarFallback>
-                      )}
+                      <AvatarImage
+                        src={previewUrl || currentAvatar || undefined}
+                        alt={previewUrl ? "Preview" : "Avatar"}
+                      />
+                      <AvatarFallback className="bg-[#4F6F52]/10 text-[#4F6F52] font-bold text-xl">
+                        {getInitials(
+                          form.getValues().firstname ||
+                            user?.first_name ||
+                            user?.email?.[0],
+                          form.getValues().lastname || user?.last_name || "",
+                        )}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="absolute right-0 bottom-0 -mb-1 -mr-1 bg-white rounded-full p-1 shadow">
                       <Camera className="w-4 h-4 text-gray-600" />

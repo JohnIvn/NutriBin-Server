@@ -126,7 +126,7 @@ export default function LoginRecords() {
                       <FormItem className="w-full">
                         <FormControl>
                           <Input
-                            placeholder="Filter by id, type, ip or identifier..."
+                            placeholder="Filter by id, type, ip or full name..."
                             className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] text-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-11"
                             {...field}
                           />
@@ -182,7 +182,7 @@ export default function LoginRecords() {
                     USER TYPE
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
-                    IDENTIFIER
+                    FULL NAME
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
                     SITE

@@ -94,7 +94,9 @@ export default function Sidebar() {
   return (
     <aside
       className={`${
-        shouldCollapse ? "w-16" : "w-60"
+        shouldCollapse
+          ? "w-16 min-w-[4rem] max-w-[4rem]"
+          : "w-60 min-w-[15rem] max-w-[15rem]"
       } h-screen bg-white border-r border-gray-200 sticky top-0 left-0 z-40 transition-[width] duration-200 flex flex-col shadow-sm`}
       onMouseEnter={() => {
         if (sidebarMode === "hover") setIsHovering(true);
@@ -156,10 +158,10 @@ export default function Sidebar() {
           collapsed={shouldCollapse}
         />
         <NavItem
-          to="/repair"
+          to="/repairs"
           icon={Wrench}
           label="Repairs"
-          active={isActive("/repair")}
+          active={isActive("/repairs")}
           collapsed={shouldCollapse}
         />
         <NavItem

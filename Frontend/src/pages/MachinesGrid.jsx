@@ -146,11 +146,10 @@ function MachinesGrid() {
                 </div>
                 <div className="text-center">
                   <h3 className="font-bold text-[black] text-lg group-hover:text-[#4F6F52] transition-colors">
-                    {machine.machine_id}
+                    {machine.first_name} {machine.last_name}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1 flex items-center justify-center gap-1">
-                    <User className="h-3 w-3" /> {machine.first_name}{" "}
-                    {machine.last_name}
+                    <User className="h-3 w-3" /> {machine.machine_id}
                   </p>
                 </div>
               </div>

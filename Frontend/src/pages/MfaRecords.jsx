@@ -224,9 +224,6 @@ export default function MfaRecords() {
                   <TableHead className="font-bold text-gray-700">
                     FULL NAME
                   </TableHead>
-                  <TableHead className="font-bold text-gray-700">
-                    EMAIL
-                  </TableHead>
                   <TableHead className="font-bold text-gray-700">MFA</TableHead>
                   <TableHead className="font-bold text-gray-700">
                     ENABLED
@@ -239,7 +236,7 @@ export default function MfaRecords() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-64 text-center">
+                    <TableCell colSpan={5} className="h-64 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
                         <p className="text-gray-400 font-medium">
@@ -251,7 +248,7 @@ export default function MfaRecords() {
                 ) : paginated.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={5}
                       className="h-64 text-center text-gray-400 font-medium"
                     >
                       No records found.
@@ -263,16 +260,18 @@ export default function MfaRecords() {
                       key={`${r.user_type}-${r.identifier}-${idx}`}
                       className="hover:bg-gray-50/30 transition-all"
                     >
-                      <TableCell className="pl-6 font-mono text-xs text-gray-500">
-                        {(r.identifier || "").slice
-                          ? (r.identifier || "").slice(0, 8) + "..."
-                          : r.identifier}
+                      <TableCell className="font-mono text-[#4F6F52] font-bold pl-6">
+                        {r.identifier}
                       </TableCell>
-                      <TableCell className="font-semibold text-gray-800">
-                        {r.full_name || "-"}
-                      </TableCell>
-                      <TableCell className="text-gray-600">
-                        {r.email || "—"}
+                      <TableCell>
+                        <div className="flex flex-col py-2">
+                          <span className="font-semibold text-gray-900 leading-none mb-1">
+                            {r.full_name || "-"}
+                          </span>
+                          <span className="text-xs text-gray-500 font-medium">
+                            {r.email || "—"}
+                          </span>
+                        </div>
                       </TableCell>
                       <TableCell className="text-gray-600">
                         {r.authentication_type &&

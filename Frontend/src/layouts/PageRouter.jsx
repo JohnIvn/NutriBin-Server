@@ -135,7 +135,7 @@ function PageRouter() {
         }
       />
       <Route
-        path="/repair"
+        path="/repairs"
         element={
           <ProtectedRoute>
             <Machines />

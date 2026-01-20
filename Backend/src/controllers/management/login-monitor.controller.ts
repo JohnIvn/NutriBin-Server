@@ -21,26 +21,30 @@ export class LoginMonitorController {
   ) {
     // Derive siteVisited from headers if not explicitly provided.
     let derivedSite: string | undefined = body.siteVisited;
+
     try {
-      const origin = (headers?.origin ||
-        headers?.referer ||
-        headers?.host ||
-        '') as string;
-      if (!derivedSite && origin) {
-        if (
-          origin.includes('nutribin-admin.up.railway.app') ||
-          origin.includes('nutribin-server-backend-production.up.railway.app')
-        ) {
+      const candidates = [
+        headers?.origin,
+        headers?.referer,
+        headers?.host,
+        headers?.['x-forwarded-host'],
+        headers?.['x-original-host'],
+        headers?.['x-forwarded-for'],
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      if (!derivedSite && candidates) {
+        // Prioritize explicit admin indicators
+        if (/(admin|staff|server-backend)/.test(candidates)) {
           derivedSite = 'admin/staff portal';
-        } else if (
-          origin.includes('nutribin.up.railway.app') ||
-          origin.includes('nutribin-user-backend-production.up.railway.app')
-        ) {
+        } else if (/(nutribin|user|frontend|up\.railway\.app)/.test(candidates)) {
           derivedSite = 'user website';
         }
       }
     } catch (e) {
-      derivedSite = body.siteVisited;
+      // noop - leave derivedSite as provided or undefined
     }
 
     const result = await this.monitor.recordLogin({

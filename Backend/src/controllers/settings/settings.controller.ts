@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { randomInt } from 'crypto';
+import { randomInt, randomBytes } from 'crypto';
 
 import { DatabaseService } from '../../service/database/database.service';
 import { BrevoService } from '../../service/email/brevo.service';
@@ -392,26 +392,25 @@ export class SettingsController {
 
       const staff = userResult.rows[0];
 
-      // Clear previous codes for this user and purpose
+      // Clear previous tokens/codes for this user and purpose
       await client.query(
         `DELETE FROM codes WHERE user_id = $1 AND purpose = 'password_reset' AND used = false`,
         [staffId],
       );
 
-      const code = String(randomInt(100000, 1000000));
+      // Generate a secure token and store it (expires in 1 hour)
+      const token = randomBytes(32).toString('hex');
 
       await client.query(
         `INSERT INTO codes (user_id, code, purpose, expires_at)
-         VALUES ($1, $2, 'password_reset', NOW() + INTERVAL '15 minutes')`,
-        [staffId, code],
+         VALUES ($1, $2, 'password_reset', NOW() + INTERVAL '1 hour')`,
+        [staffId, token],
       );
 
       try {
-        await this.mailer.sendPasswordResetCodeEmail(staff.email, code);
+        await this.mailer.sendPasswordResetEmail(staff.email, token, staffId);
       } catch (mailErr) {
-        // Log the detailed mail error for production debugging
         console.error('password reset email error:', mailErr);
-        // Throw a clearer error so the client sees a specific failure
         throw new InternalServerErrorException(
           'Failed to send password reset email',
         );
@@ -419,7 +418,7 @@ export class SettingsController {
 
       return {
         ok: true,
-        message: 'Password reset code sent to your email',
+        message: 'Password reset link sent to your email',
       };
     } catch (error) {
       if (
@@ -451,13 +450,10 @@ export class SettingsController {
     @Body() body: { code?: string; newPassword?: string },
   ) {
     if (!staffId) throw new BadRequestException('staffId is required');
-    const code = body?.code?.trim();
+    const code = body?.code?.toString().trim();
     const newPassword = body?.newPassword;
-
-    if (!code || !/^\d{6}$/.test(code)) {
-      throw new BadRequestException(
-        'Verification code must be a 6-digit number',
-      );
+    if (!code) {
+      throw new BadRequestException('Verification token is required');
     }
     if (!newPassword || newPassword.length < 8) {
       throw new BadRequestException(

@@ -73,6 +73,14 @@ export default function MfaRecords() {
     }
   };
 
+  const formatAuthenticationType = (type) => {
+    const t = (type || "").toString().toLowerCase().trim();
+    if (!t || t === "nothing" || t === "n/a") return "N/A";
+    if (t === "email") return "Email";
+    if (t === "sms") return "SMS";
+    return type;
+  };
+
   const term = filterForm.watch("term").toLowerCase();
 
   const customers = records.filter(
@@ -274,10 +282,7 @@ export default function MfaRecords() {
                         </div>
                       </TableCell>
                       <TableCell className="text-gray-600">
-                        {r.authentication_type &&
-                        r.authentication_type !== "N/A"
-                          ? r.authentication_type
-                          : "nothing"}
+                        {formatAuthenticationType(r.authentication_type)}
                       </TableCell>
                       <TableCell className="text-gray-600">
                         {r.enabled ? "Yes" : "No"}

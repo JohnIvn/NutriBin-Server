@@ -252,7 +252,7 @@ export class RepairManagementController {
               machineId,
               issueType,
               status: repair.repair_status,
-              description: repair.description,
+              description: repair.description ?? undefined,
             });
           }
         }

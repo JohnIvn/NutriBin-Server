@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
+import { useEffect, useState } from "react";
+import Requests from "@/utils/Requests";
 import {
   Card,
   CardContent,
@@ -110,16 +112,61 @@ function ActivityItem({ icon: Icon, title, when }) {
 function Analytics() {
   const { user } = useUser();
 
-  // Placeholder stats — will wire to real APIs on request
-  const stats = {
-    machinesActive: 5,
-    machinesTotal: 10,
-    fertilizerYieldKg: 12.32,
-    salesToday: 8,
-    usersCount: 124,
-    repairsPending: 2,
-    firmwarePending: 3,
-  };
+  const [stats, setStats] = useState({
+    machinesActive: 0,
+    machinesTotal: 0,
+    fertilizerYieldKg: 0,
+    salesToday: 0,
+    usersCount: 0,
+  });
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      try {
+        const res = await Requests({ url: "/dashboard/summary" });
+        const body = res.data;
+        if (!mounted) return;
+
+        if (body && body.ok) {
+          const c = body.counts || {};
+          const s = body.sums || {};
+
+          setStats((prev) => ({
+            ...prev,
+            machinesActive: parseInt(c.active_machines || 0, 10),
+            machinesTotal: parseInt(c.total_machines || 0, 10),
+            fertilizerYieldKg: 0,
+            salesToday: s.sales_last_24h || 0,
+            usersCount: parseInt(c.total_customers || 0, 10),
+          }));
+
+          const recent = (body.recent_sales || []).map((r) => ({
+            id: r.sale_id,
+            icon: DollarSign,
+            title: `${r.product || "Sale"} — $${r.amount}`,
+            when: r.sale_date
+              ? new Date(r.sale_date).toLocaleString()
+              : r.date_created,
+          }));
+
+          setRecentActivity(recent);
+        }
+      } catch (e) {
+        console.error("Failed to load dashboard summary", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
@@ -222,26 +269,7 @@ function Analytics() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              {[
-                {
-                  id: 1,
-                  icon: Activity,
-                  title: "Firmware v1.2.3 released",
-                  when: "2h ago",
-                },
-                {
-                  id: 2,
-                  icon: Wrench,
-                  title: "Repair scheduled for #03 Mixer",
-                  when: "6h ago",
-                },
-                {
-                  id: 3,
-                  icon: DollarSign,
-                  title: "8 sales processed today",
-                  when: "1d ago",
-                },
-              ].map((a) => (
+              {(loading ? [] : recentActivity).map((a) => (
                 <ActivityItem
                   key={a.id}
                   icon={a.icon}

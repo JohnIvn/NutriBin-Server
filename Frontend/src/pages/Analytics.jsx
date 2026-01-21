@@ -122,6 +122,13 @@ function Analytics() {
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const formatPeso = (v) =>
+    new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+      maximumFractionDigits: 0,
+    }).format(Number(v) || 0);
+
   useEffect(() => {
     let mounted = true;
 
@@ -140,6 +147,7 @@ function Analytics() {
             machinesActive: parseInt(c.active_machines || 0, 10),
             machinesTotal: parseInt(c.total_machines || 0, 10),
             fertilizerYieldKg: 0,
+            // temporarily store raw sales value; we'll replace with average from /sales
             salesToday: s.sales_last_24h || 0,
             usersCount: parseInt(c.total_customers || 0, 10),
           }));
@@ -147,7 +155,7 @@ function Analytics() {
           const recent = (body.recent_sales || []).map((r) => ({
             id: r.sale_id,
             icon: DollarSign,
-            title: `${r.product || "Sale"} — $${r.amount}`,
+            title: `${r.product || "Sale"} — ${formatPeso(r.amount)}`,
             when: r.sale_date
               ? new Date(r.sale_date).toLocaleString()
               : r.date_created,
@@ -162,7 +170,26 @@ function Analytics() {
       }
     }
 
+    // Load dashboard summary first
     load();
+
+    // Also fetch sales to compute average order (display in sales KPI)
+    (async () => {
+      try {
+        const res = await Requests({ url: "/sales" });
+        const d = res?.data;
+        if (!mounted) return;
+        if (d?.ok && Array.isArray(d.sales) && d.sales.length) {
+          const amounts = d.sales.map((s) => Number(s.amount) || 0);
+          const total = amounts.reduce((a, b) => a + b, 0);
+          const avg = total / amounts.length;
+          setStats((prev) => ({ ...prev, salesToday: avg }));
+          // Also update recentActivity amounts if dashboard summary lacked them
+        }
+      } catch (err) {
+        // ignore
+      }
+    })();
     return () => {
       mounted = false;
     };

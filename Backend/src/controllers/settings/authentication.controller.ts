@@ -64,8 +64,8 @@ export class AuthenticationController {
     if (!userId) {
       throw new BadRequestException('userId is required');
     }
-    if (!body.mfaType || !['N/A', 'email'].includes(body.mfaType)) {
-      throw new BadRequestException('mfaType must be "N/A" or "email"');
+    if (!body.mfaType || !['N/A', 'email', 'sms'].includes(body.mfaType)) {
+      throw new BadRequestException('mfaType must be "N/A", "email" or "sms"');
     }
 
     const client = this.databaseService.getClient();
@@ -241,6 +241,98 @@ export class AuthenticationController {
       }
       console.error('Error verifying MFA:', error);
       throw new InternalServerErrorException('Failed to verify MFA');
+    }
+  }
+
+  @Post('verify-mfa-sms')
+  async verifyMfaSms(
+    @Body() body: { code?: string; staffId?: string; adminId?: string },
+  ) {
+    if (!body.code) throw new BadRequestException('code is required');
+    if (!body.staffId && !body.adminId)
+      throw new BadRequestException('staffId or adminId is required');
+
+    const client = this.databaseService.getClient();
+
+    try {
+      const userId = body.adminId || body.staffId;
+
+      // Get latest unused mfa code for this user
+      const codeResult = await client.query<{
+        code: string;
+        expires_at: string;
+        code_id: string;
+      }>(
+        `SELECT code, expires_at, code_id FROM codes
+         WHERE user_id = $1 AND purpose = 'mfa' AND used = false
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [userId],
+      );
+
+      if (!codeResult.rowCount) {
+        throw new BadRequestException('No MFA code found for this account');
+      }
+
+      const record = codeResult.rows[0];
+      const now = new Date();
+      const expiresAt = new Date(record.expires_at);
+      if (expiresAt < now) {
+        throw new BadRequestException('Verification code has expired');
+      }
+
+      if (record.code !== String(body.code).trim()) {
+        throw new BadRequestException(
+          'The verification code you entered is incorrect.',
+        );
+      }
+
+      // Mark code as used
+      await client.query('UPDATE codes SET used = true WHERE code_id = $1', [
+        record.code_id,
+      ]);
+
+      // Fetch user data to return after successful verification
+      let isAdmin = false;
+      const adminCheck = await client.query(
+        'SELECT admin_id FROM user_admin WHERE admin_id = $1 LIMIT 1',
+        [userId],
+      );
+      if (adminCheck.rowCount) isAdmin = true;
+
+      let userQuery = '';
+      if (isAdmin) {
+        userQuery = `SELECT admin_id as id, first_name, last_name, contact_number, address, email, date_created, last_updated, status FROM user_admin WHERE admin_id = $1`;
+      } else {
+        userQuery = `SELECT staff_id as id, first_name, last_name, contact_number, address, email, date_created, last_updated, status FROM user_staff WHERE staff_id = $1`;
+      }
+
+      const userResult = await client.query(userQuery, [userId]);
+      if (!userResult.rowCount) throw new BadRequestException('User not found');
+
+      const user = userResult.rows[0];
+      const safeUser = {
+        [isAdmin ? 'admin_id' : 'staff_id']: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        contact_number: user.contact_number,
+        address: user.address,
+        email: user.email,
+        date_created: user.date_created,
+        last_updated: user.last_updated,
+        status: user.status,
+        role: isAdmin ? 'admin' : 'staff',
+      };
+
+      return {
+        ok: true,
+        message: 'MFA verification successful',
+        staff: safeUser,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Error verifying MFA SMS:', error);
+      throw new InternalServerErrorException('Failed to verify MFA SMS');
     }
   }
 }

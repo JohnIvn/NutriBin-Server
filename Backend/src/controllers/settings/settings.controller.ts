@@ -608,4 +608,61 @@ export class SettingsController {
       throw new InternalServerErrorException('Failed to remove photo');
     }
   }
+
+  @Post(':staffId/mfa')
+  async setMfaSetting(
+    @Param('staffId') staffId: string,
+    @Body() body: { method?: 'email' | 'sms' | 'none'; enabled?: boolean },
+  ) {
+    if (!staffId) throw new BadRequestException('staffId is required');
+
+    const method = body?.method || 'none';
+    const enabled = body?.enabled === true;
+
+    const client = this.databaseService.getClient();
+
+    try {
+      // Determine whether it's an admin or staff
+      let userResult = await client.query(
+        'SELECT admin_id FROM user_admin WHERE admin_id = $1 LIMIT 1',
+        [staffId],
+      );
+
+      const isAdmin = (userResult.rowCount ?? 0) > 0;
+
+      if (!isAdmin) {
+        userResult = await client.query(
+          'SELECT staff_id FROM user_staff WHERE staff_id = $1 LIMIT 1',
+          [staffId],
+        );
+      }
+
+      if (!userResult.rowCount)
+        throw new NotFoundException('Account not found');
+
+      const authType =
+        method === 'sms' ? 'sms' : method === 'email' ? 'email' : 'N/A';
+
+      if (isAdmin) {
+        await client.query(
+          `INSERT INTO authentication (admin_id, user_type, authentication_type, enabled)
+           VALUES ($1, 'admin', $2, $3)
+           ON CONFLICT (admin_id) DO UPDATE SET authentication_type = $2, enabled = $3`,
+          [staffId, authType, enabled],
+        );
+      } else {
+        await client.query(
+          `INSERT INTO authentication (staff_id, user_type, authentication_type, enabled)
+           VALUES ($1, 'staff', $2, $3)
+           ON CONFLICT (staff_id) DO UPDATE SET authentication_type = $2, enabled = $3`,
+          [staffId, authType, enabled],
+        );
+      }
+
+      return { ok: true, message: 'MFA settings updated' };
+    } catch (err) {
+      console.error('setMfaSetting error:', err);
+      throw new InternalServerErrorException('Failed to update MFA settings');
+    }
+  }
 }

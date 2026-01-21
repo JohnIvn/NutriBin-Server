@@ -68,7 +68,7 @@ export function VerifyMFA() {
         setError(
           err.response?.data?.message ||
             err.message ||
-            "An error occurred during verification"
+            "An error occurred during verification",
         );
         setVerifying(false);
       }

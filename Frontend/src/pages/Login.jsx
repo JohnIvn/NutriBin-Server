@@ -57,6 +57,18 @@ export function Login() {
 
       // Check if MFA is required
       if (response.data.requiresMFA) {
+        // If MFA type is SMS, redirect to SMS verification page
+        if (response.data.mfaType === "sms") {
+          const id = response.data.staffId || response.data.adminId;
+          if (id) {
+            navigate(
+              `/verify-mfasms?${response.data.staffId ? `staffId=${id}` : `adminId=${id}`}`,
+            );
+            return;
+          }
+        }
+
+        // Default: show message (email-based flow)
         setMfaMessage("Go to your email to verify your login with MFA.");
         return;
       }
@@ -89,7 +101,7 @@ export function Login() {
       navigate("/dashboard");
     } catch (error) {
       setLoginError(
-        error.response?.data?.message || error.message || "An error occurred"
+        error.response?.data?.message || error.message || "An error occurred",
       );
       console.error(error);
     }

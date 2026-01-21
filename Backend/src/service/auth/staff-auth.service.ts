@@ -12,6 +12,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { DatabaseService } from '../database/database.service';
 import { BrevoService } from '../email/brevo.service';
 import { LoginMonitorService } from '../security/login-monitor.service';
+import { IprogSmsService } from '../iprogsms/iprogsms.service';
 import type {
   StaffSignInDto,
   StaffSignUpDto,
@@ -56,6 +57,7 @@ export class StaffAuthService {
     private readonly databaseService: DatabaseService,
     private readonly mailer: BrevoService,
     private readonly loginMonitor: LoginMonitorService,
+    private readonly iprogSms: IprogSmsService,
   ) {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     if (!clientId) {
@@ -249,7 +251,55 @@ export class StaffAuthService {
         return {
           ok: true,
           requiresMFA: true,
+          mfaType: 'email',
           message: 'MFA verification email sent',
+          adminId: admin.id,
+        };
+      }
+
+      // If SMS-based MFA is enabled for admin
+      if (
+        mfaResult.rowCount &&
+        mfaResult.rows[0].enabled &&
+        mfaResult.rows[0].authentication_type === 'sms'
+      ) {
+        // Ensure admin has a contact number
+        const phone = admin.contact_number;
+        if (!phone) {
+          return {
+            ok: false,
+            error: 'No phone number on record for SMS verification',
+          };
+        }
+
+        // Clear previous MFA codes for this user
+        await client.query(
+          `DELETE FROM codes WHERE user_id = $1 AND purpose = 'mfa' AND used = false`,
+          [admin.id],
+        );
+
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+
+        await client.query(
+          `INSERT INTO codes (user_id, code, purpose, expires_at)
+           VALUES ($1, $2, 'mfa', NOW() + INTERVAL '10 minutes')`,
+          [admin.id, code],
+        );
+
+        try {
+          await this.iprogSms.sendSms({
+            to: phone,
+            body: `Your NutriBin verification code is: ${code}`,
+          });
+        } catch (smsErr) {
+          console.error('Failed to send MFA SMS (admin):', smsErr);
+        }
+
+        return {
+          ok: true,
+          requiresMFA: true,
+          mfaType: 'sms',
+          message: 'MFA verification code sent via SMS',
           adminId: admin.id,
         };
       }
@@ -389,7 +439,53 @@ export class StaffAuthService {
       return {
         ok: true,
         requiresMFA: true,
+        mfaType: 'email',
         message: 'MFA verification email sent',
+        staffId: staff.staff_id,
+      };
+    }
+
+    // If SMS-based MFA is enabled for staff
+    if (
+      mfaResult.rowCount &&
+      mfaResult.rows[0].enabled &&
+      mfaResult.rows[0].authentication_type === 'sms'
+    ) {
+      const phone = staff.contact_number;
+      if (!phone) {
+        return {
+          ok: false,
+          error: 'No phone number on record for SMS verification',
+        };
+      }
+
+      await client.query(
+        `DELETE FROM codes WHERE user_id = $1 AND purpose = 'mfa' AND used = false`,
+        [staff.staff_id],
+      );
+
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+
+      await client.query(
+        `INSERT INTO codes (user_id, code, purpose, expires_at)
+         VALUES ($1, $2, 'mfa', NOW() + INTERVAL '10 minutes')`,
+        [staff.staff_id, code],
+      );
+
+      try {
+        await this.iprogSms.sendSms({
+          to: phone,
+          body: `Your NutriBin verification code is: ${code}`,
+        });
+      } catch (smsErr) {
+        console.error('Failed to send MFA SMS (staff):', smsErr);
+      }
+
+      return {
+        ok: true,
+        requiresMFA: true,
+        mfaType: 'sms',
+        message: 'MFA verification code sent via SMS',
         staffId: staff.staff_id,
       };
     }

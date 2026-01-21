@@ -7,6 +7,7 @@ import Firmware from "@/pages/Firmware";
 import Login from "@/pages/Login";
 import PasswordReset from "@/pages/PasswordReset";
 import { VerifyMFA } from "@/pages/VerifyMFA";
+import { VerifyMFASMS } from "@/pages/VerifyMFASMS";
 import Machines from "@/pages/Machines";
 import MachinesGrid from "@/pages/MachinesGrid";
 import Modules from "@/pages/Modules";
@@ -61,6 +62,7 @@ function PageRouter() {
       <Route path="/login" element={<LoginRoute />} />
       <Route path="/password-reset" element={<PasswordResetRoute />} />
       <Route path="/verify-mfa" element={<VerifyMFA />} />
+      <Route path="/verify-mfasms" element={<VerifyMFASMS />} />
 
       <Route
         path="/staff"

@@ -16,12 +16,14 @@ import { SalesController } from './controllers/sales.controller';
 import { LoginMonitorController } from './controllers/management/login-monitor.controller';
 import { LoginRecordsController } from './controllers/management/login-records.controller';
 import { MfaRecordsController } from './controllers/management/mfa-records.controller';
+import { IprogSmsController } from './controllers/iprogsms.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
 import { StaffAuthService } from './service/auth/staff-auth.service';
 import { BrevoService } from './service/email/brevo.service';
 import { TwilioService } from './service/twilio/twilio.service';
+import { IprogSmsService } from './service/iprogsms/iprogsms.service';
 import { LoginMonitorService } from './service/security/login-monitor.service';
 
 @Module({
@@ -44,6 +46,7 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
     CodesController,
     AnnouncementsController,
     SalesController,
+    IprogSmsController,
   ],
   providers: [
     AppService,
@@ -52,6 +55,7 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
     LoginMonitorService,
     BrevoService,
     TwilioService,
+    IprogSmsService,
   ],
 })
 export class AppModule {}

@@ -161,7 +161,7 @@ function Account() {
       if (response.data.ok) {
         setMfaType(newMfaType);
         toast.success(
-          `MFA set to ${newMfaType === "N/A" ? "Disabled" : "Email"}`,
+          `MFA set to ${newMfaType === "N/A" ? "Disabled" : newMfaType === "email" ? "Email" : "SMS"}`,
         );
       }
     } catch (error) {
@@ -708,6 +708,25 @@ function Account() {
                       </div>
                       <div className="text-[10px] text-gray-500">
                         Code sent to email on login
+                      </div>
+                    </div>
+                  </label>
+                  <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
+                    <input
+                      type="radio"
+                      name="mfa"
+                      value="sms"
+                      checked={mfaType === "sms"}
+                      onChange={() => handleMFAChange("sms")}
+                      disabled={mfaLoading}
+                      className="accent-[#4F6F52]"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-900">
+                        SMS Verification
+                      </div>
+                      <div className="text-[10px] text-gray-500">
+                        Code sent to your phone number on login
                       </div>
                     </div>
                   </label>

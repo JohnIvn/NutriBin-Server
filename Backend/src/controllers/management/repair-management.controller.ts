@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService } from '../../service/database/database.service';
+import { BrevoService } from '../../service/email/brevo.service';
 
 type RepairRow = {
   repair_id: string;
@@ -72,7 +73,10 @@ const repairComponentColumns = [
 
 @Controller('management/repair')
 export class RepairManagementController {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly mailer: BrevoService,
+  ) {}
 
   @Get()
   async getAllRepairs() {
@@ -222,9 +226,43 @@ export class RepairManagementController {
         throw new NotFoundException('Repair not found');
       }
 
+      const repair = result.rows[0];
+
+      // Notify user by email for relevant status changes
+      try {
+        if (
+          ['accepted', 'cancelled', 'postponed'].includes(
+            (repair.repair_status || '').toLowerCase(),
+          ) &&
+          repair.user_id
+        ) {
+          const userRes = await client.query(
+            'SELECT email, first_name FROM user_customer WHERE customer_id = $1 LIMIT 1',
+            [repair.user_id],
+          );
+          if (userRes.rows && userRes.rows.length) {
+            const user = userRes.rows[0];
+            const to = user.email;
+            const firstName = user.first_name || '';
+            const machineId = repair.machine_id || '';
+            const issueType = repair.description || 'Repair request';
+
+            // Send repair notification (don't fail the request if email fails)
+            await this.mailer.sendRepairNotification(to, {
+              machineId,
+              issueType,
+              status: repair.repair_status,
+              description: repair.description,
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to send repair notification email:', err);
+      }
+
       return {
         ok: true,
-        repair: result.rows[0],
+        repair,
       };
     } catch (error) {
       if (

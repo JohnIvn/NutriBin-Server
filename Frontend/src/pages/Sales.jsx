@@ -79,6 +79,13 @@ function Sales() {
     ? Math.round(totalSales / new Set(salesData.map((s) => s.date)).size)
     : 0;
 
+  const formatPeso = (v) =>
+    new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+      maximumFractionDigits: 0,
+    }).format(Number(v) || 0);
+
   const regionTotals = salesData.reduce((acc, r) => {
     acc[r.region] = (acc[r.region] || 0) + (r.amount || 0);
     return acc;
@@ -306,7 +313,7 @@ function Sales() {
               </div>
               <div className="flex items-center gap-3 mt-2">
                 <div className="text-4xl font-extrabold text-[#3A4D39]">
-                  ${Math.round(currentAvg).toLocaleString()}
+                  {formatPeso(Math.round(currentAvg))}
                 </div>
                 <div
                   className={`text-sm font-bold flex items-center gap-1 ${avgChange >= 0 ? "text-green-600" : "text-red-600"}`}
@@ -358,7 +365,7 @@ function Sales() {
                   </CardDescription>
                 </div>
                 <div className="text-xs font-bold bg-[#ECE3CE] text-[#3A4D39] px-3 py-1 rounded-full">
-                  Total: ${totalSales.toLocaleString()}
+                  Total: {formatPeso(totalSales)}
                 </div>
               </CardHeader>
 
@@ -390,7 +397,7 @@ function Sales() {
                         axisLine={false}
                         tickMargin={10}
                         className="text-xs font-medium fill-gray-500"
-                        unit="$"
+                        unit="₱"
                       />
 
                       <ChartTooltip
@@ -460,7 +467,7 @@ function Sales() {
                               : "—"}
                           </TableCell>
                           <TableCell className="font-mono text-[#4F6F52] font-bold">
-                            ${s.amount.toLocaleString()}
+                            {formatPeso(s.amount)}
                           </TableCell>
                           <TableCell className="text-[#4F6F52]/90">
                             {s.region}

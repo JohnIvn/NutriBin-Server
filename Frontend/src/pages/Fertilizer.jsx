@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/card";
 
 function Fertilizer() {
+  const [productionKg, setProductionKg] = useState(null);
   const barChartData = [
     { batch: "NB3123", nitrogen: 24, phosporus: 32, potassium: 35 },
     { batch: "NB2123", nitrogen: 27, phosporus: 37, potassium: 49 },
@@ -310,7 +311,9 @@ function Fertilizer() {
 
                   <div className="flex flex-col mt-1">
                     <h3 className="text-4xl font-black text-[#3A4D39]">
-                      12.32
+                      {productionKg === null
+                        ? "—"
+                        : String(Number(productionKg).toFixed(2))}
                       <span className="text-lg ml-1 text-gray-400 font-medium">
                         kg
                       </span>
@@ -336,6 +339,32 @@ function Fertilizer() {
     </div>
   );
 }
+
+useEffect(() => {
+  let mounted = true;
+
+  (async () => {
+    try {
+      const res = await Requests({ url: "/fertilizer/production" });
+      const body = res?.data;
+      if (!mounted) return;
+      if (body && body.ok) {
+        const val =
+          body.production_kg ??
+          body.production_result ??
+          body.fertilizer_kg ??
+          null;
+        if (val !== null && val !== undefined) setProductionKg(Number(val));
+      }
+    } catch (e) {
+      // ignore — leave productionKg as null
+    }
+  })();
+
+  return () => {
+    mounted = false;
+  };
+}, []);
 
 function ActiveMachinesDisplay() {
   const [data, setData] = useState({

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ export function VerifyMFASMS() {
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const attemptedCodeRef = useRef("");
 
   const staffId = searchParams.get("staffId");
   const adminId = searchParams.get("adminId");
@@ -23,11 +24,26 @@ export function VerifyMFASMS() {
     }
   }, [staffId, adminId]);
 
+  // Auto-submit when a full 6-digit code is entered, but avoid repeating
+  useEffect(() => {
+    const trimmed = code.trim();
+    if (
+      /^\d{6}$/.test(trimmed) &&
+      !submitting &&
+      attemptedCodeRef.current !== trimmed
+    ) {
+      handleSubmit();
+    }
+  }, [code, submitting]);
+
   const handleSubmit = async () => {
     if (!code || !/^\d{6}$/.test(code.trim())) {
       setError("Enter a 6-digit code");
       return;
     }
+    const trimmed = code.trim();
+    // mark this code as attempted to prevent duplicate auto-submits
+    attemptedCodeRef.current = trimmed;
     setSubmitting(true);
     setError(null);
     try {
@@ -72,9 +88,12 @@ export function VerifyMFASMS() {
 
           <div className="mb-4">
             <Input
+              autoFocus
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
               placeholder="123456"
+              inputMode="numeric"
+              maxLength={6}
             />
           </div>
 
@@ -83,7 +102,7 @@ export function VerifyMFASMS() {
           <Button
             className="w-full"
             onClick={handleSubmit}
-            disabled={submitting}
+            disabled={submitting || !/^\d{6}$/.test(code.trim())}
           >
             {submitting ? "Verifying..." : "Verify Code"}
           </Button>

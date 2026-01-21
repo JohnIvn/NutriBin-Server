@@ -56,7 +56,11 @@ export class StaffPhoneController {
         console.error('Failed to send verification SMS:', smsErr);
       }
 
-      return { ok: true, message: 'Verification code sent via SMS' };
+      return {
+        ok: true,
+        message: 'Verification code sent via SMS',
+        code: code.toString(),
+      };
     } catch (err) {
       throw new InternalServerErrorException(
         'Failed to send verification code',

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './controllers/app.controller';
 import { StaffAuthController } from './controllers/staff/staff-auth.controller';
+import { StaffPhoneController } from './controllers/staff/staff-phone.controller';
 import { StaffManagementController } from './controllers/management/staff-management.controller';
 import { UserManagementController } from './controllers/management/user-management.controller';
 import { RepairManagementController } from './controllers/management/repair-management.controller';
@@ -32,6 +33,7 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
   controllers: [
     AppController,
     StaffAuthController,
+    StaffPhoneController,
     StaffManagementController,
     UserManagementController,
     RepairManagementController,

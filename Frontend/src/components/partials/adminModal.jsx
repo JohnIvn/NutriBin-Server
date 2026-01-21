@@ -50,11 +50,15 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   // const [phoneChecking, setPhoneChecking] = useState(false);
   const [phoneAvailable, setPhoneAvailable] = useState(null);
   const [originalPhone, setOriginalPhone] = useState("");
-  const [sendingCode, setSendingCode] = useState(false);
+  const [sendingEmailCode, setSendingEmailCode] = useState(false);
+  const [sendingPhoneCode, setSendingPhoneCode] = useState(false);
   // const [codeSent, setCodeSent] = useState(false);
   const [codeFormatValid, setCodeFormatValid] = useState(false);
   const [codeError, setCodeError] = useState("");
   const [codeVerified, setCodeVerified] = useState(false);
+  const [phoneCodeFormatValid, setPhoneCodeFormatValid] = useState(false);
+  const [phoneCodeError, setPhoneCodeError] = useState("");
+  const [phoneCodeVerified, setPhoneCodeVerified] = useState(false);
   const [googleError, setGoogleError] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
@@ -74,6 +78,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
       password: "",
       confirmPassword: "",
       emailVerificationCode: "",
+      phoneVerificationCode: "",
     },
   });
 
@@ -98,7 +103,9 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
   const confirmPassword = form.watch("confirmPassword");
   const contact = form.watch("contact");
   const emailVerificationCode = form.watch("emailVerificationCode");
+  const phoneVerificationCode = form.watch("phoneVerificationCode");
   const emailChanged = isEdit && email !== originalEmail;
+  const contactChanged = isEdit && contact !== originalPhone;
 
   const passwordChecks = {
     minLength: password && password.length >= 8 && password.length <= 20,
@@ -169,6 +176,59 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     emailAvailable,
     isEdit,
     emailChanged,
+    form,
+  ]);
+
+  useEffect(() => {
+    if (!phoneVerificationCode) {
+      setPhoneCodeFormatValid(false);
+      return;
+    }
+    setPhoneCodeFormatValid(/^\d{6}$/.test(phoneVerificationCode.trim()));
+    setPhoneCodeError("");
+  }, [phoneVerificationCode]);
+
+  useEffect(() => {
+    if (!phoneCodeFormatValid) {
+      setPhoneCodeVerified(false);
+      return;
+    }
+
+    // Only verify when contact is present and it's either a create or an edited contact
+    if (!contact) return;
+    if (isEdit && !contactChanged) return;
+    if (phoneAvailable === false) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await Requests({
+          url: "/staff/phone/verify",
+          method: "POST",
+          data: { code: phoneVerificationCode.trim() },
+          credentials: true,
+        });
+        if (response.data?.valid) {
+          setPhoneCodeVerified(true);
+          setPhoneCodeError("");
+          form.clearErrors("phoneVerificationCode");
+        } else {
+          setPhoneCodeVerified(false);
+          setPhoneCodeError(response.data?.message || "Invalid code");
+        }
+      } catch (err) {
+        setPhoneCodeVerified(false);
+        setPhoneCodeError("Failed to verify code");
+      }
+    }, 600);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    phoneCodeFormatValid,
+    phoneVerificationCode,
+    contact,
+    phoneAvailable,
+    isEdit,
+    contactChanged,
     form,
   ]);
 
@@ -352,7 +412,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
       return;
     }
     try {
-      setSendingCode(true);
+      setSendingEmailCode(true);
       const response = await Requests({
         url: staff?.staff_id
           ? `/management/staff/${staff.staff_id}/email-verification`
@@ -367,7 +427,30 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     } catch {
       toast.error("Failed to send code");
     } finally {
-      setSendingCode(false);
+      setSendingEmailCode(false);
+    }
+  };
+
+  const handleSendPhoneCode = async () => {
+    if (!contact) {
+      toast.error("Enter phone number first");
+      return;
+    }
+    try {
+      setSendingPhoneCode(true);
+      const response = await Requests({
+        url: `/staff/phone/request`,
+        method: "POST",
+        data: { phone: contact },
+        credentials: true,
+      });
+      if (response.data?.ok) {
+        toast.success("Code sent via SMS!");
+      }
+    } catch (err) {
+      toast.error("Failed to send SMS code");
+    } finally {
+      setSendingPhoneCode(false);
     }
   };
 
@@ -606,11 +689,13 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                           size="sm"
                           onClick={handleSendCode}
                           disabled={
-                            sendingCode || emailAvailable === false || !email
+                            sendingEmailCode ||
+                            emailAvailable === false ||
+                            !email
                           }
                           className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#A34906]"
                         >
-                          {sendingCode ? "Sending..." : "Send Code"}
+                          {sendingEmailCode ? "Sending..." : "Send Code"}
                         </Button>
                       </div>
                       <FormField
@@ -667,6 +752,92 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                                 </p>
                               )}
                               {codeVerified && (
+                                <p className="text-[11px] text-green-600">
+                                  Code verified
+                                </p>
+                              )}
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  {/* phone verification */}
+                  {(!isEdit || contactChanged) && (
+                    <div className="p-4 border border-[#4F6F52]/30 bg-[#4F6F52]/5 rounded-lg mt-2 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[#4F6F52] font-bold">
+                          Verify Phone
+                        </Label>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleSendPhoneCode}
+                          disabled={
+                            sendingPhoneCode ||
+                            phoneAvailable === false ||
+                            !contact
+                          }
+                          className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#A34906]"
+                        >
+                          {sendingPhoneCode ? "Sending..." : "Send Code"}
+                        </Button>
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="phoneVerificationCode"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1">
+                            <div className="relative">
+                              <InputIcon
+                                icon={KeyRound}
+                                active={phoneCodeFormatValid}
+                              />
+                              <Input
+                                placeholder="6-digit code"
+                                maxLength={6}
+                                className="pl-10 h-10 focus-visible:ring-1 focus-visible:ring-[#4F6F52]"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    e.target.value.replace(/[^0-9]/g, ""),
+                                  )
+                                }
+                              />
+
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                                {!phoneCodeFormatValid && (
+                                  <span className="text-gray-400 text-xs">
+                                    • • •
+                                  </span>
+                                )}
+                                {phoneCodeFormatValid &&
+                                  !phoneCodeVerified &&
+                                  !phoneCodeError && (
+                                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                                  )}
+                                {phoneCodeVerified && (
+                                  <CheckCircle2
+                                    className="w-4 h-4 text-green-500"
+                                    title="Code verified"
+                                  />
+                                )}
+                                {phoneCodeError && (
+                                  <XCircle
+                                    className="w-4 h-4 text-red-500"
+                                    title={phoneCodeError}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            <div className="min-h-[1rem]">
+                              {phoneCodeError && (
+                                <p className="text-[11px] text-red-500">
+                                  {phoneCodeError}
+                                </p>
+                              )}
+                              {phoneCodeVerified && (
                                 <p className="text-[11px] text-green-600">
                                   Code verified
                                 </p>

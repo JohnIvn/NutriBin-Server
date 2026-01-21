@@ -51,6 +51,7 @@ function Account() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
   const [currentAvatar, setCurrentAvatar] = useState(undefined);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -323,9 +324,19 @@ function Account() {
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
+                      const MAX_BYTES = 5 * 1024 * 1024; // 5MB
                       if (file) {
-                        setSelectedPhoto(file);
-                        setPreviewUrl(URL.createObjectURL(file));
+                        if (file.size > MAX_BYTES) {
+                          setAvatarError(
+                            "File is too large (max 5MB). Please pick another picture.",
+                          );
+                          setSelectedPhoto(null);
+                          setPreviewUrl("");
+                        } else {
+                          setAvatarError("");
+                          setSelectedPhoto(file);
+                          setPreviewUrl(URL.createObjectURL(file));
+                        }
                       }
                     }}
                   />
@@ -342,7 +353,9 @@ function Account() {
                   <div className="flex items-center gap-3 mt-3">
                     <Button
                       type="button"
-                      disabled={!selectedPhoto || uploadingPhoto}
+                      disabled={
+                        !selectedPhoto || uploadingPhoto || !!avatarError
+                      }
                       className="h-9 px-3 bg-[#4F6F52] text-white"
                       onClick={async () => {
                         if (!selectedPhoto) return;
@@ -436,6 +449,11 @@ function Account() {
                     <div className="mt-2 text-xs text-gray-600">
                       Selected: {selectedPhoto.name} (
                       {Math.round(selectedPhoto.size / 1024)} KB)
+                    </div>
+                  )}
+                  {avatarError && (
+                    <div className="mt-2 text-xs text-red-600">
+                      {avatarError}
                     </div>
                   )}
                 </div>

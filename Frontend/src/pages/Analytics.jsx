@@ -132,64 +132,62 @@ function Analytics() {
   useEffect(() => {
     let mounted = true;
 
-    async function load() {
+    (async () => {
       try {
-        const res = await Requests({ url: "/dashboard/summary" });
-        const body = res.data;
+        // Fetch dashboard summary and sales in parallel to avoid races
+        const [summaryRes, salesRes] = await Promise.all([
+          Requests({ url: "/dashboard/summary" }),
+          Requests({ url: "/sales" }),
+        ]);
+
         if (!mounted) return;
 
-        if (body && body.ok) {
-          const c = body.counts || {};
-          const s = body.sums || {};
+        const body = summaryRes?.data;
+        const salesBody = salesRes?.data;
 
-          setStats((prev) => ({
-            ...prev,
-            machinesActive: parseInt(c.active_machines || 0, 10),
-            machinesTotal: parseInt(c.total_machines || 0, 10),
-            fertilizerYieldKg: 0,
-            // temporarily store raw sales value; we'll replace with average from /sales
-            salesToday: s.sales_last_24h || 0,
-            usersCount: parseInt(c.total_customers || 0, 10),
-          }));
+        const c = body?.counts || {};
+        const s = body?.sums || {};
 
-          const recent = (body.recent_sales || []).map((r) => ({
-            id: r.sale_id,
-            icon: DollarSign,
-            title: `${r.product || "Sale"} — ${formatPeso(r.amount)}`,
-            when: r.sale_date
-              ? new Date(r.sale_date).toLocaleString()
-              : r.date_created,
-          }));
-
-          setRecentActivity(recent);
+        // compute average from /sales if available, otherwise fallback to summary value
+        let finalSales = 0;
+        if (
+          salesBody?.ok &&
+          Array.isArray(salesBody.sales) &&
+          salesBody.sales.length
+        ) {
+          const amounts = salesBody.sales.map((it) => Number(it.amount) || 0);
+          const total = amounts.reduce((a, b) => a + b, 0);
+          finalSales = total / amounts.length;
+        } else {
+          finalSales = s.sales_last_24h || 0;
         }
+
+        setStats((prev) => ({
+          ...prev,
+          machinesActive: parseInt(c.active_machines || 0, 10),
+          machinesTotal: parseInt(c.total_machines || 0, 10),
+          fertilizerYieldKg: 0,
+          salesToday: finalSales,
+          usersCount: parseInt(c.total_customers || 0, 10),
+        }));
+
+        const recent = (body?.recent_sales || []).map((r) => ({
+          id: r.sale_id,
+          icon: DollarSign,
+          title: `${r.product || "Sale"} — ${formatPeso(r.amount)}`,
+          when: r.sale_date
+            ? new Date(r.sale_date).toLocaleString()
+            : r.date_created,
+        }));
+
+        setRecentActivity(recent);
       } catch (e) {
         console.error("Failed to load dashboard summary", e);
       } finally {
         setLoading(false);
       }
-    }
-
-    // Load dashboard summary first
-    load();
-
-    // Also fetch sales to compute average order (display in sales KPI)
-    (async () => {
-      try {
-        const res = await Requests({ url: "/sales" });
-        const d = res?.data;
-        if (!mounted) return;
-        if (d?.ok && Array.isArray(d.sales) && d.sales.length) {
-          const amounts = d.sales.map((s) => Number(s.amount) || 0);
-          const total = amounts.reduce((a, b) => a + b, 0);
-          const avg = total / amounts.length;
-          setStats((prev) => ({ ...prev, salesToday: avg }));
-          // Also update recentActivity amounts if dashboard summary lacked them
-        }
-      } catch (err) {
-        // ignore
-      }
     })();
+
     return () => {
       mounted = false;
     };

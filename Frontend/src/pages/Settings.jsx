@@ -53,6 +53,15 @@ function Account() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const [currentAvatar, setCurrentAvatar] = useState(undefined);
+  const [originalNumber, setOriginalNumber] = useState("");
+  const [pendingPhone, setPendingPhone] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(true);
+  const [phoneCode, setPhoneCode] = useState("");
+  const [sendingCode, setSendingCode] = useState(false);
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+  const [phoneAvailable, setPhoneAvailable] = useState(true);
+  const [checkingPhone, setCheckingPhone] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const avatarInputRef = useRef(null);
@@ -104,6 +113,8 @@ function Account() {
           address: staff.address || "",
           number: staff.contact_number || "",
         });
+        setOriginalNumber(staff.contact_number || "");
+        setPhoneVerified(true);
         // Set current avatar if provided by API (try several common field names)
         setCurrentAvatar(
           staff.avatar ||
@@ -180,6 +191,53 @@ function Account() {
     setCodeFormatValid(/^\d{6}$/.test(resetCode.trim()));
   }, [resetCode]);
 
+  // Watch contact number changes to require verification when changed
+  const watchedNumber = form.watch("number");
+  useEffect(() => {
+    if (loading) return;
+    if ((watchedNumber || "") !== (originalNumber || "")) {
+      setPendingPhone(watchedNumber || "");
+      setPhoneVerified(false);
+    } else {
+      setPendingPhone("");
+      setPhoneVerified(true);
+    }
+  }, [watchedNumber, originalNumber, loading]);
+
+  // Debounced availability check for pendingPhone
+  useEffect(() => {
+    if (!pendingPhone) {
+      setPhoneAvailable(true);
+      setCheckingPhone(false);
+      return;
+    }
+
+    let cancelled = false;
+    setCheckingPhone(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await Requests({
+          url: `/management/staff/check-phone/${encodeURIComponent(pendingPhone)}`,
+          method: "GET",
+          credentials: true,
+        });
+        if (cancelled) return;
+        if (res.data?.ok) setPhoneAvailable(res.data.available === true);
+        else setPhoneAvailable(true);
+      } catch (err) {
+        console.error("phone availability check failed", err);
+        setPhoneAvailable(true);
+      } finally {
+        if (!cancelled) setCheckingPhone(false);
+      }
+    }, 600);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [pendingPhone]);
+
   const passwordChecks = {
     minLength:
       newPassword && newPassword.length >= 8 && newPassword.length <= 20,
@@ -204,6 +262,13 @@ function Account() {
       setSaveLoading(true);
       const values = form.getValues();
 
+      // Prevent saving if phone changed but not verified
+      if ((values.number || "") !== (originalNumber || "") && !phoneVerified) {
+        toast.error("Please verify your new phone number before saving");
+        setSaveLoading(false);
+        return;
+      }
+
       const response = await Requests({
         url: `/settings/${userId}`,
         method: "PATCH",
@@ -226,6 +291,71 @@ function Account() {
       console.error(error);
     } finally {
       setSaveLoading(false);
+    }
+  };
+
+  const sendPhoneCode = async () => {
+    const userId = user?.staff_id || user?.admin_id;
+    if (!userId) return toast.error("No user id");
+    if (!pendingPhone) return toast.error("Enter a phone number to verify");
+
+    if (!phoneAvailable) {
+      toast.error("That phone number is already in use");
+      return;
+    }
+
+    try {
+      setSendingCode(true);
+      const res = await Requests({
+        url: `/settings/${userId}/phone/verify/request`,
+        method: "POST",
+        data: { newPhone: pendingPhone },
+        credentials: true,
+      });
+
+      if (res.data?.ok) {
+        toast.success("Verification code sent");
+      } else {
+        toast.error(res.data?.message || "Failed to send verification code");
+      }
+    } catch (err) {
+      toast.error("Failed to send verification code");
+      console.error(err);
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
+  const verifyPhone = async () => {
+    const userId = user?.staff_id || user?.admin_id;
+    if (!userId) return toast.error("No user id");
+    if (!phoneCode || !/^[0-9]{6}$/.test(phoneCode.trim()))
+      return setPhoneError("Enter a 6-digit code");
+
+    try {
+      setVerifyingPhone(true);
+      const res = await Requests({
+        url: `/settings/${userId}/phone/verify`,
+        method: "POST",
+        data: { code: phoneCode, newPhone: pendingPhone },
+        credentials: true,
+      });
+
+      if (res.data?.ok) {
+        toast.success("Phone verified");
+        setPhoneVerified(true);
+        setOriginalNumber(pendingPhone);
+        form.setValue("number", pendingPhone);
+        setPhoneCode("");
+        setPhoneError("");
+      } else {
+        toast.error(res.data?.message || "Verification failed");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to verify phone");
+      console.error(err);
+    } finally {
+      setVerifyingPhone(false);
     }
   };
 
@@ -564,6 +694,70 @@ function Account() {
                       </FormItem>
                     )}
                   />
+                  {editMode &&
+                    pendingPhone &&
+                    pendingPhone !== originalNumber && (
+                      <div className="mt-2 space-y-2">
+                        <p className="text-xs text-gray-500">
+                          You changed your phone number. Please verify it to
+                          save changes.
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-[#4F6F52] hover:bg-[#3A523D] text-white h-9"
+                            disabled={
+                              sendingCode || checkingPhone || !phoneAvailable
+                            }
+                            onClick={sendPhoneCode}
+                          >
+                            {sendingCode
+                              ? "Sending..."
+                              : checkingPhone
+                                ? "Checking..."
+                                : "Send verification code"}
+                          </Button>
+
+                          {checkingPhone ? (
+                            <span className="text-sm text-gray-500">
+                              Checking
+                            </span>
+                          ) : !phoneAvailable ? (
+                            <span className="text-sm text-red-600">
+                              Number already in use
+                            </span>
+                          ) : phoneVerified ? (
+                            <span className="text-sm text-green-600">
+                              Verified
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {!phoneVerified && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <Input
+                              placeholder="Enter 6-digit code"
+                              value={phoneCode}
+                              onChange={(e) => setPhoneCode(e.target.value)}
+                              className="h-9 w-44"
+                            />
+                            <Button
+                              size="sm"
+                              className="bg-[#4F6F52] hover:bg-[#3A523D] text-white h-9"
+                              onClick={verifyPhone}
+                              disabled={verifyingPhone}
+                            >
+                              {verifyingPhone ? "Verifying..." : "Verify"}
+                            </Button>
+                            {phoneError && (
+                              <div className="text-xs text-red-600">
+                                {phoneError}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-100">

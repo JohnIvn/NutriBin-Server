@@ -18,6 +18,7 @@ import { randomInt } from 'crypto';
 
 import { DatabaseService } from '../../service/database/database.service';
 import { BrevoService } from '../../service/email/brevo.service';
+import { IprogSmsService } from '../../service/iprogsms/iprogsms.service';
 import supabaseService from '../../service/storage/supabase.service';
 
 type StaffPublicRow = {
@@ -55,6 +56,7 @@ export class SettingsController {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly mailer: BrevoService,
+    private readonly iprogSms: IprogSmsService,
   ) {}
 
   private async resolveAvatarUrl(userId: string) {
@@ -663,6 +665,168 @@ export class SettingsController {
     } catch (err) {
       console.error('setMfaSetting error:', err);
       throw new InternalServerErrorException('Failed to update MFA settings');
+    }
+  }
+
+  @Post(':staffId/phone/verify/request')
+  async requestPhoneVerification(
+    @Param('staffId') staffId: string,
+    @Body() body: { newPhone?: string },
+  ) {
+    if (!staffId) throw new BadRequestException('staffId is required');
+    const newPhone = body?.newPhone?.trim();
+    if (!newPhone) throw new BadRequestException('newPhone is required');
+
+    const client = this.databaseService.getClient();
+
+    try {
+      // Check that phone isn't already used by another account
+      const existing = await client.query(
+        `SELECT staff_id FROM user_staff WHERE contact_number = $1 LIMIT 1`,
+        [newPhone],
+      );
+      const existingAdmin = await client.query(
+        `SELECT admin_id FROM user_admin WHERE contact_number = $1 LIMIT 1`,
+        [newPhone],
+      );
+
+      if (existing.rowCount || existingAdmin.rowCount) {
+        return { ok: false, message: 'Phone number already in use' };
+      }
+
+      // Clear previous phone verification codes for this user
+      await client.query(
+        `DELETE FROM codes WHERE user_id = $1 AND purpose = 'other' AND used = false`,
+        [staffId],
+      );
+
+      const code = String(randomInt(100000, 1000000));
+
+      await client.query(
+        `INSERT INTO codes (user_id, code, purpose, expires_at)
+         VALUES ($1, $2, 'other', NOW() + INTERVAL '15 minutes')`,
+        [staffId, code],
+      );
+
+      try {
+        await this.iprogSms.sendSms({
+          to: newPhone,
+          body: `Your NutriBin verification code is: ${code}`,
+        });
+      } catch (smsErr) {
+        console.error('Failed to send phone verification SMS:', smsErr);
+        throw new InternalServerErrorException(
+          'Failed to send verification SMS',
+        );
+      }
+
+      return { ok: true, message: 'Verification code sent via SMS' };
+    } catch (err) {
+      console.error('requestPhoneVerification error:', err);
+      if (err instanceof BadRequestException) throw err;
+      throw new InternalServerErrorException(
+        'Failed to request phone verification',
+      );
+    }
+  }
+
+  @Post(':staffId/phone/verify')
+  async verifyPhoneChange(
+    @Param('staffId') staffId: string,
+    @Body() body: { code?: string; newPhone?: string },
+  ) {
+    if (!staffId) throw new BadRequestException('staffId is required');
+    const code = body?.code?.trim();
+    const newPhone = body?.newPhone?.trim();
+
+    if (!code || !/^[0-9]{6}$/.test(code)) {
+      throw new BadRequestException(
+        'Verification code must be a 6-digit number',
+      );
+    }
+    if (!newPhone) {
+      throw new BadRequestException('newPhone is required');
+    }
+
+    const client = this.databaseService.getClient();
+    try {
+      // Get latest code record for this user and purpose
+      const codeResult = await client.query<{
+        code: string;
+        expires_at: string;
+        code_id: string;
+      }>(
+        `SELECT code, expires_at, code_id FROM codes
+         WHERE user_id = $1 AND purpose = 'other' AND used = false
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [staffId],
+      );
+
+      if (!codeResult.rowCount) {
+        throw new BadRequestException('No phone verification request found');
+      }
+
+      const record = codeResult.rows[0];
+      const now = new Date();
+      const expiresAt = new Date(record.expires_at);
+      if (expiresAt < now) {
+        throw new BadRequestException('Verification code has expired');
+      }
+      if (record.code !== code) {
+        throw new BadRequestException(
+          'The verification code you entered is incorrect.',
+        );
+      }
+
+      // Update phone number for admin or staff
+      let userResult = await client.query(
+        'SELECT admin_id as staff_id FROM user_admin WHERE admin_id = $1 LIMIT 1',
+        [staffId],
+      );
+      const isAdmin = (userResult.rowCount ?? 0) > 0;
+
+      if (isAdmin) {
+        await client.query(
+          'UPDATE user_admin SET contact_number = $1, last_updated = NOW() WHERE admin_id = $2',
+          [newPhone, staffId],
+        );
+        const updated = await client.query(
+          `SELECT admin_id as staff_id, first_name, last_name, NULL as birthday, NULL as age, contact_number, address, email, date_created, last_updated, status
+           FROM user_admin WHERE admin_id = $1 LIMIT 1`,
+          [staffId],
+        );
+        await client.query('UPDATE codes SET used = true WHERE code_id = $1', [
+          record.code_id,
+        ]);
+        return {
+          ok: true,
+          staff: updated.rows[0],
+          message: 'Phone number updated',
+        };
+      } else {
+        await client.query(
+          'UPDATE user_staff SET contact_number = $1, last_updated = NOW() WHERE staff_id = $2',
+          [newPhone, staffId],
+        );
+        const updated = await client.query(
+          `SELECT staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status
+           FROM user_staff WHERE staff_id = $1 LIMIT 1`,
+          [staffId],
+        );
+        await client.query('UPDATE codes SET used = true WHERE code_id = $1', [
+          record.code_id,
+        ]);
+        return {
+          ok: true,
+          staff: updated.rows[0],
+          message: 'Phone number updated',
+        };
+      }
+    } catch (error) {
+      console.error('verifyPhoneChange error:', error);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException('Failed to verify phone change');
     }
   }
 }

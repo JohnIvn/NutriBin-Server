@@ -326,6 +326,26 @@ function Account() {
                       const file = e.target.files?.[0];
                       const MAX_BYTES = 5 * 1024 * 1024; // 5MB
                       if (file) {
+                        // Validate type: prefer MIME type, fallback to extension
+                        const allowedMime = ["image/jpeg", "image/png"];
+                        const nameExt = file.name
+                          ?.split(".")
+                          .pop()
+                          ?.toLowerCase();
+                        const allowedExt = ["jpg", "jpeg", "png"];
+                        const isTypeOk =
+                          allowedMime.includes(file.type) ||
+                          allowedExt.includes(nameExt);
+
+                        if (!isTypeOk) {
+                          setAvatarError(
+                            "Only JPG or PNG images are allowed. Please pick another picture.",
+                          );
+                          setSelectedPhoto(null);
+                          setPreviewUrl("");
+                          return;
+                        }
+
                         if (file.size > MAX_BYTES) {
                           setAvatarError(
                             "File is too large (max 5MB). Please pick another picture.",

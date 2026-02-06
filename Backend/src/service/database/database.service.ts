@@ -10,6 +10,7 @@ import { createTrashLogsTable } from './models/trash-logs.model';
 import { createCameraLogsTable } from './models/camera-logs';
 import { createFertilizerAnalyticsTable } from './models/fertilizer-analytics.model';
 import { createMachinesTable } from './models/machines.model';
+import { createMachineCustomersTable } from './models/machine_customers.model';
 import { createModuleAnalyticsTable } from './models/module-analytics.model';
 import { createRepairTable } from './models/repair.module';
 import { createAnnouncementsTable } from './models/announcements.model';
@@ -59,6 +60,7 @@ export class DatabaseService implements OnModuleInit {
     await createUserStaffTable(this.client);
     await createUserAdminTable(this.client);
     await createMachinesTable(this.client);
+    await createMachineCustomersTable(this.client);
     await createModuleAnalyticsTable(this.client);
     await createFertilizerAnalyticsTable(this.client);
     await createCameraLogsTable(this.client);

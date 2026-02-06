@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './controllers/app.controller';
 import { StaffAuthController } from './controllers/staff/staff-auth.controller';
 import { StaffPhoneController } from './controllers/staff/staff-phone.controller';
@@ -19,9 +20,12 @@ import { LoginMonitorController } from './controllers/management/login-monitor.c
 import { LoginRecordsController } from './controllers/management/login-records.controller';
 import { MfaRecordsController } from './controllers/management/mfa-records.controller';
 import { IprogSmsController } from './controllers/iprogsms.controller';
+import { BackupController } from './controllers/backup.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
+import { BackupService } from './service/database/backup.service';
+import { ScheduledBackupService } from './service/database/scheduled-backup.service';
 import { StaffAuthService } from './service/auth/staff-auth.service';
 import { BrevoService } from './service/email/brevo.service';
 import { TwilioService } from './service/twilio/twilio.service';
@@ -29,7 +33,7 @@ import { IprogSmsService } from './service/iprogsms/iprogsms.service';
 import { LoginMonitorService } from './service/security/login-monitor.service';
 
 @Module({
-  imports: [],
+  imports: [ScheduleModule.forRoot()],
   controllers: [
     AppController,
     StaffAuthController,
@@ -51,10 +55,13 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
     SalesController,
     DashboardController,
     IprogSmsController,
+    BackupController,
   ],
   providers: [
     AppService,
     DatabaseService,
+    BackupService,
+    ScheduledBackupService,
     StaffAuthService,
     LoginMonitorService,
     BrevoService,

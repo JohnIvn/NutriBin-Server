@@ -3,7 +3,7 @@ import { Client } from 'pg';
 export async function createMachinesTable(client: Client) {
   await client.query(`
     CREATE TABLE IF NOT EXISTS machines (
-      machine_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      machine_id uuid PRIMARY KEY REFERENCES machine_serial(machine_serial_id) ON DELETE RESTRICT,
       is_active BOOLEAN DEFAULT true,
       C1 boolean DEFAULT false,
       C2 boolean DEFAULT false,

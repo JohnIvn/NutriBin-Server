@@ -1,23 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Search,
-  User,
-  Mail,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Thermometer,
-  Droplets,
-  Wind,
-  Activity,
-  Sprout,
-  Cpu,
-} from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { userFilter } from "@/schema/users";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { User, Mail, Cpu, Grid3x3, Users, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
@@ -28,7 +10,7 @@ function MachinesGrid() {
   const navigate = useNavigate();
   const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMachine, setSelectedMachine] = useState(null);
+  const [viewMode, setViewMode] = useState("machines");
 
   useEffect(() => {
     if (user && user.role !== "admin" && user.role !== "staff") {
@@ -36,11 +18,6 @@ function MachinesGrid() {
       navigate("/dashboard");
     }
   }, [user, navigate]);
-
-  const filterForm = useForm({
-    resolver: zodResolver(userFilter),
-    defaultValues: { count: "10", term: "" },
-  });
 
   useEffect(() => {
     fetchMachines();
@@ -62,25 +39,53 @@ function MachinesGrid() {
     }
   };
 
-  const handleMachineClick = (machine) => {
-    // navigate to machine details page
-    navigate(`/machine/${machine.machine_id}`);
+  // Group machines by machine_id
+  const groupMachinesByMachineId = () => {
+    const grouped = {};
+    machines.forEach((record) => {
+      if (!grouped[record.machine_id]) {
+        grouped[record.machine_id] = {
+          machine_id: record.machine_id,
+          users: [],
+        };
+      }
+      if (record.user_id) {
+        grouped[record.machine_id].users.push({
+          user_id: record.user_id,
+          first_name: record.first_name,
+          last_name: record.last_name,
+          email: record.email,
+        });
+      }
+    });
+    return Object.values(grouped);
   };
 
-  // Helpers for NPK computations
-  const toNumber = (val) => {
-    if (val === null || val === undefined) return NaN;
-    const num = parseFloat(String(val).replace(/[^0-9.-]/g, ""));
-    return Number.isFinite(num) ? num : NaN;
+  // Group machines by user
+  const groupMachinesByUser = () => {
+    const grouped = {};
+    machines.forEach((record) => {
+      if (record.user_id) {
+        const userKey = record.user_id;
+        if (!grouped[userKey]) {
+          grouped[userKey] = {
+            user_id: record.user_id,
+            first_name: record.first_name,
+            last_name: record.last_name,
+            email: record.email,
+            machines: [],
+          };
+        }
+        grouped[userKey].machines.push({
+          machine_id: record.machine_id,
+        });
+      }
+    });
+    return Object.values(grouped);
   };
 
-  const term = filterForm.watch("term").toLowerCase();
-  const filteredMachines = machines.filter((machine) => {
-    return (
-      machine.machine_id?.toLowerCase().includes(term) ||
-      `${machine.first_name} ${machine.last_name}`.toLowerCase().includes(term)
-    );
-  });
+  const machinesByMachineId = groupMachinesByMachineId();
+  const machinesByUser = groupMachinesByUser();
 
   return (
     <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
@@ -95,30 +100,30 @@ function MachinesGrid() {
               Monitor and manage all NutriBin units.
             </p>
           </div>
-        </div>
-
-        {/* search bar */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <Form {...filterForm}>
-            <div className="relative w-full md:w-[450px] group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-200 group-focus-within:text-[#4F6F52] z-10" />
-              <FormField
-                control={filterForm.control}
-                name="term"
-                render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormControl>
-                      <Input
-                        placeholder="Search by Machine ID or Owner..."
-                        className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52] w-full h-11 transition-all duration-200"
-                        {...field}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-          </Form>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode("machines")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                viewMode === "machines"
+                  ? "bg-[#4F6F52] text-white shadow-md"
+                  : "bg-white text-[#4F6F52] border border-gray-200 hover:border-[#4F6F52]"
+              }`}
+            >
+              <Grid3x3 className="h-4 w-4" />
+              Machines
+            </button>
+            <button
+              onClick={() => setViewMode("users")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                viewMode === "users"
+                  ? "bg-[#4F6F52] text-white shadow-md"
+                  : "bg-white text-[#4F6F52] border border-gray-200 hover:border-[#4F6F52]"
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              Users
+            </button>
+          </div>
         </div>
 
         {/* machines grid*/}
@@ -127,52 +132,169 @@ function MachinesGrid() {
             <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
             <p className="text-[#4F6F52] font-medium">Loading Machines...</p>
           </div>
-        ) : filteredMachines.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-400 font-medium bg-white rounded-xl border border-gray-100 shadow-sm">
-            <Search className="h-10 w-10 mb-2 opacity-20" />
-            No machines found.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredMachines.map((machine) => (
-              <div
-                key={machine.machine_id}
-                onClick={() => handleMachineClick(machine)}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-[#4F6F52]/50 p-6 flex flex-col items-center justify-center gap-3 relative overflow-hidden"
-              >
-                <div className="absolute top-0 left-0 w-full h-1 bg-[#ECE3CE] group-hover:bg-[#4F6F52] transition-colors" />
-                <div className="w-12 h-12 rounded-full bg-[#ECE3CE] flex items-center justify-center group-hover:bg-[#4F6F52] transition-colors duration-300">
-                  <Cpu className="h-6 w-6 text-[#4F6F52] group-hover:text-white transition-colors" />
-                </div>
-                <div className="text-center">
-                  <h3 className="font-bold text-[black] text-lg group-hover:text-[#4F6F52] transition-colors">
-                    {machine.first_name} {machine.last_name}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-1 flex items-center justify-center gap-1">
-                    <User className="h-3 w-3" /> {machine.machine_id}
-                  </p>
-                </div>
+        ) : viewMode === "machines" ? (
+          // MACHINES VIEW - Group by machine, show users under each
+          <>
+            {machinesByMachineId.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 text-gray-400 font-medium bg-white rounded-xl border border-gray-100 shadow-sm">
+                <Search className="h-10 w-10 mb-2 opacity-20" />
+                No machines found.
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Total count */}
-        {!loading && filteredMachines.length > 0 && (
-          <div className="text-center pb-8">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-white px-4 py-1 rounded-full border border-gray-100">
-              Total Machines: {filteredMachines.length}
-            </span>
-          </div>
+            ) : (
+              <div className="space-y-4">
+                {machinesByMachineId.map((machineGroup) => (
+                  <div
+                    key={machineGroup.machine_id}
+                    className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300"
+                  >
+                    <div
+                      onClick={() =>
+                        navigate(`/machine/${machineGroup.machine_id}`)
+                      }
+                      className="p-6 cursor-pointer hover:bg-gray-50 transition-colors group border-b border-gray-100"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-[#ECE3CE] flex items-center justify-center group-hover:bg-[#4F6F52] transition-colors">
+                          <Cpu className="h-6 w-6 text-[#4F6F52] group-hover:text-white transition-colors" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg text-[black] group-hover:text-[#4F6F52] transition-colors">
+                            Machine
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {machineGroup.machine_id}
+                          </p>
+                        </div>
+                        <div className="ml-auto text-xs font-semibold bg-[#4F6F52]/10 text-[#4F6F52] px-3 py-1 rounded-full">
+                          {machineGroup.users.length}{" "}
+                          {machineGroup.users.length === 1 ? "User" : "Users"}
+                        </div>
+                      </div>
+                    </div>
+                    {machineGroup.users.length > 0 && (
+                      <div className="divide-y divide-gray-100">
+                        {machineGroup.users.map((userRecord, idx) => (
+                          <div
+                            key={idx}
+                            className="p-4 hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                  <User className="h-5 w-5 text-gray-600" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-[black]">
+                                    {userRecord.first_name}{" "}
+                                    {userRecord.last_name}
+                                  </p>
+                                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                                    <Mail className="h-3 w-3" />{" "}
+                                    {userRecord.email}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {machinesByMachineId.length > 0 && (
+              <div className="text-center pb-8">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-white px-4 py-1 rounded-full border border-gray-100">
+                  Total Machines: {machinesByMachineId.length}
+                </span>
+              </div>
+            )}
+          </>
+        ) : (
+          // USERS VIEW - Group by user, show machines under each
+          <>
+            {machinesByUser.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 text-gray-400 font-medium bg-white rounded-xl border border-gray-100 shadow-sm">
+                <Search className="h-10 w-10 mb-2 opacity-20" />
+                No users found.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {machinesByUser.map((userGroup) => (
+                  <div
+                    key={userGroup.user_id}
+                    className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="p-6 border-b border-gray-100 bg-gray-50">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-[#ECE3CE] flex items-center justify-center">
+                          <User className="h-6 w-6 text-[#4F6F52]" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg text-[black]">
+                            {userGroup.first_name} {userGroup.last_name}
+                          </h3>
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {userGroup.email}
+                          </p>
+                        </div>
+                        <div className="ml-auto text-xs font-semibold bg-[#4F6F52]/10 text-[#4F6F52] px-3 py-1 rounded-full">
+                          {userGroup.machines.length}{" "}
+                          {userGroup.machines.length === 1
+                            ? "Machine"
+                            : "Machines"}
+                        </div>
+                      </div>
+                    </div>
+                    {userGroup.machines.length > 0 && (
+                      <div className="divide-y divide-gray-100">
+                        {userGroup.machines.map((machineRecord, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() =>
+                              navigate(`/machine/${machineRecord.machine_id}`)
+                            }
+                            className="p-4 hover:bg-gray-50 transition-colors cursor-pointer group"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-[#ECE3CE] flex items-center justify-center group-hover:bg-[#4F6F52] transition-colors">
+                                  <Cpu className="h-5 w-5 text-[#4F6F52] group-hover:text-white transition-colors" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-[black] group-hover:text-[#4F6F52] transition-colors">
+                                    Machine
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {machineRecord.machine_id}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {machinesByUser.length > 0 && (
+              <div className="text-center pb-8">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-white px-4 py-1 rounded-full border border-gray-100">
+                  Total Users: {machinesByUser.length}
+                </span>
+              </div>
+            )}
+          </>
         )}
       </section>
-
-      {/* Removed modal — clicking a machine now navigates to the machine page */}
     </div>
   );
 }
 
 // sub-components for cleaner code
 
-// EnvCard and NutrientBar moved to MachineDetails page
+// Machine and User cards are rendered within the main component for flexibility
 export default MachinesGrid;

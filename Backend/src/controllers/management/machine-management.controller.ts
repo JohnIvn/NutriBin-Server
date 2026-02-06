@@ -28,12 +28,13 @@ export class MachineManagementController {
       const result = await client.query<MachineRow>(
         `SELECT 
           m.machine_id,
-          m.user_id,
+          uc.customer_id as user_id,
           uc.first_name,
           uc.last_name,
           uc.email
          FROM machines m
-         LEFT JOIN user_customer uc ON m.user_id = uc.customer_id
+         LEFT JOIN machine_customers mc ON m.machine_id = mc.machine_id
+         LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
          ORDER BY m.machine_id`,
       );
 
@@ -55,15 +56,16 @@ export class MachineManagementController {
       const machineResult = await client.query(
         `SELECT 
           m.machine_id,
-          m.user_id,
+          mc.customer_id as user_id,
           uc.first_name,
           uc.last_name,
           uc.email,
-          m.c1, m.c2, m.c3, m.c4, m.c5,
-          m.s1, m.s2, m.s3, m.s4, m.s5, m.s6, m.s7, m.s8, m.s9,
-          m.m1, m.m2, m.m3, m.m4, m.m5, m.m6, m.m7
+          m.C1, m.C2, m.C3, m.C4, m.C5,
+          m.S1, m.S2, m.S3, m.S4, m.S5, m.S6, m.S7, m.S8, m.S9,
+          m.M1, m.M2, m.M3, m.M4, m.M5, m.M6, m.M7
          FROM machines m
-         LEFT JOIN user_customer uc ON m.user_id = uc.customer_id
+         LEFT JOIN machine_customers mc ON m.machine_id = mc.machine_id
+         LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
          WHERE m.machine_id = $1
          LIMIT 1`,
         [machineId],

@@ -40,6 +40,7 @@ export class StatusController {
         },
       };
     } catch (error) {
+      console.error('Failed to fetch machine status', error);
       throw new InternalServerErrorException('Failed to fetch machine status');
     }
   }

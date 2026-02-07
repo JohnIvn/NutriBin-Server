@@ -46,7 +46,8 @@ export class AnnouncementsController {
         ok: true,
         announcements: result.rows,
       };
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to fetch announcements', error);
       throw new InternalServerErrorException('Failed to fetch announcements');
     }
   }
@@ -88,7 +89,8 @@ export class AnnouncementsController {
         ok: true,
         announcement: result.rows[0],
       };
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to create announcement', error);
       throw new InternalServerErrorException('Failed to create announcement');
     }
   }
@@ -113,7 +115,7 @@ export class AnnouncementsController {
 
     try {
       const updates: string[] = [];
-      const values: any[] = [];
+      const values: Array<string | string[] | boolean | null> = [];
 
       if (body.title !== undefined) {
         updates.push(`title = $${updates.length + 1}`);
@@ -152,7 +154,10 @@ export class AnnouncementsController {
         updates.length + 1
       } RETURNING announcement_id, title, body, author, priority, notified, date_published, is_active, date_created`;
 
-      const result = await client.query(query, [...values, id]);
+      const result = await client.query<AnnouncementRow>(query, [
+        ...values,
+        id,
+      ]);
 
       if (!result.rowCount)
         throw new NotFoundException('Announcement not found');
@@ -161,12 +166,13 @@ export class AnnouncementsController {
         ok: true,
         announcement: result.rows[0],
       };
-    } catch (err) {
+    } catch (error) {
       if (
-        err instanceof NotFoundException ||
-        err instanceof BadRequestException
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
       )
-        throw err;
+        throw error;
+      console.error('Failed to update announcement', error);
       throw new InternalServerErrorException('Failed to update announcement');
     }
   }
@@ -187,8 +193,9 @@ export class AnnouncementsController {
         throw new NotFoundException('Announcement not found');
 
       return { ok: true };
-    } catch (err) {
-      if (err instanceof NotFoundException) throw err;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      console.error('Failed to delete announcement', error);
       throw new InternalServerErrorException('Failed to delete announcement');
     }
   }

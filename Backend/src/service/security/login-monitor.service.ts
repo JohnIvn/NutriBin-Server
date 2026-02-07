@@ -14,7 +14,7 @@ export class LoginMonitorService {
     staffId?: string;
     adminId?: string;
     customerId?: string;
-    userType?: 'customer' | 'staff' | 'admin' | string;
+    userType?: string;
     siteVisited?: string;
     ip?: string;
     success?: boolean;
@@ -59,29 +59,30 @@ export class LoginMonitorService {
 
       if (!success) return { banned: false };
 
-      // Determine which id column to use for counting
-      let countRes;
+      const interval = `${this.WINDOW_SECONDS} seconds`;
+      let cnt = 0;
       if (adminId) {
-        countRes = await client.query(
+        const { rows } = await client.query<{ cnt: number }>(
           `SELECT COUNT(*)::int as cnt FROM login_attempts WHERE admin_id = $1 AND success = true AND date_created > (now() - $2::interval)`,
-          [adminId, `${this.WINDOW_SECONDS} seconds`],
+          [adminId, interval],
         );
+        cnt = rows[0]?.cnt ?? 0;
       } else if (staffId) {
-        countRes = await client.query(
+        const { rows } = await client.query<{ cnt: number }>(
           `SELECT COUNT(*)::int as cnt FROM login_attempts WHERE staff_id = $1 AND success = true AND date_created > (now() - $2::interval)`,
-          [staffId, `${this.WINDOW_SECONDS} seconds`],
+          [staffId, interval],
         );
+        cnt = rows[0]?.cnt ?? 0;
       } else if (customerId) {
-        countRes = await client.query(
+        const { rows } = await client.query<{ cnt: number }>(
           `SELECT COUNT(*)::int as cnt FROM login_attempts WHERE customer_id = $1::uuid AND success = true AND date_created > (now() - $2::interval)`,
-          [customerId, `${this.WINDOW_SECONDS} seconds`],
+          [customerId, interval],
         );
+        cnt = rows[0]?.cnt ?? 0;
       } else {
         // No id provided; nothing to do
         return { banned: false };
       }
-
-      const cnt = countRes.rows[0]?.cnt ?? 0;
 
       const idForLog = adminId || staffId || customerId || 'unknown';
 

@@ -8,7 +8,9 @@ export class LoginRecordsController {
   @Get()
   async list(@Query('limit') limit?: string) {
     const client = this.db.getClient();
-    const l = Math.min(Math.max(parseInt(limit as any) || 100, 1), 1000);
+    const parsedLimitRaw = parseInt(limit ?? '', 10);
+    const parsedLimit = Number.isNaN(parsedLimitRaw) ? 100 : parsedLimitRaw;
+    const l = Math.min(Math.max(parsedLimit, 1), 1000);
 
     const res = await client.query(
       `

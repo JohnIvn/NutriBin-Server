@@ -24,7 +24,7 @@ export class CodesController {
     const purpose = String(body.purpose).trim();
 
     // Try to find a staff with this email
-    const staff = await client.query(
+    const staff = await client.query<{ staff_id: string }>(
       'SELECT staff_id FROM user_staff WHERE email = $1',
       [email],
     );

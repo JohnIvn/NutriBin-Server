@@ -8,6 +8,11 @@ import {
 
 import { DatabaseService } from '../../service/database/database.service';
 
+type MachineRow = {
+  machine_id: string;
+  [key: string]: unknown;
+};
+
 @Controller('management/machine-health')
 export class MachineHealthController {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -33,7 +38,7 @@ export class MachineHealthController {
         throw new NotFoundException('Machine not found');
       }
 
-      const row = result.rows[0] as Record<string, unknown>;
+      const row = result.rows[0] as MachineRow;
 
       const componentKeys = [
         'c1',
@@ -67,10 +72,14 @@ export class MachineHealthController {
         const val = row[key];
         // treat multiple representations of true as an error: boolean true, 't', 'true', 1, '1'
         let isError = false;
-        if (val === true) isError = true;
-        else if (val !== null && val !== undefined) {
-          const s = String(val).toLowerCase();
-          if (s === 'true' || s === 't' || s === '1') isError = true;
+        if (val === true) {
+          isError = true;
+        } else if (typeof val === 'string') {
+          const normalized = val.toLowerCase();
+          if (normalized === 'true' || normalized === 't' || normalized === '1')
+            isError = true;
+        } else if (typeof val === 'number') {
+          if (val === 1) isError = true;
         }
 
         components[key] = isError;

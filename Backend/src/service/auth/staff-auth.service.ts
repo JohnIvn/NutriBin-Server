@@ -171,7 +171,7 @@ export class StaffAuthService {
             userType: 'admin',
             success: false,
           });
-        } catch (err) {
+        } catch {
           /* swallow monitor errors */
         }
 
@@ -323,7 +323,7 @@ export class StaffAuthService {
           userType: 'admin',
           success: true,
         });
-      } catch (err) {
+      } catch {
         /* swallow monitor errors */
       }
 
@@ -359,7 +359,7 @@ export class StaffAuthService {
           userType: 'staff',
           success: false,
         });
-      } catch (err) {
+      } catch {
         /* swallow monitor errors */
       }
 
@@ -509,7 +509,7 @@ export class StaffAuthService {
         userType: 'staff',
         success: true,
       });
-    } catch (err) {
+    } catch {
       /* swallow monitor errors */
     }
 

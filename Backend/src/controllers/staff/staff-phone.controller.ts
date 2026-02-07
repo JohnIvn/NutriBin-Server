@@ -38,7 +38,7 @@ export class StaffPhoneController {
     }
 
     try {
-      const code = String(Math.floor(100000 + Math.random() * 900000));
+      const code = String(randomInt(100000, 1000000));
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
       const userId = randomUUID();
 
@@ -62,6 +62,7 @@ export class StaffPhoneController {
         code: code.toString(),
       };
     } catch (err) {
+      console.error('Failed to send verification code:', err);
       throw new InternalServerErrorException(
         'Failed to send verification code',
       );
@@ -76,7 +77,7 @@ export class StaffPhoneController {
 
     const client = this.databaseService.getClient();
 
-    const row = await client.query(
+    const row = await client.query<{ code_id: string }>(
       `SELECT * FROM codes WHERE code = $1 AND purpose = $2 AND used = false AND expires_at > now() ORDER BY created_at DESC LIMIT 1`,
       [String(code).trim(), 'other'],
     );
@@ -91,7 +92,7 @@ export class StaffPhoneController {
       await client.query(`UPDATE codes SET used = true WHERE code_id = $1`, [
         codeRow.code_id,
       ]);
-    } catch (err) {
+    } catch {
       // ignore update errors
     }
 

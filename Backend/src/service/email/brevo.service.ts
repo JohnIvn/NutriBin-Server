@@ -16,22 +16,57 @@ export interface EmailOptions {
   }>;
 }
 
+type EmailRecipient = { email: string };
+type EmailSender = EmailRecipient & { name?: string };
+interface AttachmentPayload {
+  name: string;
+  content?: string;
+}
+interface SendTransacEmailPayload {
+  sender: EmailSender;
+  to: EmailRecipient[];
+  subject: string;
+  htmlContent?: string;
+  textContent?: string;
+  cc?: EmailRecipient[];
+  bcc?: EmailRecipient[];
+  attachment?: AttachmentPayload[];
+}
+interface SendTransacEmailResponse {
+  messageId?: string;
+}
+type TransactionalEmailsApi = {
+  sendTransacEmail(
+    payload: SendTransacEmailPayload,
+  ): Promise<SendTransacEmailResponse>;
+};
+type SibApiClientInstance = {
+  authentications: Record<'api-key', { apiKey?: string }>;
+};
+type SibApiType = {
+  ApiClient: {
+    instance: SibApiClientInstance;
+  };
+  TransactionalEmailsApi: new () => TransactionalEmailsApi;
+};
+const SibApi = SibApiV3Sdk as unknown as SibApiType;
+
 @Injectable()
 export class BrevoService {
-  private tranEmailApi: any;
-  private defaultSender: { email: string; name?: string };
+  private tranEmailApi: TransactionalEmailsApi;
+  private defaultSender: EmailSender = { email: '' };
 
   constructor() {
     const apiKey =
       process.env.BREVO_API_KEY ||
       process.env.SENDINBLUE_API_KEY ||
       process.env.SIB_API_KEY;
-    const defaultClient = SibApiV3Sdk.ApiClient.instance;
+    const defaultClient = SibApi.ApiClient.instance;
     if (apiKey) {
       const apiKeyAuth = defaultClient.authentications['api-key'];
       apiKeyAuth.apiKey = apiKey;
     }
-    this.tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
+    this.tranEmailApi = new SibApi.TransactionalEmailsApi();
     const fromEnv = process.env.MAIL_FROM || process.env.MAIL_USER || '';
     if (fromEnv) {
       // MAIL_FROM may be in format "Name <email>"
@@ -49,9 +84,9 @@ export class BrevoService {
     }
   }
 
-  private formatRecipients(value?: string | string[]) {
-    if (!value) return [] as Array<{ email: string }>;
-    if (Array.isArray(value)) return value.map((e) => ({ email: e }));
+  private formatRecipients(value?: string | string[]): EmailRecipient[] {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.map((email) => ({ email }));
     return [{ email: value }];
   }
 
@@ -66,37 +101,37 @@ export class BrevoService {
 
     const sender =
       options.from ||
-      (this.defaultSender && this.defaultSender.email) ||
+      this.defaultSender.email ||
       process.env.MAIL_FROM ||
       process.env.MAIL_USER ||
       '';
 
-    const payload: any = {
-      sender:
-        this.defaultSender && this.defaultSender.email
-          ? this.defaultSender
-          : { email: sender },
+    const senderInfo =
+      this.defaultSender.email && this.defaultSender.email.length
+        ? this.defaultSender
+        : { email: sender };
+    const payload: SendTransacEmailPayload = {
+      sender: senderInfo,
       to: this.formatRecipients(options.to),
       subject: options.subject,
       htmlContent: options.html,
       textContent: options.text,
     };
 
-    const cc = this.formatRecipients(options.cc as string | string[]);
-    const bcc = this.formatRecipients(options.bcc as string | string[]);
+    const cc = this.formatRecipients(options.cc);
+    const bcc = this.formatRecipients(options.bcc);
     if (cc.length) payload.cc = cc;
     if (bcc.length) payload.bcc = bcc;
 
     if (options.attachments && options.attachments.length) {
-      payload.attachment = options.attachments.map((a) => {
-        const content = a.content
-          ? typeof a.content === 'string'
-            ? Buffer.from(a.content).toString('base64')
-            : Buffer.from(a.content).toString('base64')
-          : undefined;
+      payload.attachment = options.attachments.map((attachment) => {
+        let encoded: string | undefined;
+        if (attachment.content) {
+          encoded = Buffer.from(attachment.content).toString('base64');
+        }
         return {
-          name: a.filename,
-          content,
+          name: attachment.filename,
+          content: encoded,
         };
       });
     }
@@ -116,19 +151,12 @@ export class BrevoService {
   }
 
   async verifyConnection(): Promise<boolean> {
-    try {
-      // Basic verification: ensure API key exists and TransactionalEmailsApi can be constructed
-      if (
-        !process.env.BREVO_API_KEY &&
-        !process.env.SENDINBLUE_API_KEY &&
-        !process.env.SIB_API_KEY
-      )
-        return false;
-      return true;
-    } catch (err) {
-      console.error('Brevo verification error:', err);
-      return false;
-    }
+    const hasApiKey = Boolean(
+      process.env.BREVO_API_KEY ||
+      process.env.SENDINBLUE_API_KEY ||
+      process.env.SIB_API_KEY,
+    );
+    return await Promise.resolve(hasApiKey);
   }
 
   async sendTextEmail(to: string, subject: string, text: string) {

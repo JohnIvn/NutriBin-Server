@@ -25,6 +25,7 @@ import Studies from "@/pages/Studies";
 import Guide from "@/pages/Guide";
 import Announcements from "@/pages/Announcements";
 import Emissions from "@/pages/Emissions";
+import CameraLogs from "@/pages/CameraLogs";
 import Home from "@/pages/Home";
 import LoginRecords from "@/pages/LoginRecords";
 import MfaRecords from "@/pages/MfaRecords";
@@ -189,6 +190,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Emissions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/camera-logs"
+        element={
+          <ProtectedRoute>
+            <CameraLogs />
           </ProtectedRoute>
         }
       />

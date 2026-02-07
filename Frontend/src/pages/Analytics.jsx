@@ -438,6 +438,24 @@ function Analytics() {
                     Schedule Repair
                   </span>
                 </Link>
+                <Link
+                  to="/camera-logs"
+                  className="flex items-center gap-3 p-3 rounded-md border border-[#ECE3CE] hover:shadow-md"
+                >
+                  <Camera className="h-5 w-5 text-[#4F6F52]" />
+                  <span className="text-sm font-medium text-[#3A4D39]">
+                    View Camera Logs
+                  </span>
+                </Link>
+                <Link
+                  to="/fertilizer"
+                  className="flex items-center gap-3 p-3 rounded-md border border-[#ECE3CE] hover:shadow-md"
+                >
+                  <Beaker className="h-5 w-5 text-[#4F6F52]" />
+                  <span className="text-sm font-medium text-[#3A4D39]">
+                    Nutrient Stats
+                  </span>
+                </Link>
               </div>
             </CardContent>
           </Card>

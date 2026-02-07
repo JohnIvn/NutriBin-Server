@@ -23,6 +23,7 @@ import { IprogSmsController } from './controllers/iprogsms.controller';
 import { BackupController } from './controllers/backup.controller';
 import { EmissionsController } from './controllers/emissions.controller';
 import { FertilizerController } from './controllers/fertilizer.controller';
+import { CameraLogsController } from './controllers/camera-logs.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
@@ -60,6 +61,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
     BackupController,
     EmissionsController,
     FertilizerController,
+    CameraLogsController,
   ],
   providers: [
     AppService,

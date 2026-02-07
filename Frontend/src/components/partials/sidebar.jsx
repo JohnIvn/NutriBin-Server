@@ -21,6 +21,7 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  Camera,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -148,6 +149,13 @@ export default function Sidebar() {
           icon={Cloud}
           label="Emissions"
           active={isActive("/emissions")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/camera-logs"
+          icon={Camera}
+          label="Camera Logs"
+          active={isActive("/camera-logs")}
           collapsed={shouldCollapse}
         />
         <NavItem

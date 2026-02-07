@@ -39,7 +39,9 @@ export class LoginMonitorController {
         // Prioritize explicit admin indicators
         if (/(admin|staff|server-backend)/.test(candidates)) {
           derivedSite = 'admin/staff portal';
-        } else if (/(nutribin|user|frontend|up\.railway\.app)/.test(candidates)) {
+        } else if (
+          /(nutribin|user|frontend|up\.railway\.app)/.test(candidates)
+        ) {
           derivedSite = 'user website';
         }
       }

@@ -28,7 +28,6 @@ import { BackupService } from './service/database/backup.service';
 import { ScheduledBackupService } from './service/database/scheduled-backup.service';
 import { StaffAuthService } from './service/auth/staff-auth.service';
 import { BrevoService } from './service/email/brevo.service';
-import { TwilioService } from './service/twilio/twilio.service';
 import { IprogSmsService } from './service/iprogsms/iprogsms.service';
 import { LoginMonitorService } from './service/security/login-monitor.service';
 
@@ -65,7 +64,6 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
     StaffAuthService,
     LoginMonitorService,
     BrevoService,
-    TwilioService,
     IprogSmsService,
   ],
 })

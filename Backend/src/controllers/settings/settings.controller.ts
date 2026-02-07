@@ -780,7 +780,7 @@ export class SettingsController {
       }
 
       // Update phone number for admin or staff
-      let userResult = await client.query(
+      const userResult = await client.query(
         'SELECT admin_id as staff_id FROM user_admin WHERE admin_id = $1 LIMIT 1',
         [staffId],
       );

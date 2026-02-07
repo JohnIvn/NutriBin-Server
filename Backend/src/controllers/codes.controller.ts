@@ -28,7 +28,7 @@ export class CodesController {
       'SELECT staff_id FROM user_staff WHERE email = $1',
       [email],
     );
-    let userId = staff.rows[0]?.staff_id;
+    const userId = staff.rows[0]?.staff_id;
 
     if (!userId) {
       // If no user, look up codes by code + purpose (non-consuming)

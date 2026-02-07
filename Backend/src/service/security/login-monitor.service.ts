@@ -95,7 +95,7 @@ export class LoginMonitorService {
 
       return { banned: false };
     } catch (error) {
-      this.logger.error('Error recording login attempt', error as any);
+      this.logger.error('Error recording login attempt', error);
       throw error;
     }
   }
@@ -152,7 +152,7 @@ export class LoginMonitorService {
         );
       }
     } catch (error) {
-      this.logger.error('Failed to ban user', error as any);
+      this.logger.error('Failed to ban user', error);
       // swallow - do not crash caller; log for investigation
     }
   }

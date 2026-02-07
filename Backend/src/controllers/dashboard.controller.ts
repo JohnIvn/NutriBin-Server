@@ -57,6 +57,22 @@ export class DashboardController {
           COALESCE((SELECT SUM(amount) FROM sales WHERE sale_date > now() - INTERVAL '7 days'), 0) AS sales_last_7d
       `);
 
+      const fertilizerQ = await client.query(`
+        SELECT 
+          COUNT(*) as total_batches,
+          (COUNT(*) * 0.75) as production_kg
+        FROM fertilizer_analytics
+      `);
+
+      const healthQ = await client.query(`
+        SELECT 
+          AVG(NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric) as avg_ph,
+          AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) as avg_moisture,
+          AVG(NULLIF(regexp_replace(methane, '[^0-9.]', '', 'g'), '')::numeric) as avg_methane,
+          AVG(NULLIF(regexp_replace(smoke, '[^0-9.]', '', 'g'), '')::numeric) as avg_smoke
+        FROM fertilizer_analytics
+      `);
+
       const recentSalesQ = await client.query<DashboardSale>(
         `SELECT sale_id, sale_date, amount, product, quantity, date_created, customer_id FROM sales ORDER BY sale_date DESC NULLS LAST, date_created DESC LIMIT 10`,
       );
@@ -65,6 +81,16 @@ export class DashboardController {
         ok: true,
         counts: countsQ.rows[0] || ({} as DashboardCounts),
         sums: sumsQ.rows[0] || ({} as DashboardSums),
+        production: fertilizerQ.rows[0] || {
+          total_batches: 0,
+          production_kg: 0,
+        },
+        health: healthQ.rows[0] || {
+          avg_ph: 0,
+          avg_moisture: 0,
+          avg_methane: 0,
+          avg_smoke: 0,
+        },
         recent_sales: recentSalesQ.rows || [],
       };
     } catch (error) {

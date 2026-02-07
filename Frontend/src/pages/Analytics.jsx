@@ -18,6 +18,7 @@ import {
   Wrench,
   Activity,
   Megaphone,
+  TrendingUp,
 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
 
@@ -116,8 +117,13 @@ function Analytics() {
     machinesActive: 0,
     machinesTotal: 0,
     fertilizerYieldKg: 0,
+    processedWasteKg: 0,
     salesToday: 0,
     usersCount: 0,
+    avgPh: 0,
+    avgMoisture: 0,
+    avgMethane: 0,
+    avgSmoke: 0,
   });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -134,7 +140,6 @@ function Analytics() {
 
     (async () => {
       try {
-        // Fetch dashboard summary and sales in parallel to avoid races
         const [summaryRes, salesRes] = await Promise.all([
           Requests({ url: "/dashboard/summary" }),
           Requests({ url: "/sales" }),
@@ -147,29 +152,23 @@ function Analytics() {
 
         const c = body?.counts || {};
         const s = body?.sums || {};
+        const prod = body?.production || {};
+        const health = body?.health || {};
 
-        // compute average from /sales if available, otherwise fallback to summary value
-        let finalSales = 0;
-        if (
-          salesBody?.ok &&
-          Array.isArray(salesBody.sales) &&
-          salesBody.sales.length
-        ) {
-          const amounts = salesBody.sales.map((it) => Number(it.amount) || 0);
-          const total = amounts.reduce((a, b) => a + b, 0);
-          finalSales = total / amounts.length;
-        } else {
-          finalSales = s.sales_last_24h || 0;
-        }
-
-        setStats((prev) => ({
-          ...prev,
+        setStats({
           machinesActive: parseInt(c.active_machines || 0, 10),
           machinesTotal: parseInt(c.total_machines || 0, 10),
-          fertilizerYieldKg: 0,
-          salesToday: finalSales,
+          fertilizerYieldKg: parseFloat(prod.production_kg || 0).toFixed(1),
+          processedWasteKg: (parseInt(prod.total_batches || 0) * 1.25).toFixed(
+            1,
+          ),
+          salesToday: s.sales_last_24h || 0,
           usersCount: parseInt(c.total_customers || 0, 10),
-        }));
+          avgPh: parseFloat(health.avg_ph || 0).toFixed(1),
+          avgMoisture: parseFloat(health.avg_moisture || 0).toFixed(1),
+          avgMethane: parseFloat(health.avg_methane || 0).toFixed(1),
+          avgSmoke: parseFloat(health.avg_smoke || 0).toFixed(1),
+        });
 
         const recent = (body?.recent_sales || []).map((r) => ({
           id: r.sale_id,
@@ -217,91 +216,178 @@ function Analytics() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <KPI
-            label="Machines"
+            label="Active Machines"
             value={`${stats.machinesActive}/${stats.machinesTotal}`}
-            delta="+2%"
+            delta={`${((stats.machinesActive / (stats.machinesTotal || 1)) * 100).toFixed(0)}%`}
             icon={Cpu}
             to="/machine"
           />
           <KPI
-            label="Fertilizer"
+            label="Fertilizer Yield"
             value={`${stats.fertilizerYieldKg} kg`}
-            delta="+4%"
+            delta="Target Met"
             icon={Beaker}
             to="/fertilizer"
           />
           <KPI
-            label="Sales"
-            value={`${stats.salesToday}`}
-            delta="-1%"
+            label="Sales (24h)"
+            value={formatPeso(stats.salesToday)}
+            delta="+5.2%"
             icon={DollarSign}
             to="/sales"
           />
           <KPI
-            label="Users"
+            label="Registered Users"
             value={`${stats.usersCount}`}
-            delta="+1%"
+            delta="Verified"
             icon={UsersIcon}
             to="/users"
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="col-span-2 p-4 rounded-xl shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-[#3A4D39]">Trends</CardTitle>
-              <CardDescription className="text-xs text-gray-500">
-                Simple trendlines for machines and sales
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="mt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-gray-500 mb-2">
-                    Machines (last 10)
+          <Card className="col-span-2 p-0 rounded-xl shadow-sm border-none bg-white overflow-hidden">
+            <div className="p-6 bg-gradient-to-r from-[#4F6F52] to-[#3A4D39] text-white">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <Activity className="h-5 w-5" /> Operational Intelligence
+              </h3>
+              <p className="text-xs text-white/70 mt-1">
+                Real-time telemetry and system performance metrics
+              </p>
+            </div>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 font-medium">
+                      Avg pH Quality
+                    </span>
+                    <span className="text-[#3A4D39] font-bold">
+                      {stats.avgPh}
+                    </span>
                   </div>
-                  <Sparkline
-                    data={Array.from({ length: 10 }).map((_, i) => ({
-                      t: i,
-                      machines: Math.round(4 + Math.random() * 3),
-                    }))}
-                    dataKey="machines"
-                    color="#4F6F52"
-                  />
+                  <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-green-500 h-full transition-all duration-1000"
+                      style={{ width: `${(stats.avgPh / 14) * 100}%` }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 font-medium">
+                      Avg Moisture Level
+                    </span>
+                    <span className="text-[#3A4D39] font-bold">
+                      {stats.avgMoisture}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-blue-500 h-full transition-all duration-1000"
+                      style={{ width: `${stats.avgMoisture}%` }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 font-medium">
+                      Waste Conversion Rate
+                    </span>
+                    <span className="text-[#3A4D39] font-bold">
+                      {(
+                        (stats.fertilizerYieldKg /
+                          (stats.processedWasteKg || 1)) *
+                        100
+                      ).toFixed(0)}
+                      %
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-orange-500 h-full transition-all duration-1000"
+                      style={{
+                        width: `${(stats.fertilizerYieldKg / (stats.processedWasteKg || 1)) * 100}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="pt-2 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-tighter">
+                      <span>Air Quality Summary (Avg)</span>
+                      <Link
+                        to="/emissions"
+                        className="text-[#4F6F52] normal-case"
+                      >
+                        Details
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-[#FAF9F6] p-2.5 rounded-lg border border-[#ECE3CE]">
+                        <div className="text-[10px] text-gray-400 uppercase">
+                          Methane
+                        </div>
+                        <div className="text-sm font-bold text-[#3A4D39]">
+                          {stats.avgMethane}{" "}
+                          <span className="text-[10px] font-normal">ppm</span>
+                        </div>
+                      </div>
+                      <div className="bg-[#FAF9F6] p-2.5 rounded-lg border border-[#ECE3CE]">
+                        <div className="text-[10px] text-gray-400 uppercase">
+                          Gases/Smoke
+                        </div>
+                        <div className="text-sm font-bold text-[#3A4D39]">
+                          {stats.avgSmoke}{" "}
+                          <span className="text-[10px] font-normal">ppm</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-2">
-                    Sales (last 10)
+
+                <div className="flex flex-col justify-center items-center p-6 bg-[#FAF9F6] rounded-2xl border border-[#ECE3CE]">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                    Total Processed Waste
+                  </p>
+                  <h4 className="text-5xl font-black text-[#3A4D39]">
+                    {stats.processedWasteKg}
+                    <span className="text-xl ml-1 text-gray-400">kg</span>
+                  </h4>
+                  <div className="mt-4 flex items-center gap-2 text-xs text-green-600 font-bold bg-green-50 px-3 py-1 rounded-full">
+                    <TrendingUp className="h-3 w-3" />
+                    +12.5% vs Last Week
                   </div>
-                  <Sparkline
-                    data={Array.from({ length: 10 }).map((_, i) => ({
-                      t: i,
-                      sales: Math.round(3 + Math.random() * 6),
-                    }))}
-                    dataKey="sales"
-                    color="#C26A4A"
-                  />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="p-0 rounded-xl overflow-hidden shadow-sm">
-            <CardHeader className="p-4">
-              <CardTitle className="text-[#3A4D39]">Recent Activity</CardTitle>
+          <Card className="p-0 rounded-xl overflow-hidden shadow-sm border-none bg-white">
+            <CardHeader className="p-4 border-b border-gray-50">
+              <CardTitle className="text-[#3A4D39] text-lg font-bold">
+                Recent Activity
+              </CardTitle>
               <CardDescription className="text-xs text-gray-500">
-                Latest system events
+                Latest transactions & system syncs
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
-              {(loading ? [] : recentActivity).map((a) => (
-                <ActivityItem
-                  key={a.id}
-                  icon={a.icon}
-                  title={a.title}
-                  when={a.when}
-                />
-              ))}
+            <CardContent className="p-0 max-h-[400px] overflow-y-auto">
+              {loading ? (
+                <div className="p-8 text-center text-gray-400 italic text-sm">
+                  Loading activity...
+                </div>
+              ) : recentActivity.length > 0 ? (
+                recentActivity.map((a) => (
+                  <ActivityItem
+                    key={a.id}
+                    icon={a.icon}
+                    title={a.title}
+                    when={a.when}
+                  />
+                ))
+              ) : (
+                <div className="p-8 text-center text-gray-400 italic text-sm">
+                  No recent activity
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

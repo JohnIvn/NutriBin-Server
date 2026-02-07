@@ -5,6 +5,7 @@ Thank you for your interest in contributing to NutriBin! We welcome improvements
 ## Project Structure
 
 NutriBin is split into two main parts:
+
 - `Backend/`: A NestJS application handling the API, database (PostgreSQL/Supabase), and services.
 - `Frontend/`: A Vite + React application for the web interface.
 
@@ -89,12 +90,14 @@ Suggested PR description template:
 
 ```markdown
 ### Description
+
 - What changed and why.
 
 ### How to test
+
 - Steps to verify the changes.
 
 ### Screenshots (if applicable)
+
 - Add any relevant screenshots for frontend changes.
 ```
-

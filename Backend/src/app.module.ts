@@ -21,6 +21,7 @@ import { LoginRecordsController } from './controllers/management/login-records.c
 import { MfaRecordsController } from './controllers/management/mfa-records.controller';
 import { IprogSmsController } from './controllers/iprogsms.controller';
 import { BackupController } from './controllers/backup.controller';
+import { EmissionsController } from './controllers/emissions.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
@@ -56,6 +57,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
     DashboardController,
     IprogSmsController,
     BackupController,
+    EmissionsController,
   ],
   providers: [
     AppService,

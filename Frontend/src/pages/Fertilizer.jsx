@@ -37,50 +37,71 @@ import {
 
 function Fertilizer() {
   const [productionKg, setProductionKg] = useState(null);
+  const [barChartData, setBarChartData] = useState([]);
+  const [pieChartData, setPieChartData] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let mounted = true;
 
-    (async () => {
+    async function fetchData() {
       try {
-        const res = await Requests({ url: "/fertilizer/production" });
-        const body = res?.data;
+        setLoading(true);
+        const [prodRes, batchesRes, avgRes, statsRes, logsRes] =
+          await Promise.all([
+            Requests({ url: "/fertilizer/production" }),
+            Requests({ url: "/fertilizer/batches" }),
+            Requests({ url: "/fertilizer/averages" }),
+            Requests({ url: "/fertilizer/stats" }),
+            Requests({ url: "/fertilizer/logs" }),
+          ]);
+
         if (!mounted) return;
-        if (body && body.ok) {
-          const val =
-            body.production_kg ??
-            body.production_result ??
-            body.fertilizer_kg ??
-            null;
-          if (val !== null && val !== undefined) setProductionKg(Number(val));
+
+        if (prodRes?.data?.ok) {
+          setProductionKg(prodRes.data.production_kg);
         }
-      } catch {
-        // ignore — leave productionKg as null
+        if (batchesRes?.data?.ok) {
+          setBarChartData(batchesRes.data.batches);
+        }
+        if (avgRes?.data?.ok) {
+          setPieChartData(avgRes.data.averages);
+        }
+        if (statsRes?.data?.ok) {
+          setStats(statsRes.data.stats);
+        }
+        if (logsRes?.data?.ok) {
+          setLogs(logsRes.data.logs);
+        }
+      } catch (err) {
+        console.error("Failed to fetch fertilizer data", err);
+      } finally {
+        if (mounted) setLoading(false);
       }
-    })();
+    }
+
+    fetchData();
 
     return () => {
       mounted = false;
     };
   }, []);
-  const barChartData = [
-    { batch: "NB3123", nitrogen: 24, phosporus: 32, potassium: 35 },
-    { batch: "NB2123", nitrogen: 27, phosporus: 37, potassium: 49 },
-    { batch: "NB1123", nitrogen: 31, phosporus: 24, potassium: 42 },
-    { batch: "NB4123", nitrogen: 43, phosporus: 21, potassium: 32 },
-    { batch: "NB5123", nitrogen: 35, phosporus: 30, potassium: 27 },
-  ];
-
-  const pieChartData = [
-    { name: "Nitrogen", value: 275, fill: "#C26A4A" },
-    { name: "Phosporus", value: 200, fill: "#D97706" },
-    { name: "Potassium", value: 187, fill: "#739072" },
-  ];
 
   const chartConfig = {
     nitrogen: { label: "Nitrogen", color: "#C26A4A" },
     phosporus: { label: "Phosporus", color: "#D97706" },
     potassium: { label: "Potassium", color: "#739072" },
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#ECE3CE]/10">
+        <div className="w-14 h-14 border-[5px] border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
@@ -309,7 +330,7 @@ function Fertilizer() {
 
                   <div className="flex flex-col mt-1">
                     <h3 className="text-4xl font-black text-[#3A4D39]">
-                      15.0
+                      {stats ? stats.processed_waste : "—"}
                       <span className="text-lg ml-1 text-gray-400 font-medium">
                         kg
                       </span>
@@ -338,7 +359,7 @@ function Fertilizer() {
                     <h3 className="text-4xl font-black text-[#3A4D39]">
                       {productionKg === null
                         ? "—"
-                        : String(Number(productionKg).toFixed(2))}
+                        : String(Number(productionKg).toFixed(1))}
                       <span className="text-lg ml-1 text-gray-400 font-medium">
                         kg
                       </span>
@@ -357,8 +378,134 @@ function Fertilizer() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* pH & Moisture insights */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-white border-none shadow-md p-4 rounded-xl">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                    Avg pH
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold text-[#3A4D39]">
+                      {stats?.avg_ph || "--"}
+                    </span>
+                    <span className="text-xs text-green-600 font-bold">
+                      Safe
+                    </span>
+                  </div>
+                </Card>
+                <Card className="bg-white border-none shadow-md p-4 rounded-xl">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                    Avg Moisture
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold text-[#3A4D39]">
+                      {stats?.avg_moisture || "--"}%
+                    </span>
+                    <span className="text-xs text-blue-500 font-bold">
+                      Ideal
+                    </span>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Insights card */}
+              <Card className="bg-gradient-to-br from-[#4F6F52] to-[#3A4D39] border-none shadow-md p-5 rounded-xl text-white">
+                <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" /> Eco-Insight
+                </h4>
+                <p className="text-[11px] leading-relaxed text-white/80">
+                  Current NPK output is optimal for leafy greens and vegetable
+                  gardens. The neutral pH ({stats?.avg_ph}) ensures high
+                  nutrient availability for most tropical soil types.
+                </p>
+              </Card>
             </div>
           </div>
+        </div>
+
+        {/* Detailed Logs Table */}
+        <div className="w-full">
+          <Card className="shadow-md border-none bg-white rounded-xl overflow-hidden">
+            <CardHeader className="border-b border-gray-50 pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-[#3A4D39] text-xl">
+                    Recent Production Logs
+                  </CardTitle>
+                  <CardDescription>
+                    Real-time telemetry from latest fertilizer batches
+                  </CardDescription>
+                </div>
+                <button className="text-xs font-bold text-[#4F6F52] hover:underline">
+                  Download CSV
+                </button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-[#FAF9F6] text-gray-500 text-[10px] uppercase tracking-wider font-bold">
+                    <tr>
+                      <th className="px-6 py-4">Batch ID</th>
+                      <th className="px-6 py-4">Nutrients (N-P-K)</th>
+                      <th className="px-6 py-4">pH Level</th>
+                      <th className="px-6 py-4">Moisture</th>
+                      <th className="px-6 py-4">Temp</th>
+                      <th className="px-6 py-4">Processed At</th>
+                      <th className="px-6 py-4 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {logs.map((log) => (
+                      <tr
+                        key={log.fertilizer_analytics_id}
+                        className="hover:bg-gray-50/50 transition-colors"
+                      >
+                        <td className="px-6 py-4 font-mono text-xs text-gray-500">
+                          NB-{log.fertilizer_analytics_id.slice(0, 8)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <span className="text-[#C26A4A] font-bold">
+                              {log.nitrogen}
+                            </span>
+                            <span className="text-[#D97706] font-bold">
+                              {log.phosphorus}
+                            </span>
+                            <span className="text-[#739072] font-bold">
+                              {log.potassium}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 font-medium">{log.ph}</td>
+                        <td className="px-6 py-4">{log.moisture}</td>
+                        <td className="px-6 py-4">{log.temperature}</td>
+                        <td className="px-6 py-4 text-gray-400 text-xs">
+                          {new Date(log.date_created).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">
+                            Verified
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {logs.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="px-6 py-12 text-center text-gray-400 italic"
+                        >
+                          No production logs available yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     </div>

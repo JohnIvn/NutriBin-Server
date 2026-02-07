@@ -198,6 +198,13 @@ export default function Sidebar() {
           collapsed={shouldCollapse}
         />
         <NavItem
+          to="/serial"
+          icon={Key}
+          label="Serials"
+          active={isActive("/serial")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
           to="/announcements"
           icon={Megaphone}
           label="Announcements"

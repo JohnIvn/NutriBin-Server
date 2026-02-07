@@ -15,6 +15,7 @@ import MachineDetails from "@/pages/MachineDetails";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Staff from "@/pages/Staff";
 import Users from "@/pages/Users";
+import Serial from "@/pages/Serial";
 import Archives from "@/pages/Archives";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import About from "@/pages/About";
@@ -78,6 +79,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Users />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/serial"
+        element={
+          <ProtectedRoute>
+            <Serial />
           </ProtectedRoute>
         }
       />

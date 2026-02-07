@@ -19,6 +19,7 @@ import {
   Activity,
   Megaphone,
   TrendingUp,
+  Camera,
 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
 

@@ -54,7 +54,7 @@ export default function Emissions() {
 
       if (summaryRes.data.ok) setSummaryData(summaryRes.data.data);
       if (devicesRes.data.ok) setDeviceData(devicesRes.data.devices);
-    } catch (err) {
+    } catch {
       toast.error("Failed to fetch emissions data");
     } finally {
       setLoading(false);
@@ -118,7 +118,7 @@ export default function Emissions() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {gases.map((g, idx) => (
+          {gases.map((g) => (
             <Card
               key={g.id}
               className="rounded-2xl border shadow-sm hover:shadow-md overflow-hidden"
@@ -176,7 +176,7 @@ export default function Emissions() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {deviceData.map((dev, di) => {
+                    {deviceData.map((dev) => {
                       const lastSync = dev.last_reading
                         ? new Date(dev.last_reading).toLocaleString()
                         : "Never";

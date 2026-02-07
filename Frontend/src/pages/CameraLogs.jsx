@@ -35,7 +35,7 @@ export default function CameraLogs() {
 
       if (logsRes.data?.ok) setLogs(logsRes.data.logs);
       if (summaryRes.data?.ok) setSummary(summaryRes.data.summary);
-    } catch (err) {
+    } catch {
       toast.error("Failed to fetch camera logs");
     } finally {
       setLoading(false);

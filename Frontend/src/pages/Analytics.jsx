@@ -141,15 +141,13 @@ function Analytics() {
 
     (async () => {
       try {
-        const [summaryRes, salesRes] = await Promise.all([
+        const [summaryRes] = await Promise.all([
           Requests({ url: "/dashboard/summary" }),
-          Requests({ url: "/sales" }),
         ]);
 
         if (!mounted) return;
 
         const body = summaryRes?.data;
-        const salesBody = salesRes?.data;
 
         const c = body?.counts || {};
         const s = body?.sums || {};

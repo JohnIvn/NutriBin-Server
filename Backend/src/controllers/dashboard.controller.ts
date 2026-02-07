@@ -25,6 +25,18 @@ type DashboardSale = {
   customer_id: string | null;
 };
 
+type GenericDashboardStats = {
+  total_batches: string | number;
+  production_kg: string | number;
+};
+
+type HealthDashboardStats = {
+  avg_ph: string | number;
+  avg_moisture: string | number;
+  avg_methane: string | number;
+  avg_smoke: string | number;
+};
+
 type MachineSummary = {
   machine_id: string;
   user_id: string | null;
@@ -57,14 +69,14 @@ export class DashboardController {
           COALESCE((SELECT SUM(amount) FROM sales WHERE sale_date > now() - INTERVAL '7 days'), 0) AS sales_last_7d
       `);
 
-      const fertilizerQ = await client.query(`
+      const fertilizerQ = await client.query<GenericDashboardStats>(`
         SELECT 
           COUNT(*) as total_batches,
           (COUNT(*) * 0.75) as production_kg
         FROM fertilizer_analytics
       `);
 
-      const healthQ = await client.query(`
+      const healthQ = await client.query<HealthDashboardStats>(`
         SELECT 
           AVG(NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric) as avg_ph,
           AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) as avg_moisture,

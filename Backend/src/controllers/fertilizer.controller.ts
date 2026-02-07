@@ -9,7 +9,7 @@ export class FertilizerController {
   async getProduction() {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const result = await client.query<{ total: string }>(`
         SELECT COUNT(*) as total FROM fertilizer_analytics
       `);
 
@@ -31,7 +31,12 @@ export class FertilizerController {
   async getBatches() {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const result = await client.query<{
+        batch: string;
+        nitrogen: string;
+        phosporus: string;
+        potassium: string;
+      }>(`
         SELECT 
           SUBSTRING(fertilizer_analytics_id::text, 1, 6) as batch,
           nitrogen,
@@ -65,7 +70,11 @@ export class FertilizerController {
   async getAverages() {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const result = await client.query<{
+        nitrogen: string | null;
+        phosphorus: string | null;
+        potassium: string | null;
+      }>(`
         SELECT 
           AVG(NULLIF(regexp_replace(nitrogen, '[^0-9.]', '', 'g'), '')::numeric) as nitrogen,
           AVG(NULLIF(regexp_replace(phosphorus, '[^0-9.]', '', 'g'), '')::numeric) as phosphorus,
@@ -106,7 +115,12 @@ export class FertilizerController {
   async getStats() {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const result = await client.query<{
+        total_batches: string | null;
+        active_devices: string | null;
+        avg_ph: string | null;
+        avg_moisture: string | null;
+      }>(`
         SELECT 
           (SELECT COUNT(*) FROM fertilizer_analytics) as total_batches,
           (SELECT COUNT(DISTINCT machine_id) FROM fertilizer_analytics) as active_devices,

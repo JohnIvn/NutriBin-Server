@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
@@ -34,9 +34,9 @@ export function VerifyMFASMS() {
     ) {
       handleSubmit();
     }
-  }, [code, submitting]);
+  }, [code, submitting, handleSubmit]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!code || !/^\d{6}$/.test(code.trim())) {
       setError("Enter a 6-digit code");
       return;
@@ -72,7 +72,7 @@ export function VerifyMFASMS() {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [code, staffId, adminId, login, navigate]);
 
   return (
     <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">

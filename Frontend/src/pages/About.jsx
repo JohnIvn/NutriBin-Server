@@ -44,13 +44,6 @@ const ProcessStep = ({ icon, title, desc, stepNumber }) => (
 );
 
 export default function About() {
-  const PageHeaderComponent = () => (
-    <PageHeader
-      title="About NutriBin"
-      icon={<Leaf className="w-8 h-8 text-[#4F6F52]" />}
-    />
-  );
-
   // animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -69,7 +62,10 @@ export default function About() {
     <div className="bg-[#ECE3CE]/20 min-h-screen font-sans pt-6">
       {/* header */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <PageHeaderComponent />
+        <PageHeader
+          title="About NutriBin"
+          icon={<Leaf className="w-8 h-8 text-[#4F6F52]" />}
+        />
       </div>
 
       {/* hero */}

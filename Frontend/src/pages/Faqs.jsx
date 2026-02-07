@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaCommentDots, FaPlus, FaMinus } from "react-icons/fa";
-import { motion } from "framer-motion";
 import PageHeader from "@/components/ui/pageheader";
 
 const faqsData = [

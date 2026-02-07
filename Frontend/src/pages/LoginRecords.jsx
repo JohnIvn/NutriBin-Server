@@ -31,7 +31,6 @@ import { useForm } from "react-hook-form";
 export default function LoginRecords() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const filterForm = useForm({ defaultValues: { count: "10", term: "" } });
@@ -48,8 +47,8 @@ export default function LoginRecords() {
         });
         if (!mounted) return;
         setRecords(res.data?.rows || res.data || []);
-      } catch (e) {
-        setError(e.message || "Failed to load");
+      } catch {
+        // failed to load
       } finally {
         setLoading(false);
       }
@@ -73,7 +72,7 @@ export default function LoginRecords() {
         second: "2-digit",
         hour12: false,
       });
-    } catch (e) {
+    } catch {
       return new Date(dateString).toString();
     }
   };

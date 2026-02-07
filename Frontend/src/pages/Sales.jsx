@@ -75,9 +75,6 @@ function Sales() {
   }));
 
   const totalSales = salesData.reduce((s, r) => s + (r.amount || 0), 0);
-  const avgSales = salesData.length
-    ? Math.round(totalSales / new Set(salesData.map((s) => s.date)).size)
-    : 0;
 
   const formatPeso = (v) =>
     new Intl.NumberFormat("en-PH", {
@@ -85,16 +82,6 @@ function Sales() {
       currency: "PHP",
       maximumFractionDigits: 0,
     }).format(Number(v) || 0);
-
-  const regionTotals = salesData.reduce((acc, r) => {
-    acc[r.region] = (acc[r.region] || 0) + (r.amount || 0);
-    return acc;
-  }, {});
-
-  const productTotals = salesData.reduce((acc, r) => {
-    acc[r.product] = (acc[r.product] || 0) + (r.amount || 0);
-    return acc;
-  }, {});
 
   const chartConfig = {
     amount: { label: "Sales", color: "var(--color-nitrogen)" },

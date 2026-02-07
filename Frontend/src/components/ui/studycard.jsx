@@ -1,5 +1,4 @@
 import { LightBulbIcon } from "@heroicons/react/24/solid";
-// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 

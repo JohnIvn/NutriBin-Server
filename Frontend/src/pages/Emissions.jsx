@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { useUser } from "@/contexts/UserContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
@@ -27,8 +26,6 @@ function Sparkline({ data, dataKey, color }) {
 }
 
 export default function Emissions() {
-  const { user } = useUser();
-
   // Example (placeholder) telemetry for each gas — replace with real API data later
   const gases = useMemo(
     () => [

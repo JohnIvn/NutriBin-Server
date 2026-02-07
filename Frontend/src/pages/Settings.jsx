@@ -526,7 +526,9 @@ function Account() {
                             fetchProfile();
                             try {
                               refreshUser?.();
-                            } catch (e) {}
+                            } catch {
+                              // ignore
+                            }
                             setSelectedPhoto(null);
                             setPreviewUrl("");
                           } else {
@@ -573,7 +575,9 @@ function Account() {
                               fetchProfile();
                               try {
                                 refreshUser?.();
-                              } catch (e) {}
+                              } catch {
+                                // ignore
+                              }
                             } else {
                               toast.error(
                                 res.data?.message || "Failed to remove photo",

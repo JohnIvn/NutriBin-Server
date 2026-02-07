@@ -53,7 +53,7 @@ function Fertilizer() {
             null;
           if (val !== null && val !== undefined) setProductionKg(Number(val));
         }
-      } catch (e) {
+      } catch {
         // ignore — leave productionKg as null
       }
     })();
@@ -389,7 +389,7 @@ function ActiveMachinesDisplay() {
         } else {
           setData((s) => ({ ...s, loading: false }));
         }
-      } catch (e) {
+      } catch {
         if (!mounted) return;
         setData((s) => ({ ...s, loading: false }));
       }

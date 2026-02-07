@@ -12,13 +12,6 @@ import PageHeader from "@/components/ui/pageheader";
 import { Share2 } from "lucide-react";
 
 export default function Socials() {
-  const PageHeaderComponent = () => (
-    <PageHeader
-      title="Follow Us"
-      icon={<Share2 className="w-8 h-8 text-[#4F6F52]" />}
-    />
-  );
-
   const socials = [
     {
       name: "GitHub",
@@ -72,7 +65,10 @@ export default function Socials() {
   return (
     <div className="relative w-full min-h-screen flex flex-col overflow-hidden bg-[#ECE3CE]/30 font-sans pt-6">
       <div className="max-w-6xl mx-auto px-4 md:px-8 w-full">
-        <PageHeaderComponent />
+        <PageHeader
+          title="Follow Us"
+          icon={<Share2 className="w-8 h-8 text-[#4F6F52]" />}
+        />
       </div>
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* --- right-side --- */}

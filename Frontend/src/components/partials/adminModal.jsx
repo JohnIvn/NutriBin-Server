@@ -162,7 +162,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
           setCodeVerified(false);
           setCodeError(response.data?.message || "Invalid code");
         }
-      } catch (err) {
+      } catch {
         setCodeVerified(false);
         setCodeError("Failed to verify code");
       }
@@ -215,7 +215,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
           setPhoneCodeVerified(false);
           setPhoneCodeError(response.data?.message || "Invalid code");
         }
-      } catch (err) {
+      } catch {
         setPhoneCodeVerified(false);
         setPhoneCodeError("Failed to verify code");
       }
@@ -447,7 +447,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
       if (response.data?.ok) {
         toast.success("Code sent via SMS!");
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to send SMS code");
     } finally {
       setSendingPhoneCode(false);
@@ -476,7 +476,6 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
     }
   }, [mode, staff, isEdit, form]);
 
-  // eslint-disable-next-line no-unused-vars
   const InputIcon = ({ icon: IconComp, active }) => (
     <IconComp
       className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${

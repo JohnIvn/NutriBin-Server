@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   User,
@@ -26,11 +26,22 @@ function MachineDetails() {
   const [selectedDiag, setSelectedDiag] = useState(null);
   const [showDiagModal, setShowDiagModal] = useState(false);
 
-  useEffect(() => {
-    fetchMachineDetails();
-  }, [machineId]);
+  const fetchMachineHealth = useCallback(async (id) => {
+    try {
+      const res = await Requests({
+        url: `/management/machine-health/${id}`,
+        method: "GET",
+        credentials: true,
+      });
+      if (res.data?.ok && res.data.health) {
+        setMachineHealth(res.data.health);
+      }
+    } catch {
+      // silently ignore health errors (keep existing display)
+    }
+  }, []);
 
-  const fetchMachineDetails = async () => {
+  const fetchMachineDetails = useCallback(async () => {
     try {
       setDetailsLoading(true);
       const response = await Requests({
@@ -42,27 +53,16 @@ function MachineDetails() {
         setMachineDetails(response.data.machine);
         fetchMachineHealth(response.data.machine.machine_id);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to load machine details");
     } finally {
       setDetailsLoading(false);
     }
-  };
+  }, [machineId, fetchMachineHealth]);
 
-  const fetchMachineHealth = async (id) => {
-    try {
-      const res = await Requests({
-        url: `/management/machine-health/${id}`,
-        method: "GET",
-        credentials: true,
-      });
-      if (res.data?.ok && res.data.health) {
-        setMachineHealth(res.data.health);
-      }
-    } catch (err) {
-      // silently ignore health errors (keep existing display)
-    }
-  };
+  useEffect(() => {
+    fetchMachineDetails();
+  }, [fetchMachineDetails]);
 
   const toNumber = (val) => {
     if (val === null || val === undefined) return NaN;
@@ -364,7 +364,6 @@ function MachineDetails() {
                       const val = machineDetails[key];
                       // reverse logic: truthy value indicates a problem on the machine
                       const ok = !(val === true || val === "true" || val === 1);
-                      const statusColor = ok ? "green" : "red";
 
                       return (
                         <button

@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 
 export function ProtectedRoute({ children }) {
-  const { user, loading } = useUser();
+  const { loading } = useUser();
 
   if (loading) {
     return (

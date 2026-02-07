@@ -138,7 +138,7 @@ function Firmware() {
       const sha = await computeSHA256(file);
       setChecksum(sha);
       toast.success("Checksum computed");
-    } catch (err) {
+    } catch {
       setFileError("Failed to compute checksum");
     } finally {
       setValidating(false);

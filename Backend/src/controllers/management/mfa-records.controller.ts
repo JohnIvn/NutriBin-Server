@@ -1,6 +1,18 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { DatabaseService } from '../../service/database/database.service';
 
+type RawMfaRecordRow = {
+  user_type: string;
+  identifier: string;
+  full_name: string;
+  email: string;
+  authentication_type: string | null;
+  enabled: boolean | null;
+  mfa_token: string | null;
+  mfa_token_expiry: string | null;
+  auth_date_created: string | null;
+};
+
 @Controller('management/mfa-records')
 export class MfaRecordsController {
   constructor(private readonly db: DatabaseService) {}
@@ -8,13 +20,18 @@ export class MfaRecordsController {
   @Get()
   async list(@Query('limit') limit?: string) {
     const client = this.db.getClient();
-    const l = Math.min(Math.max(parseInt(limit as any) || 100, 1), 2000);
+    const requestedLimit =
+      typeof limit === 'string' ? Number.parseInt(limit, 10) : NaN;
+    const normalizedLimit = Number.isFinite(requestedLimit)
+      ? requestedLimit
+      : 100;
+    const l = Math.min(Math.max(normalizedLimit, 1), 2000);
 
     // Combine admins, staff, and customers with their authentication row if present.
-    const res = await client.query(
+    const res = await client.query<RawMfaRecordRow>(
       `
-      SELECT * FROM (
-        SELECT
+        SELECT * FROM (
+          SELECT
           'admin'::text AS user_type,
           ua.admin_id::text AS identifier,
           ua.first_name || ' ' || ua.last_name AS full_name,
@@ -58,16 +75,21 @@ export class MfaRecordsController {
         LEFT JOIN authentication a ON a.customer_id = uc.customer_id
       ) combined
       ORDER BY full_name NULLS LAST
-      LIMIT $1
-    `,
+        LIMIT $1
+      `,
       [l],
     );
 
     // Normalize rows: if authentication_type is null -> treat as 'N/A' and present MFA as 'nothing'
     const rows = res.rows.map((r) => ({
-      ...r,
+      user_type: r.user_type,
+      identifier: r.identifier,
+      full_name: r.full_name,
+      email: r.email,
       authentication_type: r.authentication_type || 'N/A',
       enabled: r.enabled === true,
+      mfa_token: r.mfa_token,
+      mfa_token_expiry: r.mfa_token_expiry,
       auth_date_created: r.auth_date_created || null,
     }));
 

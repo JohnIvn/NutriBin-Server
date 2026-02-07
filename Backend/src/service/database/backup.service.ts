@@ -2,7 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
+import { promises as fsPromises } from 'fs';
 import chalk from 'chalk';
+
+type TableInfo = { table_name: string };
+type ColumnInfo = {
+  column_name: string;
+  data_type: string;
+  character_maximum_length: number | null;
+  column_default: string | null;
+  is_nullable: 'YES' | 'NO';
+  udt_name: string;
+};
+type PrimaryKeyInfo = { column_name: string };
+type ForeignKeyInfo = {
+  column_name: string;
+  foreign_table_name: string;
+  foreign_column_name: string;
+  delete_rule: string;
+  update_rule: string;
+};
 
 @Injectable()
 export class BackupService {
@@ -33,7 +52,7 @@ export class BackupService {
 
     try {
       // Get all tables in the public schema
-      const tablesResult = await client.query(`
+      const tablesResult = await client.query<TableInfo>(`
         SELECT table_name 
         FROM information_schema.tables 
         WHERE table_schema = 'public' 
@@ -86,7 +105,7 @@ export class BackupService {
     tableName: string,
   ): Promise<string> {
     // Get column information
-    const columnsResult = await client.query(
+    const columnsResult = await client.query<ColumnInfo>(
       `
       SELECT 
         column_name,
@@ -103,7 +122,7 @@ export class BackupService {
     );
 
     // Get primary key information
-    const pkResult = await client.query(
+    const pkResult = await client.query<PrimaryKeyInfo>(
       `
       SELECT a.attname AS column_name
       FROM pg_index i
@@ -116,7 +135,7 @@ export class BackupService {
     const primaryKeys = pkResult.rows.map((row) => row.column_name);
 
     // Get foreign key information
-    const fkResult = await client.query(
+    const fkResult = await client.query<ForeignKeyInfo>(
       `
       SELECT
         kcu.column_name,
@@ -214,7 +233,9 @@ export class BackupService {
   ): Promise<string> {
     try {
       // Get all data from the table
-      const dataResult = await client.query(`SELECT * FROM "${tableName}";`);
+      const dataResult = await client.query<Record<string, unknown>>(
+        `SELECT * FROM "${tableName}";`,
+      );
 
       if (dataResult.rows.length === 0) {
         return `-- No data in table ${tableName}\n`;
@@ -232,26 +253,9 @@ export class BackupService {
 
         insertSQL += `INSERT INTO "${tableName}" (${columnList}) VALUES\n`;
 
-        const values = batch.map((row, index) => {
+        const values = batch.map((row) => {
           const rowValues = columns
-            .map((col) => {
-              const value = row[col];
-              if (value === null || value === undefined) {
-                return 'NULL';
-              } else if (typeof value === 'string') {
-                // Escape single quotes in strings
-                return `'${value.replace(/'/g, "''")}'`;
-              } else if (typeof value === 'boolean') {
-                return value ? 'TRUE' : 'FALSE';
-              } else if (value instanceof Date) {
-                return `'${value.toISOString()}'`;
-              } else if (typeof value === 'object') {
-                // Handle JSON/JSONB columns
-                return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
-              } else {
-                return value;
-              }
-            })
+            .map((col) => this.formatRowValue(row[col]))
             .join(', ');
 
           return `  (${rowValues})`;
@@ -277,6 +281,42 @@ export class BackupService {
     }
   }
 
+  private formatRowValue(value: unknown): string {
+    if (value === null || value === undefined) {
+      return 'NULL';
+    }
+
+    const escapeString = (raw: string | undefined): string =>
+      `'${(raw ?? '').replace(/'/g, "''")}'`;
+
+    if (typeof value === 'string') {
+      return escapeString(value);
+    }
+    if (typeof value === 'boolean') {
+      return value ? 'TRUE' : 'FALSE';
+    }
+    if (typeof value === 'number') {
+      return String(value);
+    }
+    if (typeof value === 'bigint') {
+      return value.toString();
+    }
+    if (typeof value === 'symbol' || typeof value === 'function') {
+      return escapeString(value.toString());
+    }
+    if (value instanceof Date) {
+      return escapeString(value.toISOString());
+    }
+    if (value instanceof Buffer) {
+      return `'\\x${value.toString('hex')}'`;
+    }
+    if (typeof value === 'object') {
+      return escapeString(JSON.stringify(value));
+    }
+
+    return escapeString(JSON.stringify(value));
+  }
+
   /**
    * Lists all available backup files
    */
@@ -296,7 +336,7 @@ export class BackupService {
   /**
    * Deletes old backup files, keeping only the specified number of most recent backups
    */
-  cleanOldBackups(keepCount: number = 10): void {
+  async cleanOldBackups(keepCount: number = 10): Promise<void> {
     try {
       const backups = this.listBackups();
 
@@ -308,7 +348,7 @@ export class BackupService {
 
         for (const backup of toDelete) {
           const filePath = path.join(this.backupDir, backup);
-          fs.unlinkSync(filePath);
+          await fsPromises.unlink(filePath);
           console.log(chalk.gray(`  └─ Deleted: ${backup}`));
         }
       }

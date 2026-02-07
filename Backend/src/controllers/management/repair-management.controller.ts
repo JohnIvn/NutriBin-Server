@@ -47,6 +47,11 @@ type RepairRow = {
   m7?: boolean;
 };
 
+type CustomerEmailRow = {
+  email: string | null;
+  first_name: string | null;
+};
+
 const repairComponentColumns = [
   'c1',
   'c2',
@@ -236,24 +241,24 @@ export class RepairManagementController {
           ) &&
           repair.user_id
         ) {
-          const userRes = await client.query(
+          const userRes = await client.query<CustomerEmailRow>(
             'SELECT email, first_name FROM user_customer WHERE customer_id = $1 LIMIT 1',
             [repair.user_id],
           );
-          if (userRes.rows && userRes.rows.length) {
+          if (userRes.rows.length) {
             const user = userRes.rows[0];
             const to = user.email;
-            const firstName = user.first_name || '';
             const machineId = repair.machine_id || '';
             const issueType = repair.description || 'Repair request';
 
-            // Send repair notification (don't fail the request if email fails)
-            await this.mailer.sendRepairNotification(to, {
-              machineId,
-              issueType,
-              status: repair.repair_status,
-              description: repair.description ?? undefined,
-            });
+            if (to) {
+              await this.mailer.sendRepairNotification(to, {
+                machineId,
+                issueType,
+                status: repair.repair_status,
+                description: repair.description ?? undefined,
+              });
+            }
           }
         }
       } catch (err) {

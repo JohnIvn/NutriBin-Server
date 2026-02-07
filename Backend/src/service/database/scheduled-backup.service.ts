@@ -5,6 +5,8 @@ import { BackupService } from '../database/backup.service';
 import { DatabaseService } from '../database/database.service';
 import chalk from 'chalk';
 
+type CronDateLike = Date | { toJSDate(): Date };
+
 @Injectable()
 export class ScheduledBackupService implements OnModuleInit {
   constructor(
@@ -46,7 +48,7 @@ export class ScheduledBackupService implements OnModuleInit {
         );
 
         // Clean old backups (keep last 30 for daily backups)
-        this.backupService.cleanOldBackups(30);
+        await this.backupService.cleanOldBackups(30);
       } catch (error) {
         console.error(chalk.red('[BACKUP] Scheduled backup failed:'), error);
       }
@@ -82,10 +84,13 @@ export class ScheduledBackupService implements OnModuleInit {
   /**
    * Stop scheduled backups
    */
-  stopScheduledBackups() {
+  async stopScheduledBackups(): Promise<void> {
     try {
       const job = this.schedulerRegistry.getCronJob('database-backup');
-      job.stop();
+      const stopResult = job.stop();
+      if (stopResult) {
+        await stopResult;
+      }
       console.log(chalk.yellow('[BACKUP] Scheduled backups stopped'));
     } catch (error) {
       console.error('[BACKUP] Error stopping scheduled backups:', error);
@@ -98,24 +103,22 @@ export class ScheduledBackupService implements OnModuleInit {
   getScheduleStatus() {
     try {
       const job = this.schedulerRegistry.getCronJob('database-backup');
-      const nextDate = job.nextDate();
-      const lastDate = job.lastDate();
+      const nextDate = job.nextDate() as CronDateLike | null;
+      const lastDate = job.lastDate() as CronDateLike | null;
 
       let nextRunStr = 'N/A';
       let lastRunStr = 'N/A';
 
       if (nextDate) {
-        nextRunStr =
-          nextDate instanceof Date
-            ? nextDate.toISOString()
-            : (nextDate as any).toJSDate().toISOString();
+        const normalizedNext =
+          nextDate instanceof Date ? nextDate : nextDate.toJSDate();
+        nextRunStr = normalizedNext.toISOString();
       }
 
       if (lastDate) {
-        lastRunStr =
-          lastDate instanceof Date
-            ? lastDate.toISOString()
-            : (lastDate as any).toJSDate().toISOString();
+        const normalizedLast =
+          lastDate instanceof Date ? lastDate : lastDate.toJSDate();
+        lastRunStr = normalizedLast.toISOString();
       }
 
       return {
@@ -125,6 +128,7 @@ export class ScheduledBackupService implements OnModuleInit {
         lastRun: lastRunStr,
       };
     } catch (error) {
+      console.error('[BACKUP] Status check failed:', error);
       return {
         enabled: false,
         cronExpression: process.env.BACKUP_CRON || '0 2 * * *',

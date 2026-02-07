@@ -1,4 +1,4 @@
-import { Controller, Post, Get, UseGuards, Res, Param } from '@nestjs/common';
+import { Controller, Post, Get, Res, Param } from '@nestjs/common';
 import type { Response } from 'express';
 import { BackupService } from '../service/database/backup.service';
 import { DatabaseService } from '../service/database/database.service';
@@ -36,7 +36,7 @@ export class BackupController {
       return {
         success: false,
         message: 'Failed to create database backup',
-        error: error.message,
+        error: this.getErrorMessage(error),
       };
     }
   }
@@ -46,7 +46,7 @@ export class BackupController {
    * GET /backup/list
    */
   @Get('list')
-  async listBackups() {
+  listBackups() {
     try {
       const backups = this.backupService.listBackups();
       const backupDir = this.backupService.getBackupDirectory();
@@ -75,7 +75,7 @@ export class BackupController {
       return {
         success: false,
         message: 'Failed to list backups',
-        error: error.message,
+        error: this.getErrorMessage(error),
       };
     }
   }
@@ -85,10 +85,7 @@ export class BackupController {
    * GET /backup/download/:filename
    */
   @Get('download/:filename')
-  async downloadBackup(
-    @Param('filename') filename: string,
-    @Res() res: Response,
-  ) {
+  downloadBackup(@Param('filename') filename: string, @Res() res: Response) {
     try {
       const backupDir = this.backupService.getBackupDirectory();
       const filePath = path.join(backupDir, filename);
@@ -115,7 +112,7 @@ export class BackupController {
       return res.status(500).json({
         success: false,
         message: 'Failed to download backup',
-        error: error.message,
+        error: this.getErrorMessage(error),
       });
     }
   }
@@ -128,7 +125,7 @@ export class BackupController {
   async cleanBackups() {
     try {
       const beforeCount = this.backupService.listBackups().length;
-      this.backupService.cleanOldBackups(10); // Keep last 10 backups
+      await this.backupService.cleanOldBackups(10); // Keep last 10 backups
       const afterCount = this.backupService.listBackups().length;
 
       return {
@@ -142,7 +139,7 @@ export class BackupController {
       return {
         success: false,
         message: 'Failed to clean old backups',
-        error: error.message,
+        error: this.getErrorMessage(error),
       };
     }
   }
@@ -152,7 +149,7 @@ export class BackupController {
    * GET /backup/schedule
    */
   @Get('schedule')
-  async getScheduleStatus() {
+  getScheduleStatus() {
     try {
       const status = this.scheduledBackupService.getScheduleStatus();
       return {
@@ -167,7 +164,7 @@ export class BackupController {
       return {
         success: false,
         message: 'Failed to get schedule status',
-        error: error.message,
+        error: this.getErrorMessage(error),
       };
     }
   }
@@ -183,5 +180,15 @@ export class BackupController {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  private getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    return 'Unknown error';
   }
 }

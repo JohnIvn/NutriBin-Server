@@ -27,7 +27,9 @@
     "@nestjs/common": "^11.1.13",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.13",
     "@nestjs/schedule": "^6.1.1",
+    "@nestjs/websockets": "^11.1.13",
     "@react-oauth/google": "^0.13.4",
     "@supabase/supabase-js": "^2.90.1",
     "bcryptjs": "^3.0.3",
@@ -40,6 +42,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sib-api-v3-sdk": "^8.2.0",
+    "socket.io": "^4.8.3",
     "twilio": "^5.11.2"
   },
   "devDependencies": {

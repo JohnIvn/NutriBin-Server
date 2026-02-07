@@ -34,7 +34,6 @@ export async function createAuthenticationTable(client: Client) {
     );
   `);
 
-  // Add unique constraints if they don't already exist
   await client.query(`
     DO $$
     BEGIN
@@ -56,6 +55,19 @@ export async function createAuthenticationTable(client: Client) {
         WHERE conname = 'unique_admin_id' AND conrelid = 'authentication'::regclass
       ) THEN
         ALTER TABLE authentication ADD CONSTRAINT unique_admin_id UNIQUE (admin_id);
+      END IF;
+    END;
+    $$;
+  `);
+
+  await client.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'unique_customer_id' AND conrelid = 'authentication'::regclass
+      ) THEN
+        ALTER TABLE authentication ADD CONSTRAINT unique_customer_id UNIQUE (customer_id);
       END IF;
     END;
     $$;

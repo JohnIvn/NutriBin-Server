@@ -15,6 +15,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { randomInt } from 'crypto';
+import * as bcrypt from 'bcryptjs';
 
 import { DatabaseService } from '../../service/database/database.service';
 import { BrevoService } from '../../service/email/brevo.service';
@@ -70,7 +71,7 @@ export class SettingsController {
           60,
         );
         if (url) return url;
-      } catch (err) {
+      } catch {
         // ignore and continue
       }
     }
@@ -516,29 +517,26 @@ export class SettingsController {
       }
 
       // Update password
-      return await (async () => {
-        const bcrypt = await import('bcryptjs');
-        const passwordHash = await bcrypt.hash(newPassword, 10);
+      const passwordHash = await bcrypt.hash(newPassword, 10);
 
-        // Update password in the appropriate table
-        if (isAdmin) {
-          await client.query(
-            'UPDATE user_admin SET password = $1, last_updated = NOW() WHERE admin_id = $2',
-            [passwordHash, staffId],
-          );
-        } else {
-          await client.query(
-            'UPDATE user_staff SET password = $1, last_updated = NOW() WHERE staff_id = $2',
-            [passwordHash, staffId],
-          );
-        }
+      // Update password in the appropriate table
+      if (isAdmin) {
+        await client.query(
+          'UPDATE user_admin SET password = $1, last_updated = NOW() WHERE admin_id = $2',
+          [passwordHash, staffId],
+        );
+      } else {
+        await client.query(
+          'UPDATE user_staff SET password = $1, last_updated = NOW() WHERE staff_id = $2',
+          [passwordHash, staffId],
+        );
+      }
 
-        // Mark code as used
-        await client.query('UPDATE codes SET used = true WHERE code_id = $1', [
-          record.code_id,
-        ]);
-        return { ok: true, message: 'Password has been reset successfully' };
-      })();
+      // Mark code as used
+      await client.query('UPDATE codes SET used = true WHERE code_id = $1', [
+        record.code_id,
+      ]);
+      return { ok: true, message: 'Password has been reset successfully' };
     } catch (error) {
       if (
         error instanceof BadRequestException ||
@@ -553,32 +551,33 @@ export class SettingsController {
   @Post(':staffId/photo')
   @UseInterceptors(
     FileInterceptor('photo', {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       storage: memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     }),
   )
   async uploadPhoto(
     @Param('staffId') staffId: string,
-    @UploadedFile() file: any,
+    @UploadedFile() file: unknown,
   ) {
     if (!staffId) throw new BadRequestException('staffId is required');
     if (!file) throw new BadRequestException('No file uploaded');
 
     try {
       const bucket = 'avatars';
+      const f = file as {
+        originalname: string;
+        buffer: Buffer;
+        mimetype: string;
+      };
 
-      const orig = file.originalname || '';
+      const orig = f.originalname || '';
       const extMatch = orig.match(/\.([a-zA-Z0-9]+)$/);
       const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
       const path = `avatars/${staffId}.${ext}`;
 
       // upload buffer
-      await supabaseService.uploadBuffer(
-        bucket,
-        path,
-        file.buffer,
-        file.mimetype,
-      );
+      await supabaseService.uploadBuffer(bucket, path, f.buffer, f.mimetype);
 
       const publicUrl = supabaseService.getPublicUrl(bucket, path);
 
@@ -791,7 +790,7 @@ export class SettingsController {
           'UPDATE user_admin SET contact_number = $1, last_updated = NOW() WHERE admin_id = $2',
           [newPhone, staffId],
         );
-        const updated = await client.query(
+        const updated = await client.query<StaffPublicRow>(
           `SELECT admin_id as staff_id, first_name, last_name, NULL as birthday, NULL as age, contact_number, address, email, date_created, last_updated, status
            FROM user_admin WHERE admin_id = $1 LIMIT 1`,
           [staffId],
@@ -809,7 +808,7 @@ export class SettingsController {
           'UPDATE user_staff SET contact_number = $1, last_updated = NOW() WHERE staff_id = $2',
           [newPhone, staffId],
         );
-        const updated = await client.query(
+        const updated = await client.query<StaffPublicRow>(
           `SELECT staff_id, first_name, last_name, birthday, age, contact_number, address, email, date_created, last_updated, status
            FROM user_staff WHERE staff_id = $1 LIMIT 1`,
           [staffId],

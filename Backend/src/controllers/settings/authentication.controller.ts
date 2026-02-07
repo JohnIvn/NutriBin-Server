@@ -12,6 +12,18 @@ import {
 import { DatabaseService } from '../../service/database/database.service';
 import { BrevoService } from '../../service/email/brevo.service';
 
+type AuthenticatedUserRow = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  contact_number: string | null;
+  address: string | null;
+  email: string | null;
+  date_created: string;
+  last_updated: string;
+  status: string;
+};
+
 @Controller('authentication')
 export class AuthenticationController {
   constructor(
@@ -190,17 +202,9 @@ export class AuthenticationController {
         userQuery = `SELECT staff_id as id, first_name, last_name, contact_number, address, email, date_created, last_updated, status FROM user_staff WHERE staff_id = $1`;
       }
 
-      const userResult = await client.query<{
-        id: string;
-        first_name: string;
-        last_name: string;
-        contact_number: string | null;
-        address: string | null;
-        email: string;
-        date_created: string;
-        last_updated: string;
-        status: string;
-      }>(userQuery, [userId]);
+      const userResult = await client.query<AuthenticatedUserRow>(userQuery, [
+        userId,
+      ]);
 
       if (userResult.rows.length === 0) {
         throw new BadRequestException('User not found');
@@ -307,7 +311,9 @@ export class AuthenticationController {
         userQuery = `SELECT staff_id as id, first_name, last_name, contact_number, address, email, date_created, last_updated, status FROM user_staff WHERE staff_id = $1`;
       }
 
-      const userResult = await client.query(userQuery, [userId]);
+      const userResult = await client.query<AuthenticatedUserRow>(userQuery, [
+        userId,
+      ]);
       if (!userResult.rowCount) throw new BadRequestException('User not found');
 
       const user = userResult.rows[0];

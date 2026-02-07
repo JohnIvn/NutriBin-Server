@@ -197,7 +197,7 @@ function MachineDetails() {
                 </div>
               )}
 
-              {/* NPK and module diagnostics */}
+              {/* NPK and machine diagnostics */}
               <div className="space-y-8 mt-6">
                 {/* NPK */}
                 {(() => {
@@ -293,41 +293,8 @@ function MachineDetails() {
                   );
                 })()}
 
-                {/* module status grid */}
-                {machineDetails.module_analytics?.length > 0 && (
-                  <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
-                    <h3 className="font-bold text-[#3A4D39] mb-8 flex items-center gap-2 text-xl">
-                      <Cpu className="h-6 w-6 text-[#4F6F52]" /> Module
-                      Diagnostics
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                      {Object.entries(machineDetails.module_analytics[0])
-                        .filter(([key]) => key !== "date_created")
-                        .map(([key, value]) => (
-                          <div
-                            key={key}
-                            className={`px-5 py-4 rounded-xl border flex items-center justify-between transition-colors ${
-                              value
-                                ? "bg-green-50/50 border-green-100 text-green-800 hover:bg-green-50"
-                                : "bg-red-50/50 border-red-100 text-red-800 hover:bg-red-50"
-                            }`}
-                          >
-                            <span className="text-sm font-bold uppercase tracking-wide truncate max-w-[80%]">
-                              {key.replace(/_/g, " ")}
-                            </span>
-                            {value ? (
-                              <CheckCircle className="h-6 w-6 text-green-600" />
-                            ) : (
-                              <XCircle className="h-6 w-6 text-red-500" />
-                            )}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* Machine component diagnostics */}
-                <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm mt-6">
+                <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
                   <h3 className="font-bold text-[#3A4D39] mb-6 flex items-center gap-2 text-xl">
                     <Cpu className="h-6 w-6 text-[#4F6F52]" /> Machine
                     Diagnostics

@@ -160,11 +160,13 @@ function MachineDetails() {
                     <Wind className="h-6 w-6 text-[#4F6F52]" /> Environmental
                     Readings
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                     <EnvCard
                       icon={Thermometer}
                       label="Temperature"
-                      value={machineDetails.fertilizer_analytics[0].temperature}
+                      value={toNumber(
+                        machineDetails.fertilizer_analytics[0].temperature,
+                      )}
                       unit="°C"
                       color="text-orange-500"
                       bg="bg-orange-50"
@@ -172,7 +174,9 @@ function MachineDetails() {
                     <EnvCard
                       icon={Droplets}
                       label="Humidity"
-                      value={machineDetails.fertilizer_analytics[0].humidity}
+                      value={toNumber(
+                        machineDetails.fertilizer_analytics[0].humidity,
+                      )}
                       unit="%"
                       color="text-blue-500"
                       bg="bg-blue-50"
@@ -180,7 +184,9 @@ function MachineDetails() {
                     <EnvCard
                       icon={Activity}
                       label="pH Level"
-                      value={machineDetails.fertilizer_analytics[0].ph}
+                      value={toNumber(
+                        machineDetails.fertilizer_analytics[0].ph,
+                      )}
                       unit=""
                       color="text-purple-500"
                       bg="bg-purple-50"
@@ -188,10 +194,52 @@ function MachineDetails() {
                     <EnvCard
                       icon={Sprout}
                       label="Moisture"
-                      value={machineDetails.fertilizer_analytics[0].moisture}
+                      value={toNumber(
+                        machineDetails.fertilizer_analytics[0].moisture,
+                      )}
                       unit="%"
                       color="text-green-600"
                       bg="bg-green-50"
+                    />
+                    <EnvCard
+                      icon={Wind}
+                      label="Methane"
+                      value={toNumber(
+                        machineDetails.fertilizer_analytics[0].methane,
+                      )}
+                      unit="ppm"
+                      color="text-red-500"
+                      bg="bg-red-50"
+                    />
+                    <EnvCard
+                      icon={Wind}
+                      label="Hydrogen"
+                      value={toNumber(
+                        machineDetails.fertilizer_analytics[0].hydrogen,
+                      )}
+                      unit="ppm"
+                      color="text-cyan-500"
+                      bg="bg-cyan-50"
+                    />
+                    <EnvCard
+                      icon={Wind}
+                      label="Smoke"
+                      value={toNumber(
+                        machineDetails.fertilizer_analytics[0].smoke,
+                      )}
+                      unit="ppm"
+                      color="text-slate-500"
+                      bg="bg-slate-50"
+                    />
+                    <EnvCard
+                      icon={Wind}
+                      label="Benzene"
+                      value={toNumber(
+                        machineDetails.fertilizer_analytics[0].benzene,
+                      )}
+                      unit="ppm"
+                      color="text-indigo-500"
+                      bg="bg-indigo-50"
                     />
                   </div>
                 </div>
@@ -222,19 +270,19 @@ function MachineDetails() {
                         </h3>
                         <div className="space-y-8">
                           <NutrientBar
-                            label="Nitrogen (N)"
+                            label={`Nitrogen (N) — ${latest.nitrogen || "0%"}`}
                             value={nPct}
                             color="bg-[#C26A4A]"
                             textColor="text-[#C26A4A]"
                           />
                           <NutrientBar
-                            label="Phosphorus (P)"
+                            label={`Phosphorus (P) — ${latest.phosphorus || "0%"}`}
                             value={pPct}
                             color="bg-[#D97706]"
                             textColor="text-[#D97706]"
                           />
                           <NutrientBar
-                            label="Potassium (K)"
+                            label={`Potassium (K) — ${latest.potassium || "0%"}`}
                             value={kPct}
                             color="bg-[#739072]"
                             textColor="text-[#739072]"

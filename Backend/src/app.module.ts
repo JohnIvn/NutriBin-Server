@@ -30,6 +30,7 @@ import { StaffAuthService } from './service/auth/staff-auth.service';
 import { BrevoService } from './service/email/brevo.service';
 import { IprogSmsService } from './service/iprogsms/iprogsms.service';
 import { LoginMonitorService } from './service/security/login-monitor.service';
+import { VideoStreamGateway } from './service/video/video-stream.gateway';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
@@ -65,6 +66,7 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
     LoginMonitorService,
     BrevoService,
     IprogSmsService,
+    VideoStreamGateway,
   ],
 })
 export class AppModule {}

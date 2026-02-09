@@ -8,7 +8,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-// RadioGroup removed — gender hidden in settings
 import { settingsProfile } from "@/schema/settingsProfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState, useEffect, useRef } from "react";
@@ -26,9 +25,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, Lock, AlertTriangle, Camera, Eye, EyeOff } from "lucide-react";
+import {
+  User,
+  Lock,
+  AlertTriangle,
+  Camera,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  Key,
+  CreditCard,
+  ExternalLink,
+  Info,
+  ChevronRight,
+  LogOut,
+  Smartphone,
+  MapPin,
+  Phone,
+} from "lucide-react";
 
 function Account() {
+  const [activeTab, setActiveTab] = useState("profile");
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -87,7 +104,6 @@ function Account() {
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.staff_id, user?.admin_id]);
 
   const fetchProfile = async () => {
@@ -115,7 +131,6 @@ function Account() {
         });
         setOriginalNumber(staff.contact_number || "");
         setPhoneVerified(true);
-        // Set current avatar if provided by API (try several common field names)
         setCurrentAvatar(
           staff.avatar ||
             staff.profile_photo ||
@@ -191,7 +206,6 @@ function Account() {
     setCodeFormatValid(/^\d{6}$/.test(resetCode.trim()));
   }, [resetCode]);
 
-  // Watch contact number changes to require verification when changed
   const watchedNumber = form.watch("number");
   useEffect(() => {
     if (loading) return;
@@ -204,7 +218,6 @@ function Account() {
     }
   }, [watchedNumber, originalNumber, loading]);
 
-  // Debounced availability check for pendingPhone
   useEffect(() => {
     if (!pendingPhone) {
       setPhoneAvailable(true);
@@ -262,7 +275,6 @@ function Account() {
       setSaveLoading(true);
       const values = form.getValues();
 
-      // Prevent saving if phone changed but not verified
       if ((values.number || "") !== (originalNumber || "") && !phoneVerified) {
         toast.error("Please verify your new phone number before saving");
         setSaveLoading(false);
@@ -387,568 +399,685 @@ function Account() {
   };
 
   return (
-    <section className="flex bg-[#ECE3CE]/10 flex-col min-h-screen w-full justify-start items-center p-4 sm:p-8 gap-8">
-      <div className="w-full max-w-7xl space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-[black]">
-          Settings
-        </h1>
-        <p className="text-muted-foreground">
-          Manage your account details and preferences.
-        </p>
-      </div>
-
-      <section className="flex flex-col lg:flex-row w-full max-w-7xl gap-8 items-start">
-        {/* === Left Column: Profile Form === */}
-        <Form {...form}>
-          <form className="w-full lg:flex-1 space-y-8 bg-white border border-gray-100 shadow-sm rounded-xl p-6 sm:p-8">
-            <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-              <div className="bg-[#4F6F52]/10 p-2 rounded-lg">
-                <User className="w-5 h-5 text-[#4F6F52]" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">
-                  Personal Information
-                </h2>
-                <p className="text-xs text-gray-500">
-                  Update your personal details here.
-                </p>
-              </div>
-            </div>
-
-            {/* Avatar Upload - redesigned */}
-            <div className="py-6 border-b border-gray-100">
-              <div className="flex items-center gap-6">
-                <div className="relative">
-                  <label
-                    htmlFor="avatar-input"
-                    className="block w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50 cursor-pointer hover:opacity-90"
-                  >
-                    <Avatar className="w-full h-full">
-                      <AvatarImage
-                        src={previewUrl || currentAvatar || undefined}
-                        alt={previewUrl ? "Preview" : "Avatar"}
-                      />
-                      <AvatarFallback className="bg-[#4F6F52]/10 text-[#4F6F52] font-bold text-xl">
-                        {getInitials(
-                          form.getValues().firstname ||
-                            user?.first_name ||
-                            user?.email?.[0],
-                          form.getValues().lastname || user?.last_name || "",
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute right-0 bottom-0 -mb-1 -mr-1 bg-white rounded-full p-1 shadow">
-                      <Camera className="w-4 h-4 text-gray-600" />
-                    </div>
-                  </label>
-                  <input
-                    id="avatar-input"
-                    ref={avatarInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      const MAX_BYTES = 5 * 1024 * 1024; // 5MB
-                      if (file) {
-                        // Validate type: prefer MIME type, fallback to extension
-                        const allowedMime = ["image/jpeg", "image/png"];
-                        const nameExt = file.name
-                          ?.split(".")
-                          .pop()
-                          ?.toLowerCase();
-                        const allowedExt = ["jpg", "jpeg", "png"];
-                        const isTypeOk =
-                          allowedMime.includes(file.type) ||
-                          allowedExt.includes(nameExt);
-
-                        if (!isTypeOk) {
-                          setAvatarError(
-                            "Only JPG or PNG images are allowed. Please pick another picture.",
-                          );
-                          setSelectedPhoto(null);
-                          setPreviewUrl("");
-                          return;
-                        }
-
-                        if (file.size > MAX_BYTES) {
-                          setAvatarError(
-                            "File is too large (max 5MB). Please pick another picture.",
-                          );
-                          setSelectedPhoto(null);
-                          setPreviewUrl("");
-                        } else {
-                          setAvatarError("");
-                          setSelectedPhoto(file);
-                          setPreviewUrl(URL.createObjectURL(file));
-                        }
-                      }
-                    }}
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700 font-medium">
-                    Profile Photo
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Upload a square image for best results. JPG, PNG up to 5MB.
-                  </p>
-
-                  <div className="flex items-center gap-3 mt-3">
-                    <Button
-                      type="button"
-                      disabled={
-                        !selectedPhoto || uploadingPhoto || !!avatarError
-                      }
-                      className="h-9 px-3 bg-[#4F6F52] text-white"
-                      onClick={async () => {
-                        if (!selectedPhoto) return;
-                        const userId = user?.staff_id || user?.admin_id;
-                        if (!userId) {
-                          toast.error("No user id");
-                          return;
-                        }
-                        try {
-                          setUploadingPhoto(true);
-                          const fd = new FormData();
-                          fd.append("photo", selectedPhoto);
-
-                          const res = await Requests({
-                            url: `/settings/${userId}/photo`,
-                            method: "POST",
-                            data: fd,
-                            credentials: true,
-                          });
-
-                          if (res.data?.ok) {
-                            toast.success("Photo uploaded");
-                            fetchProfile();
-                            try {
-                              refreshUser?.();
-                            } catch {
-                              // ignore
-                            }
-                            setSelectedPhoto(null);
-                            setPreviewUrl("");
-                          } else {
-                            toast.error(res.data?.message || "Upload failed");
-                          }
-                        } catch (err) {
-                          toast.error("Failed to upload photo");
-                          console.error(err);
-                        } finally {
-                          setUploadingPhoto(false);
-                        }
-                      }}
-                    >
-                      {uploadingPhoto ? "Uploading..." : "Upload Photo"}
-                    </Button>
-
-                    <Button
-                      type="button"
-                      className="h-9 px-3 bg-[#4F6F52] hover:bg-[#3A523D] text-white"
-                      onClick={() => avatarInputRef.current?.click()}
-                    >
-                      Choose
-                    </Button>
-
-                    {(selectedPhoto || currentAvatar) && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="h-9 px-3 text-red-600"
-                        onClick={async () => {
-                          const userId = user?.staff_id || user?.admin_id;
-                          if (!userId) return toast.error("No user id");
-                          try {
-                            const res = await Requests({
-                              url: `/settings/${userId}/photo`,
-                              method: "DELETE",
-                              credentials: true,
-                            });
-                            if (res.data?.ok) {
-                              toast.success("Photo removed");
-                              setCurrentAvatar("");
-                              setSelectedPhoto(null);
-                              setPreviewUrl("");
-                              fetchProfile();
-                              try {
-                                refreshUser?.();
-                              } catch {
-                                // ignore
-                              }
-                            } else {
-                              toast.error(
-                                res.data?.message || "Failed to remove photo",
-                              );
-                            }
-                          } catch (err) {
-                            toast.error("Failed to remove photo");
-                            console.error(err);
-                          }
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-
-                  {selectedPhoto && (
-                    <div className="mt-2 text-xs text-gray-600">
-                      Selected: {selectedPhoto.name} (
-                      {Math.round(selectedPhoto.size / 1024)} KB)
-                    </div>
-                  )}
-                  {avatarError && (
-                    <div className="mt-2 text-xs text-red-600">
-                      {avatarError}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="flex flex-col items-center gap-3 py-12">
-                <div className="w-8 h-8 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
-                <p className="text-[#4F6F52] text-sm font-medium">
-                  Loading profile...
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="firstname"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-600">
-                          First Name
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            disabled={!editMode}
-                            className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="lastname"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-600">
-                          Last Name
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            disabled={!editMode}
-                            className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-600">Address</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={!editMode}
-                          className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="number"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-600">
-                          Contact Number
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            disabled={!editMode}
-                            className="h-11 border-gray-200 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] text-[#4F6F52]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {editMode &&
-                    pendingPhone &&
-                    pendingPhone !== originalNumber && (
-                      <div className="mt-2 space-y-2">
-                        <p className="text-xs text-gray-500">
-                          You changed your phone number. Please verify it to
-                          save changes.
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            className="bg-[#4F6F52] hover:bg-[#3A523D] text-white h-9"
-                            disabled={
-                              sendingCode || checkingPhone || !phoneAvailable
-                            }
-                            onClick={sendPhoneCode}
-                          >
-                            {sendingCode
-                              ? "Sending..."
-                              : checkingPhone
-                                ? "Checking..."
-                                : "Send verification code"}
-                          </Button>
-
-                          {checkingPhone ? (
-                            <span className="text-sm text-gray-500">
-                              Checking
-                            </span>
-                          ) : !phoneAvailable ? (
-                            <span className="text-sm text-red-600">
-                              Number already in use
-                            </span>
-                          ) : phoneVerified ? (
-                            <span className="text-sm text-green-600">
-                              Verified
-                            </span>
-                          ) : null}
-                        </div>
-
-                        {!phoneVerified && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <Input
-                              placeholder="Enter 6-digit code"
-                              value={phoneCode}
-                              onChange={(e) => setPhoneCode(e.target.value)}
-                              className="h-9 w-44"
-                            />
-                            <Button
-                              size="sm"
-                              className="bg-[#4F6F52] hover:bg-[#3A523D] text-white h-9"
-                              onClick={verifyPhone}
-                              disabled={verifyingPhone}
-                            >
-                              {verifyingPhone ? "Verifying..." : "Verify"}
-                            </Button>
-                            {phoneError && (
-                              <div className="text-xs text-red-600">
-                                {phoneError}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                </div>
-
-                <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-100">
-                  <Button
-                    type="button"
-                    className={`${
-                      editMode ? "hidden" : "inline-flex"
-                    } h-11 px-8 bg-[#4F6F52] hover:bg-[#3A523D] text-white font-semibold transition-all cursor-pointer`}
-                    onClick={() => setEditMode(true)}
-                  >
-                    Edit Profile
-                  </Button>
-                  <Button
-                    type="button"
-                    disabled={saveLoading}
-                    className={`${
-                      editMode ? "inline-flex" : "hidden"
-                    } h-11 px-8 bg-[#4F6F52] hover:bg-[#3A523D] text-white font-semibold transition-all cursor-pointer`}
-                    onClick={handleSubmission}
-                  >
-                    {saveLoading ? "Saving..." : "Save Changes"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={saveLoading}
-                    className={`${
-                      editMode ? "inline-flex" : "hidden"
-                    } h-11 px-8 bg-[red]/80 text-white border-gray-200 font-semibold hover:bg-[red]/100 hover:text-[white] cursor-pointer`}
-                    onClick={() => setEditMode(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-          </form>
-        </Form>
-
-        {/* === Right Column: Sidebar Actions === */}
-        <div className="flex flex-col w-full lg:w-96 gap-6">
-          {/* Security Card */}
-          <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-[#4F6F52]" />
-              <h3 className="font-bold text-gray-800 text-sm">
-                Security & Privacy
-              </h3>
-            </div>
-            <div className="p-6 space-y-6">
-              {/* Password Reset */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-semibold text-gray-700">
-                  Password
-                </h4>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  Secure your account by updating your password regularly.
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between h-10 bg-[#3A4D39] text-white hover:text-[#4F6F52] hover:border-[#4F6F52] cursor-pointer"
-                  type="button"
-                  onClick={() => {
-                    setResetSent(false);
-                    setResetOpen(true);
-                  }}
-                >
-                  Change Password
-                </Button>
-              </div>
-
-              <hr className="border-gray-100" />
-
-              {/* MFA Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-[#4F6F52]" />
-                  <h4 className="text-sm font-semibold text-gray-700">
-                    Multi-Factor Auth
-                  </h4>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
-                    <input
-                      type="radio"
-                      name="mfa"
-                      value="N/A"
-                      checked={mfaType === "N/A"}
-                      onChange={() => handleMFAChange("N/A")}
-                      disabled={mfaLoading}
-                      className="accent-[#4F6F52]"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">
-                        Disabled
-                      </div>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
-                    <input
-                      type="radio"
-                      name="mfa"
-                      value="email"
-                      checked={mfaType === "email"}
-                      onChange={() => handleMFAChange("email")}
-                      disabled={mfaLoading}
-                      className="accent-[#4F6F52]"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">
-                        Email Verification
-                      </div>
-                      <div className="text-[10px] text-gray-500">
-                        Code sent to email on login
-                      </div>
-                    </div>
-                  </label>
-                  <label className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-[#ECE3CE]/20 cursor-pointer transition-colors">
-                    <input
-                      type="radio"
-                      name="mfa"
-                      value="sms"
-                      checked={mfaType === "sms"}
-                      onChange={() => handleMFAChange("sms")}
-                      disabled={mfaLoading}
-                      className="accent-[#4F6F52]"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">
-                        SMS Verification
-                      </div>
-                      <div className="text-[10px] text-gray-500">
-                        Code sent to your phone number on login
-                      </div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <hr className="border-gray-100" />
-
-              {/* Close Account */}
-              <div className="pt-2">
-                <Button
-                  variant="ghost"
-                  className="w-full h-10 text-red-600 hover:text-red-700 hover:bg-red-50 justify-start px-2 cursor-pointer"
-                  disabled={closingAccount}
-                  onClick={() => setCloseConfirmOpen(true)}
-                >
-                  Deactivate Account
-                </Button>
-              </div>
-            </div>
+    <div className="w-full bg-[#FAF9F6] min-h-screen pb-20">
+      <section className="flex flex-col w-full px-4 md:px-8 pt-6 space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col gap-1 border-l-4 border-[#4F6F52] pl-6 transition-all duration-300 hover:pl-8">
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#3A4D39]">
+              Account Settings
+            </h1>
+            <p className="text-sm text-[#4F6F52]/70 font-medium italic">
+              Configure your profile identity, security protocols, and
+              preferences
+            </p>
           </div>
-
-          {/* Quick Links Card */}
-          <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
-              <User className="w-4 h-4 text-[#4F6F52]" />
-              <h3 className="font-bold text-gray-800 text-sm">Resources</h3>
-            </div>
-            <div className="p-2">
-              {[
-                { label: "About Us", link: "/about" },
-                { label: "FAQs", link: "/faqs" },
-                { label: "Terms of Service", link: "/policies" },
-                { label: "Socials", link: "/socials" },
-                { label: "Studies", link: "/studies" },
-                { label: "Guide", link: "/guide" },
-              ].map((item) => (
-                <Button
-                  key={item.label}
-                  asChild
-                  variant="ghost"
-                  className="w-full justify-between h-10 text-gray-600 hover:text-[#4F6F52] hover:bg-[#ECE3CE]/20 font-normal"
-                >
-                  <Link to={item.link}>{item.label}</Link>
-                </Button>
-              ))}
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-[#ECE3CE] shadow-sm">
+              <div
+                className={`w-2 h-2 rounded-full ${user?.staff_id ? "bg-blue-500" : "bg-green-500"} animate-pulse`}
+              />
+              <span className="text-[10px] font-black text-[#3A4D39] uppercase tracking-widest leading-none">
+                {user?.staff_id ? "Staff Access" : "Admin Control"}
+              </span>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* === Dialogs === */}
+        <div className="flex flex-col gap-8 items-start">
+          {/* Top Navbar (replaces sidebar) */}
+          <nav className="w-full bg-white border border-[#ECE3CE] rounded-2xl p-2 flex items-center gap-3 overflow-auto">
+            <button
+              onClick={() => setActiveTab("profile")}
+              className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl text-sm font-bold transition-all duration-200 ${
+                activeTab === "profile"
+                  ? "bg-[#4F6F52] text-white shadow-md"
+                  : "bg-white text-[#6B6F68] border border-transparent hover:bg-[#FAF9F6] hover:border-[#4F6F52]"
+              }`}
+            >
+              <User size={16} />
+              Personal Profile
+            </button>
+
+            <button
+              onClick={() => setActiveTab("security")}
+              className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl text-sm font-bold transition-all duration-200 ${
+                activeTab === "security"
+                  ? "bg-[#4F6F52] text-white shadow-md"
+                  : "bg-white text-[#6B6F68] border border-transparent hover:bg-[#FAF9F6] hover:border-[#4F6F52]"
+              }`}
+            >
+              <ShieldCheck size={16} />
+              Security
+            </button>
+
+            <button
+              onClick={() => setActiveTab("resources")}
+              className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl text-sm font-bold transition-all duration-200 ${
+                activeTab === "resources"
+                  ? "bg-[#4F6F52] text-white shadow-md"
+                  : "bg-white text-[#6B6F68] border border-transparent hover:bg-[#FAF9F6] hover:border-[#4F6F52]"
+              }`}
+            >
+              <Info size={16} />
+              Resources
+            </button>
+
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => setCloseConfirmOpen(true)}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <AlertTriangle size={16} /> Deactivate
+              </button>
+            </div>
+          </nav>
+
+          {/* Main Content Area */}
+          <div className="flex-1 w-full space-y-6">
+            {activeTab === "profile" && (
+              <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500">
+                <Form {...form}>
+                  <form className="w-full space-y-8 bg-white border border-[#ECE3CE] shadow-sm rounded-2xl p-6 sm:p-10 transition-all duration-300 hover:shadow-md">
+                    <div className="flex items-center gap-4 border-b border-[#FAF9F6] pb-6">
+                      <div className="bg-[#FAF9F6] p-3 rounded-xl text-[#4F6F52]">
+                        <User size={24} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-black text-[#3A4D39]">
+                          Identity Details
+                        </h2>
+                        <p className="text-xs text-[#6B6F68] font-medium italic">
+                          Public information and contact credentials
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Photo Upload Section */}
+                    <div className="flex flex-col sm:flex-row items-center gap-8 py-4 px-2">
+                      <div className="relative group">
+                        <label
+                          htmlFor="avatar-input"
+                          className="block w-32 h-32 rounded-3xl overflow-hidden border-4 border-[#FAF9F6] shadow-inner cursor-pointer relative transition-all duration-300 group-hover:shadow-lg group-hover:scale-105"
+                        >
+                          <Avatar className="w-full h-full rounded-none">
+                            <AvatarImage
+                              src={previewUrl || currentAvatar || undefined}
+                            />
+                            <AvatarFallback className="bg-[#4F6F52] text-white font-black text-2xl rounded-none">
+                              {getInitials(
+                                form.getValues().firstname ||
+                                  user?.first_name ||
+                                  user?.email?.[0],
+                                form.getValues().lastname ||
+                                  user?.last_name ||
+                                  "",
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <Camera className="text-white w-8 h-8" />
+                          </div>
+                        </label>
+                        <input
+                          id="avatar-input"
+                          ref={avatarInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            const MAX_BYTES = 5 * 1024 * 1024;
+                            if (file) {
+                              const allowedMime = ["image/jpeg", "image/png"];
+                              const nameExt = file.name
+                                ?.split(".")
+                                .pop()
+                                ?.toLowerCase();
+                              const allowedExt = ["jpg", "jpeg", "png"];
+                              if (
+                                !allowedMime.includes(file.type) &&
+                                !allowedExt.includes(nameExt)
+                              ) {
+                                setAvatarError(
+                                  "Only JPG or PNG images are allowed.",
+                                );
+                                setSelectedPhoto(null);
+                                setPreviewUrl("");
+                                return;
+                              }
+                              if (file.size > MAX_BYTES) {
+                                setAvatarError("File too large (max 5MB).");
+                                setSelectedPhoto(null);
+                                setPreviewUrl("");
+                              } else {
+                                setAvatarError("");
+                                setSelectedPhoto(file);
+                                setPreviewUrl(URL.createObjectURL(file));
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex-1 text-center sm:text-left space-y-4">
+                        <div>
+                          <p className="text-lg font-black text-[#3A4D39]">
+                            Avatar Identity
+                          </p>
+                          <p className="text-xs text-[#6B6F68] mt-1 font-medium">
+                            Standard square formats (JPG/PNG). Max file size:
+                            5MB.
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                          <Button
+                            type="button"
+                            disabled={
+                              !selectedPhoto || uploadingPhoto || !!avatarError
+                            }
+                            className="bg-[#4F6F52] hover:bg-[#3A4D39] text-white px-6 rounded-xl font-bold transition-all shadow-sm"
+                            onClick={async () => {
+                              if (!selectedPhoto) return;
+                              const userId = user?.staff_id || user?.admin_id;
+                              try {
+                                setUploadingPhoto(true);
+                                const fd = new FormData();
+                                fd.append("photo", selectedPhoto);
+                                const res = await Requests({
+                                  url: `/settings/${userId}/photo`,
+                                  method: "POST",
+                                  data: fd,
+                                  credentials: true,
+                                });
+                                if (res.data?.ok) {
+                                  toast.success("Identity updated");
+                                  fetchProfile();
+                                  try {
+                                    refreshUser?.();
+                                  } catch (e) {
+                                    console.debug(e);
+                                  }
+                                  setSelectedPhoto(null);
+                                  setPreviewUrl("");
+                                } else {
+                                  toast.error("Upload failed");
+                                }
+                              } catch {
+                                toast.error("System error");
+                              } finally {
+                                setUploadingPhoto(false);
+                              }
+                            }}
+                          >
+                            {uploadingPhoto ? "Processing..." : "Commit Update"}
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="border-[#4F6F52] text-[#4F6F52] hover:bg-[#4F6F52] hover:text-white px-6 rounded-xl font-bold transition-all"
+                            onClick={() => avatarInputRef.current?.click()}
+                          >
+                            Browse File
+                          </Button>
+
+                          {currentAvatar && !selectedPhoto && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const userId = user?.staff_id || user?.admin_id;
+                                try {
+                                  const res = await Requests({
+                                    url: `/settings/${userId}/photo`,
+                                    method: "DELETE",
+                                    credentials: true,
+                                  });
+                                  if (res.data?.ok) {
+                                    toast.success("Avatar purged");
+                                    setCurrentAvatar("");
+                                    fetchProfile();
+                                    try {
+                                      refreshUser?.();
+                                    } catch (e) {
+                                      console.debug(e);
+                                    }
+                                  }
+                                } catch {
+                                  toast.error("Purge failed");
+                                }
+                              }}
+                              className="text-xs font-black text-red-600 uppercase tracking-widest hover:underline"
+                            >
+                              Purge Avatar
+                            </button>
+                          )}
+                        </div>
+                        {avatarError && (
+                          <p className="text-[10px] text-red-600 font-bold uppercase">
+                            {avatarError}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {loading ? (
+                      <div className="flex justify-center py-20">
+                        <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : (
+                      <div className="space-y-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                          <FormField
+                            control={form.control}
+                            name="firstname"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="p-1.5 bg-[#FAF9F6] rounded-md">
+                                    <User
+                                      size={14}
+                                      className="text-[#4F6F52]"
+                                    />
+                                  </div>
+                                  <FormLabel className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest mb-0">
+                                    Legal First Name
+                                  </FormLabel>
+                                </div>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    disabled={!editMode}
+                                    className="h-12 bg-[#FAF9F6]/50 border-[#ECE3CE] rounded-xl focus-visible:ring-[#4F6F52] text-[#3A4D39] font-bold"
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-[10px] font-bold" />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="lastname"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="p-1.5 bg-[#FAF9F6] rounded-md">
+                                    <User
+                                      size={14}
+                                      className="text-[#4F6F52]"
+                                    />
+                                  </div>
+                                  <FormLabel className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest mb-0">
+                                    Legal Last Name
+                                  </FormLabel>
+                                </div>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    disabled={!editMode}
+                                    className="h-12 bg-[#FAF9F6]/50 border-[#ECE3CE] rounded-xl focus-visible:ring-[#4F6F52] text-[#3A4D39] font-bold"
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-[10px] font-bold" />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="p-1.5 bg-[#FAF9F6] rounded-md">
+                                  <MapPin
+                                    size={14}
+                                    className="text-[#4F6F52]"
+                                  />
+                                </div>
+                                <FormLabel className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest mb-0">
+                                  Physical Address
+                                </FormLabel>
+                              </div>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  disabled={!editMode}
+                                  className="h-12 bg-[#FAF9F6]/50 border-[#ECE3CE] rounded-xl focus-visible:ring-[#4F6F52] text-[#3A4D39] font-bold"
+                                />
+                              </FormControl>
+                              <FormMessage className="text-[10px] font-bold" />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 gap-6">
+                          <FormField
+                            control={form.control}
+                            name="number"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="p-1.5 bg-[#FAF9F6] rounded-md">
+                                    <Phone
+                                      size={14}
+                                      className="text-[#4F6F52]"
+                                    />
+                                  </div>
+                                  <FormLabel className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest mb-0">
+                                    Contact Number
+                                  </FormLabel>
+                                </div>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    disabled={!editMode}
+                                    className="h-12 bg-[#FAF9F6]/50 border-[#ECE3CE] rounded-xl focus-visible:ring-[#4F6F52] text-[#3A4D39] font-bold"
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-[10px] font-bold" />
+                              </FormItem>
+                            )}
+                          />
+
+                          {editMode &&
+                            pendingPhone &&
+                            pendingPhone !== originalNumber && (
+                              <div className="p-6 bg-[#FAF9F6] border border-[#ECE3CE] rounded-2xl space-y-4 animate-in fade-in zoom-in duration-300">
+                                <div className="flex items-center gap-3">
+                                  <ShieldCheck
+                                    size={20}
+                                    className="text-[#4F6F52]"
+                                  />
+                                  <p className="text-xs font-black text-[#3A4D39] uppercase">
+                                    Verification Sequence Required
+                                  </p>
+                                </div>
+                                <p className="text-[11px] text-[#6B6F68] font-medium">
+                                  A security code is required to manifest this
+                                  new contact record.
+                                </p>
+
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <Button
+                                    size="sm"
+                                    type="button"
+                                    className="bg-[#4F6F52] hover:bg-[#3A4D39] text-white h-10 px-6 rounded-xl font-bold"
+                                    disabled={
+                                      sendingCode ||
+                                      checkingPhone ||
+                                      !phoneAvailable
+                                    }
+                                    onClick={sendPhoneCode}
+                                  >
+                                    {sendingCode
+                                      ? "Transmitting..."
+                                      : "Send Secure Code"}
+                                  </Button>
+
+                                  {checkingPhone ? (
+                                    <span className="text-[10px] font-black text-[#4F6F52] uppercase animate-pulse">
+                                      Checking Registry...
+                                    </span>
+                                  ) : !phoneAvailable ? (
+                                    <span className="text-[10px] font-black text-red-600 uppercase">
+                                      Registry Conflict: Number In Use
+                                    </span>
+                                  ) : phoneVerified ? (
+                                    <span className="text-[10px] font-black text-green-600 uppercase flex items-center gap-1">
+                                      <ShieldCheck size={12} /> Verified
+                                    </span>
+                                  ) : null}
+                                </div>
+
+                                {!phoneVerified && (
+                                  <div className="flex items-center gap-3 mt-4">
+                                    <Input
+                                      placeholder="6-DIGIT CODE"
+                                      maxLength={6}
+                                      value={phoneCode}
+                                      onChange={(e) =>
+                                        setPhoneCode(e.target.value)
+                                      }
+                                      className="h-10 w-40 text-center font-mono font-black tracking-widest border-[#ECE3CE] rounded-xl"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      type="button"
+                                      className="bg-[#3A4D39] text-white h-10 px-6 rounded-xl font-bold"
+                                      onClick={verifyPhone}
+                                      disabled={verifyingPhone}
+                                    >
+                                      {verifyingPhone
+                                        ? "Validating..."
+                                        : "Verify"}
+                                    </Button>
+                                  </div>
+                                )}
+                                {phoneError && (
+                                  <p className="text-[10px] text-red-600 font-bold uppercase">
+                                    {phoneError}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-4 pt-8 border-t border-[#FAF9F6]">
+                          <Button
+                            type="button"
+                            className={`${editMode ? "hidden" : "inline-flex"} h-12 px-10 bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-black rounded-xl shadow-lg shadow-[#4F6F52]/20 transition-all active:scale-95`}
+                            onClick={() => setEditMode(true)}
+                          >
+                            Unlock Profile
+                          </Button>
+                          <Button
+                            type="button"
+                            disabled={saveLoading}
+                            className={`${editMode ? "inline-flex" : "hidden"} h-12 px-10 bg-[#4F6F52] hover:bg-[#3A3D39] text-white font-black rounded-xl shadow-lg transition-all active:scale-95`}
+                            onClick={handleSubmission}
+                          >
+                            {saveLoading ? "Commiting..." : "Commit Changes"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            disabled={saveLoading}
+                            className={`${editMode ? "inline-flex" : "hidden"} h-12 px-10 text-red-600 font-black rounded-xl hover:bg-red-50`}
+                            onClick={() => {
+                              setEditMode(false);
+                              fetchProfile();
+                            }}
+                          >
+                            Abort
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </form>
+                </Form>
+              </div>
+            )}
+
+            {activeTab === "security" && (
+              <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white border border-[#ECE3CE] p-8 rounded-2xl space-y-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-4 border-b border-[#FAF9F6] pb-6">
+                      <div className="bg-[#FAF9F6] p-3 rounded-xl text-[#4F6F52]">
+                        <Key size={24} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-black text-[#3A4D39]">
+                          Access Control
+                        </h2>
+                        <p className="text-xs text-[#6B6F68] font-medium italic">
+                          Update your entry credentials
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <p className="text-[11px] text-[#6B6F68] font-medium leading-relaxed">
+                        Regularly rotational password updates are recommended
+                        for secure system integrity.
+                      </p>
+                      <Button
+                        className="w-full bg-[#3A4D39] hover:bg-[#4F6F52] text-white font-black h-12 rounded-xl"
+                        onClick={() => {
+                          setResetSent(false);
+                          setResetOpen(true);
+                        }}
+                      >
+                        Update System Password
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-[#ECE3CE] p-8 rounded-2xl space-y-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-4 border-b border-[#FAF9F6] pb-6">
+                      <div className="bg-[#FAF9F6] p-3 rounded-xl text-[#4F6F52]">
+                        <ShieldCheck size={24} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-black text-[#3A4D39]">
+                          Dual-Phase Protocol
+                        </h2>
+                        <p className="text-xs text-[#6B6F68] font-medium italic">
+                          Configure Multi-Factor Authentication
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {[
+                        {
+                          id: "N/A",
+                          label: "Restricted Access",
+                          desc: "Standard single-phase login only",
+                          icon: Lock,
+                        },
+                        {
+                          id: "email",
+                          label: "SMTP Verification",
+                          desc: "Code transmission via linked email",
+                          icon: Key,
+                        },
+                        {
+                          id: "sms",
+                          label: "Cellular Auth",
+                          desc: "Secure SMS code verification",
+                          icon: Smartphone,
+                        },
+                      ].map((phase) => (
+                        <label
+                          key={phase.id}
+                          className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${mfaType === phase.id ? "bg-[#4F6F52] border-[#4F6F52] text-white" : "bg-[#FAF9F6]/50 border-[#ECE3CE] text-[#3A4D39] hover:border-[#4F6F52]"}`}
+                        >
+                          <input
+                            type="radio"
+                            name="mfa"
+                            checked={mfaType === phase.id}
+                            onChange={() => handleMFAChange(phase.id)}
+                            disabled={mfaLoading}
+                            className="hidden"
+                          />
+                          <div
+                            className={`p-2 rounded-lg ${mfaType === phase.id ? "bg-white/20" : "bg-white shadow-sm"}`}
+                          >
+                            <phase.icon
+                              size={18}
+                              className={
+                                mfaType === phase.id
+                                  ? "text-white"
+                                  : "text-[#4F6F52]"
+                              }
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-black">{phase.label}</p>
+                            <p
+                              className={`text-[10px] font-medium ${mfaType === phase.id ? "text-white/80" : "text-[#6B6F68]"}`}
+                            >
+                              {phase.desc}
+                            </p>
+                          </div>
+                          {mfaType === phase.id && <ShieldCheck size={16} />}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "resources" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-in slide-in-from-bottom-2 duration-500">
+                {[
+                  {
+                    label: "About System",
+                    link: "/about",
+                    desc: "Corporate background and mission",
+                    icon: Info,
+                  },
+                  {
+                    label: "Logic Database",
+                    link: "/faqs",
+                    desc: "Frequently asked technical questions",
+                    icon: ShieldCheck,
+                  },
+                  {
+                    label: "Usage Policies",
+                    link: "/policies",
+                    desc: "Legal terms and operator guidelines",
+                    icon: User,
+                  },
+                  {
+                    label: "Network Socials",
+                    link: "/socials",
+                    desc: "Official community communication channels",
+                    icon: ExternalLink,
+                  },
+                  {
+                    label: "Research Studies",
+                    link: "/studies",
+                    desc: "Data analysis and whitepapers",
+                    icon: CreditCard,
+                  },
+                  {
+                    label: "Protocol Guide",
+                    link: "/guide",
+                    desc: "Operational manual and tutorial",
+                    icon: Key,
+                  },
+                ].map((res) => (
+                  <Link
+                    key={res.label}
+                    to={res.link}
+                    className="bg-white border border-[#ECE3CE] p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-[#4F6F52] transition-all group"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="bg-[#FAF9F6] p-3 rounded-xl text-[#4F6F52] group-hover:bg-[#4F6F52] group-hover:text-white transition-colors">
+                        <res.icon size={20} />
+                      </div>
+                      <h3 className="font-black text-[#3A4D39] group-hover:text-[#4F6F52]">
+                        {res.label}
+                      </h3>
+                    </div>
+                    <p className="text-[11px] font-medium text-[#6B6F68] leading-relaxed italic">
+                      {res.desc}
+                    </p>
+                    <div className="flex items-center gap-1 text-[10px] font-black text-[#4F6F52] uppercase tracking-widest mt-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                      Access Intel <ChevronRight size={12} />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Password Reset Dialog */}
       <Dialog
@@ -956,7 +1085,6 @@ function Account() {
         onOpenChange={(open) => {
           setResetOpen(open);
           if (!open) {
-            // Reset form when dialog closes
             setResetCode("");
             setNewPassword("");
             setConfirmPassword("");
@@ -967,28 +1095,31 @@ function Account() {
           }
         }}
       >
-        <DialogContent className="bg-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-[#4F6F52]">
-              Change Password
+        <DialogContent className="bg-white sm:max-w-lg rounded-3xl border-none shadow-2xl p-0 overflow-hidden text-[#3A4D39]">
+          <div className="bg-[#4F6F52] p-8 text-white relative">
+            <DialogTitle className="text-2xl font-black">
+              Secure Rotation
             </DialogTitle>
-            <DialogDescription>
-              We'll send a code to your email to verify it's you.
+            <DialogDescription className="text-white/80 font-medium">
+              Multi-factor password update protocol initialized.
             </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="text-sm">
-                <p className="text-gray-500 text-xs uppercase font-bold">
-                  Send code to:
+            <ShieldCheck
+              size={120}
+              className="absolute -right-10 -bottom-10 opacity-10"
+            />
+          </div>
+
+          <div className="p-8 space-y-6">
+            <div className="flex items-center justify-between p-4 bg-[#FAF9F6] rounded-2xl border border-[#ECE3CE]">
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest">
+                  Verification Node
                 </p>
-                <p className="font-medium text-gray-900">
-                  {emailShown || user?.email}
-                </p>
+                <p className="font-bold text-sm">{emailShown || user?.email}</p>
               </div>
               <Button
                 size="sm"
-                className="bg-[#4F6F52] hover:bg-[#3A523D] text-white text-xs h-8"
+                className="bg-[#4F6F52] hover:bg-[#3A4D39] text-white px-5 rounded-xl font-bold h-10"
                 disabled={sendingReset}
                 onClick={async () => {
                   const userId = user?.staff_id || user?.admin_id;
@@ -1002,34 +1133,34 @@ function Account() {
                     if (res.data?.ok) {
                       setResetSent(true);
                       setCodeError("");
-                      toast.success("Code sent!");
+                      toast.success("Code Transmitted");
                     } else {
-                      toast.error(res.data?.message || "Failed");
+                      toast.error("Transmission Fail");
                     }
                   } catch {
-                    toast.error("Error sending code");
+                    toast.error("System Error");
                   } finally {
                     setSendingReset(false);
                   }
                 }}
               >
                 {sendingReset
-                  ? "Sending..."
+                  ? "T-mitting..."
                   : resetSent
-                    ? "Resend"
-                    : "Send Code"}
+                    ? "Re-transmit"
+                    : "Transmit Code"}
               </Button>
             </div>
 
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-600">
-                  Verification Code
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest pl-1">
+                  Security Token
                 </label>
                 <Input
-                  placeholder="000000"
+                  placeholder="000 000"
                   maxLength={6}
-                  className="text-center tracking-[0.5em] font-mono text-lg border-gray-200 focus-visible:border-[#4F6F52] text-[#4F6F52]"
+                  className="h-14 tracking-[1em] text-center font-mono font-black text-2xl border-[#ECE3CE] rounded-2xl focus-visible:ring-[#4F6F52]"
                   value={resetCode}
                   onChange={(e) =>
                     setResetCode(e.target.value.replace(/[^0-9]/g, ""))
@@ -1037,205 +1168,100 @@ function Account() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-600">
-                    New Password
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest pl-1">
+                    New Hash
                   </label>
                   <div className="relative">
                     <Input
                       type={showNewPassword ? "text" : "password"}
-                      className="border-gray-200 focus-visible:border-[#4F6F52] pr-10"
+                      className="h-12 border-[#ECE3CE] rounded-2xl focus-visible:ring-[#4F6F52] pr-12 font-bold"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword((prev) => !prev)}
-                      className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#4F6F52] cursor-pointer"
-                      tabIndex={-1}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B6F68] hover:text-[#4F6F52]"
                     >
                       {showNewPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeOff size={18} />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <Eye size={18} />
                       )}
                     </button>
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-600">
-                    Confirm
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest pl-1">
+                    Confirm Hash
                   </label>
                   <div className="relative">
                     <Input
                       type={showConfirmPassword ? "text" : "password"}
-                      className="border-gray-200 focus-visible:border-[#4F6F52] pr-10"
+                      className="h-12 border-[#ECE3CE] rounded-2xl focus-visible:ring-[#4F6F52] pr-12 font-bold"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword((prev) => !prev)}
-                      className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#4F6F52] cursor-pointer"
-                      tabIndex={-1}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B6F68] hover:text-[#4F6F52]"
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeOff size={18} />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <Eye size={18} />
                       )}
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Password Strength Requirements */}
               {newPassword && (
-                <div className="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                  <p className="text-xs font-semibold text-gray-700 mb-2">
-                    Password must contain:
+                <div className="p-5 bg-[#FAF9F6] rounded-2xl border border-[#ECE3CE] space-y-3">
+                  <p className="text-[10px] uppercase font-black text-[#6B6F68] tracking-widest mb-2">
+                    Complexity Audit
                   </p>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs">
-                      <div
-                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                          passwordChecks.minLength
-                            ? "bg-green-500"
-                            : "bg-gray-300"
-                        }`}
-                      >
-                        {passwordChecks.minLength && (
-                          <span className="text-white text-[10px]">✓</span>
-                        )}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    {[
+                      { check: passwordChecks.minLength, label: "8-20 Length" },
+                      {
+                        check: passwordChecks.hasUppercase,
+                        label: "Uppercase",
+                      },
+                      {
+                        check: passwordChecks.hasLowercase,
+                        label: "Lowercase",
+                      },
+                      { check: passwordChecks.hasNumber, label: "Numeric" },
+                      {
+                        check: passwordChecks.hasSpecial,
+                        label: "Special Char",
+                      },
+                      { check: passwordChecks.match, label: "Hash Match" },
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full ${item.check ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" : "bg-gray-300"}`}
+                        />
+                        <span
+                          className={`text-[10px] font-black uppercase ${item.check ? "text-[#3A4D39]" : "text-[#6B6F68]"}`}
+                        >
+                          {item.label}
+                        </span>
                       </div>
-                      <span
-                        className={
-                          passwordChecks.minLength
-                            ? "text-green-700"
-                            : "text-gray-600"
-                        }
-                      >
-                        8-20 characters
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <div
-                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                          passwordChecks.hasUppercase
-                            ? "bg-green-500"
-                            : "bg-gray-300"
-                        }`}
-                      >
-                        {passwordChecks.hasUppercase && (
-                          <span className="text-white text-[10px]">✓</span>
-                        )}
-                      </div>
-                      <span
-                        className={
-                          passwordChecks.hasUppercase
-                            ? "text-green-700"
-                            : "text-gray-600"
-                        }
-                      >
-                        One uppercase letter
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <div
-                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                          passwordChecks.hasLowercase
-                            ? "bg-green-500"
-                            : "bg-gray-300"
-                        }`}
-                      >
-                        {passwordChecks.hasLowercase && (
-                          <span className="text-white text-[10px]">✓</span>
-                        )}
-                      </div>
-                      <span
-                        className={
-                          passwordChecks.hasLowercase
-                            ? "text-green-700"
-                            : "text-gray-600"
-                        }
-                      >
-                        One lowercase letter
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <div
-                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                          passwordChecks.hasNumber
-                            ? "bg-green-500"
-                            : "bg-gray-300"
-                        }`}
-                      >
-                        {passwordChecks.hasNumber && (
-                          <span className="text-white text-[10px]">✓</span>
-                        )}
-                      </div>
-                      <span
-                        className={
-                          passwordChecks.hasNumber
-                            ? "text-green-700"
-                            : "text-gray-600"
-                        }
-                      >
-                        One number
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <div
-                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                          passwordChecks.hasSpecial
-                            ? "bg-green-500"
-                            : "bg-gray-300"
-                        }`}
-                      >
-                        {passwordChecks.hasSpecial && (
-                          <span className="text-white text-[10px]">✓</span>
-                        )}
-                      </div>
-                      <span
-                        className={
-                          passwordChecks.hasSpecial
-                            ? "text-green-700"
-                            : "text-gray-600"
-                        }
-                      >
-                        One special character
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <div
-                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                          passwordChecks.match ? "bg-green-500" : "bg-gray-300"
-                        }`}
-                      >
-                        {passwordChecks.match && (
-                          <span className="text-white text-[10px]">✓</span>
-                        )}
-                      </div>
-                      <span
-                        className={
-                          passwordChecks.match
-                            ? "text-green-700"
-                            : "text-gray-600"
-                        }
-                      >
-                        Passwords match
-                      </span>
-                    </div>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           </div>
-          <DialogFooter>
+
+          <div className="p-8 pt-0">
             <Button
-              type="button"
-              className="w-full bg-[#4F6F52] hover:bg-[#3A523D]"
+              className="w-full bg-[#4F6F52] hover:bg-[#3A4D39] text-white font-black h-14 rounded-2xl text-lg shadow-lg shadow-[#4F6F52]/20 transition-all active:scale-95"
               disabled={
                 resetSubmitting ||
                 !codeFormatValid ||
@@ -1243,19 +1269,6 @@ function Account() {
               }
               onClick={async () => {
                 const userId = user?.staff_id || user?.admin_id;
-
-                // Validate all password requirements are met
-                if (!allPasswordRequirementsMet) {
-                  toast.error("Please meet all password requirements");
-                  return;
-                }
-
-                // Validate code format
-                if (!codeFormatValid) {
-                  toast.error("Please enter a valid 6-digit code");
-                  return;
-                }
-
                 try {
                   setResetSubmitting(true);
                   const res = await Requests({
@@ -1265,67 +1278,59 @@ function Account() {
                     credentials: true,
                   });
                   if (res.data?.ok) {
-                    toast.success("Password changed successfully!");
+                    toast.success("Security Hash Updated");
                     setResetOpen(false);
-                    // Reset form
-                    setResetCode("");
-                    setNewPassword("");
-                    setConfirmPassword("");
-                    setResetSent(false);
-                    setShowNewPassword(false);
-                    setShowConfirmPassword(false);
                   } else {
-                    toast.error(
-                      res.data?.message || "Failed to change password",
-                    );
+                    toast.error("Validation Fail");
                   }
-                } catch (error) {
-                  toast.error(
-                    error.response?.data?.message ||
-                      "Failed to change password",
-                  );
+                } catch {
+                  toast.error("System Error");
                 } finally {
                   setResetSubmitting(false);
                 }
               }}
             >
-              {resetSubmitting ? "Updating..." : "Update Password"}
+              {resetSubmitting ? "Finalizing Hash..." : "Deploy Sec-Rotation"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Close Account Dialog */}
       <Dialog open={closeConfirmOpen} onOpenChange={setCloseConfirmOpen}>
-        <DialogContent className="bg-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-red-600 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" /> Deactivate Account
+        <DialogContent className="bg-white sm:max-w-md rounded-3xl border-none shadow-2xl p-8">
+          <DialogHeader className="items-center text-center">
+            <div className="bg-red-50 p-4 rounded-full mb-4">
+              <AlertTriangle className="w-10 h-10 text-red-600 animate-bounce" />
+            </div>
+            <DialogTitle className="text-2xl font-black text-red-600">
+              DEACTIVATE NODE
             </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to deactivate your account? You will be
-              logged out immediately.
+            <DialogDescription className="text-gray-600 font-medium">
+              This operation will immediately terminate your session and revoke
+              all access privileges.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setCloseConfirmOpen(false)}
-            >
-              Cancel
-            </Button>
+          <div className="flex flex-col gap-3 mt-6">
             <Button
               variant="destructive"
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 h-14 rounded-2xl font-black text-lg shadow-lg shadow-red-200"
               onClick={handleCloseAccount}
               disabled={closingAccount}
             >
-              {closingAccount ? "Deactivating..." : "Yes, Deactivate"}
+              {closingAccount ? "TERMINATING..." : "CONFIRM DEACTIVATION"}
             </Button>
-          </DialogFooter>
+            <Button
+              variant="ghost"
+              className="h-14 rounded-2xl font-black text-[#6B6F68]"
+              onClick={() => setCloseConfirmOpen(false)}
+            >
+              ABORT PROCEDURE
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
-    </section>
+    </div>
   );
 }
 

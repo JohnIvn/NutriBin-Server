@@ -7,6 +7,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 import {
   ChartContainer,
@@ -28,10 +29,57 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DollarSign, TrendingUp, Package } from "lucide-react";
+import {
+  DollarSign,
+  TrendingUp,
+  Package,
+  Calendar,
+  Filter,
+  Download,
+  ArrowUpRight,
+  ShoppingBag,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import Requests from "@/utils/Requests";
+
+const StatCard = ({ label, value, delta, icon: Icon, description }) => {
+  const isPositive = delta >= 0;
+  return (
+    <Card className="bg-white rounded-xl shadow-sm border-none overflow-hidden group hover:shadow-md transition-all duration-300">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-[#FAF9F6] text-[#4F6F52] group-hover:bg-[#4F6F52] group-hover:text-white transition-colors duration-300">
+              <Icon size={24} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#6B6F68]">{label}</p>
+              <h3 className="text-2xl font-bold text-[#3A4D39] mt-1">
+                {value}
+              </h3>
+            </div>
+          </div>
+          {delta !== undefined && (
+            <div
+              className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${isPositive ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"}`}
+            >
+              {isPositive ? (
+                <ArrowUpRight size={12} />
+              ) : (
+                <ArrowUpRight size={12} className="rotate-90" />
+              )}
+              {Math.abs(delta).toFixed(1)}%
+            </div>
+          )}
+        </div>
+        {description && (
+          <p className="text-xs text-[#6B6F68] mt-4 italic">{description}</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 function Sales() {
   const [salesData, setSalesData] = useState([]);
@@ -84,7 +132,7 @@ function Sales() {
     }).format(Number(v) || 0);
 
   const chartConfig = {
-    amount: { label: "Sales", color: "var(--color-nitrogen)" },
+    amount: { label: "Sales", color: "#4F6F52" },
   };
 
   // KPI period comparisons (last 30 days vs previous 30 days)
@@ -135,6 +183,7 @@ function Sales() {
     }
 
     const headers = [
+      "ID",
       "Date",
       "Amount",
       "Region",
@@ -144,6 +193,7 @@ function Sales() {
     ];
     const rows = salesData.map((s) => {
       // Preserve original values as strings to avoid JS numeric precision loss
+      const id = s.id || "";
       const date = s.date ? String(s.date) : "";
       const amount =
         s.amount !== undefined && s.amount !== null ? String(s.amount) : "";
@@ -156,12 +206,18 @@ function Sales() {
       const customer = s.customer_id || "";
 
       // If any field is complex (arrays/objects), JSON-stringify it to preserve structure
-      const fields = [date, amount, region, product, quantity, customer].map(
-        (f) => {
-          if (typeof f === "object") return JSON.stringify(f);
-          return String(f);
-        },
-      );
+      const fields = [
+        id,
+        date,
+        amount,
+        region,
+        product,
+        quantity,
+        customer,
+      ].map((f) => {
+        if (typeof f === "object") return JSON.stringify(f);
+        return String(f);
+      });
 
       return fields.map((f) => `"${f.replace(/"/g, '""')}"`).join(",");
     });
@@ -176,300 +232,283 @@ function Sales() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    toast.success("Sales exported");
+    toast.success("Sales exported successfully");
   };
 
   return (
-    <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
+    <div className="w-full bg-[#FAF9F6] min-h-screen pb-10">
       <section className="flex flex-col w-full px-4 md:px-8 pt-6 space-y-6 animate-in fade-in duration-500">
-        {/* header */}
-        <div className="flex flex-col gap-1 border-l-4 border-[#4F6F52] pl-6">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#3A4D39]">
-            Sales
-          </h1>
-          <p className="text-sm text-[#4F6F52]/80 italic">
-            Overview of recent NutriBin sales activity — sample data and visual
-            design preview.
-          </p>
-        </div>
-
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
-          <div className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-3">
-            <div className="text-sm font-medium text-[#6B6F68]">
-              Auto date range
-            </div>
-            <div className="ml-auto text-sm font-bold text-[#3A4D39]">
-              This Month
-            </div>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col gap-1 border-l-4 border-[#4F6F52] pl-6 transition-all duration-300 hover:pl-8">
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#3A4D39]">
+              Sales Intelligence
+            </h1>
+            <p className="text-sm text-[#4F6F52]/70 font-medium">
+              Real-time performance analytics and transaction monitoring
+            </p>
           </div>
-
-          <div className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-3">
-            <div className="text-sm font-medium text-[#6B6F68]">Services</div>
-            <select
-              className="ml-auto text-sm text-[#3A4D39] bg-transparent outline-none"
-              defaultValue="All"
-            >
-              <option>All</option>
-              <option>Installation</option>
-              <option>Support</option>
-            </select>
-          </div>
-
-          <div className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-3">
-            <div className="text-sm font-medium text-[#6B6F68]">Posts</div>
-            <select
-              className="ml-auto text-sm text-[#3A4D39] bg-transparent outline-none"
-              defaultValue="All"
-            >
-              <option>All</option>
-              <option>Online</option>
-              <option>Offline</option>
-            </select>
-          </div>
-
-          <div className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-3">
-            <div className="text-sm font-medium text-[#6B6F68]">Export</div>
+          <div className="flex items-center gap-3">
             <button
               onClick={handleExport}
-              className="ml-auto bg-[#4F6F52] text-white px-3 py-1 rounded-md text-sm"
+              className="flex items-center gap-2 bg-[#4F6F52] hover:bg-[#3A4D39] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all duration-300 transform hover:scale-105 active:scale-95"
             >
-              Export
+              <Download size={18} />
+              Export Report
             </button>
           </div>
         </div>
 
-        {/* KPI cards */}
+        {/* Action Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex items-center gap-4 bg-white p-2 rounded-xl border border-[#ECE3CE] shadow-sm">
+            <div className="bg-[#FAF9F6] p-2 rounded-lg ml-1">
+              <Calendar size={18} className="text-[#4F6F52]" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] uppercase font-bold text-[#6B6F68] tracking-widest">
+                Timeframe
+              </p>
+              <select className="text-sm font-bold text-[#3A4D39] bg-transparent outline-none w-full cursor-pointer">
+                <option>Last 30 Days</option>
+                <option>Last Quarter</option>
+                <option>Year to Date</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 bg-white p-2 rounded-xl border border-[#ECE3CE] shadow-sm">
+            <div className="bg-[#FAF9F6] p-2 rounded-lg ml-1">
+              <Filter size={18} className="text-[#4F6F52]" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] uppercase font-bold text-[#6B6F68] tracking-widest">
+                Category
+              </p>
+              <select className="text-sm font-bold text-[#3A4D39] bg-transparent outline-none w-full cursor-pointer">
+                <option>All Services</option>
+                <option>Installation</option>
+                <option>Maintenance</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 bg-white p-2 rounded-xl border border-[#ECE3CE] shadow-sm">
+            <div className="bg-[#FAF9F6] p-2 rounded-lg ml-1">
+              <ShoppingBag size={18} className="text-[#4F6F52]" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] uppercase font-bold text-[#6B6F68] tracking-widest">
+                Region
+              </p>
+              <select className="text-sm font-bold text-[#3A4D39] bg-transparent outline-none w-full cursor-pointer">
+                <option>All Regions</option>
+                <option>Metro Manila</option>
+                <option>Luzon Central</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* KPIs */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="bg-white rounded-xl shadow-sm p-5">
-                <div className="animate-pulse space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-1/3" />
-                  <div className="h-10 bg-gray-200 rounded w-1/2" />
-                  <div className="h-3 bg-gray-200 rounded w-2/3" />
+              <div
+                key={i}
+                className="bg-white rounded-xl shadow-sm p-6 h-32 animate-pulse space-y-4"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="w-10 h-10 bg-[#FAF9F6] rounded-lg" />
+                  <div className="w-12 h-6 bg-[#FAF9F6] rounded-full" />
                 </div>
-              </Card>
+                <div className="w-2/3 h-8 bg-[#FAF9F6] rounded" />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            <Card className="bg-white rounded-xl shadow-md p-5">
-              <div className="text-sm font-bold text-[#6B6F68] uppercase">
-                Total Devices
-              </div>
-              <div className="flex items-center gap-3 mt-2">
-                <div className="text-4xl font-extrabold text-[#3A4D39]">
-                  {salesData.length.toLocaleString()}
-                </div>
-                <div
-                  className={`text-sm font-bold flex items-center gap-1 ${ordersChange >= 0 ? "text-green-600" : "text-red-600"}`}
-                >
-                  {ordersChange >= 0 ? "▲" : "▼"}{" "}
-                  {Math.abs(ordersChange).toFixed(1)}%
-                </div>
-              </div>
-              <div className="text-xs text-[#6B6F68] mt-2">
-                vs previous 30 days
-              </div>
-            </Card>
-
-            <Card className="bg-white rounded-xl shadow-md p-5">
-              <div className="text-sm font-bold text-[#6B6F68] uppercase">
-                Orders per Month
-              </div>
-              <div className="flex items-center gap-3 mt-2">
-                <div className="text-4xl font-extrabold text-[#3A4D39]">
-                  {currentOrders}
-                </div>
-                <div
-                  className={`text-sm font-bold flex items-center gap-1 ${ordersChange >= 0 ? "text-green-600" : "text-red-600"}`}
-                >
-                  {ordersChange >= 0 ? "▲" : "▼"}{" "}
-                  {Math.abs(ordersChange).toFixed(1)}%
-                </div>
-              </div>
-              <div className="text-xs text-[#6B6F68] mt-2">
-                vs previous 30 days
-              </div>
-            </Card>
-
-            <Card className="bg-white rounded-xl shadow-md p-5">
-              <div className="text-sm font-bold text-[#6B6F68] uppercase">
-                Average Order
-              </div>
-              <div className="flex items-center gap-3 mt-2">
-                <div className="text-4xl font-extrabold text-[#3A4D39]">
-                  {formatPeso(Math.round(currentAvg))}
-                </div>
-                <div
-                  className={`text-sm font-bold flex items-center gap-1 ${avgChange >= 0 ? "text-green-600" : "text-red-600"}`}
-                >
-                  {avgChange >= 0 ? "▲" : "▼"} {Math.abs(avgChange).toFixed(1)}%
-                </div>
-              </div>
-              <div className="text-xs text-[#6B6F68] mt-2">
-                vs previous 30 days
-              </div>
-            </Card>
-
-            <Card className="bg-white rounded-xl shadow-md p-5">
-              <div className="text-sm font-bold text-[#6B6F68] uppercase">
-                Growth Rate
-              </div>
-              <div className="flex items-center gap-3 mt-2">
-                <div className="text-4xl font-extrabold text-[#3A4D39]">
-                  {growthChange.toFixed(2)}%
-                </div>
-                <div
-                  className={`text-sm font-bold flex items-center gap-1 ${growthChange >= 0 ? "text-green-600" : "text-red-600"}`}
-                >
-                  {growthChange >= 0 ? "▲" : "▼"}{" "}
-                  {Math.abs(growthChange).toFixed(1)}%
-                </div>
-              </div>
-              <div className="text-xs text-[#6B6F68] mt-2">
-                vs previous 30 days
-              </div>
-            </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              label="Total Revenue"
+              value={formatPeso(totalSales)}
+              delta={growthChange}
+              icon={DollarSign}
+              description="Gross revenue across all channels"
+            />
+            <StatCard
+              label="Transaction Count"
+              value={salesData.length.toLocaleString()}
+              delta={ordersChange}
+              icon={Package}
+              description="Total completed sales orders"
+            />
+            <StatCard
+              label="Avg. Ticket Size"
+              value={formatPeso(Math.round(currentAvg))}
+              delta={avgChange}
+              icon={TrendingUp}
+              description="Mean revenue per transaction"
+            />
+            <StatCard
+              label="Active Growth"
+              value={`${growthChange.toFixed(1)}%`}
+              delta={growthChange}
+              icon={ArrowUpRight}
+              description="Comparison vs previous period"
+            />
           </div>
         )}
 
-        {/* main content */}
-        <div className="flex flex-col lg:flex-row gap-6 w-full mt-2">
-          <div className="w-full lg:w-2/3 space-y-6">
-            <Card className="shadow-md border-none bg-white rounded-xl overflow-hidden">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-[#4F6F52]" />
-                    <CardTitle className="text-[#3A4D39]">
-                      Sales Over Time
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-sm text-[#4F6F52]/80">
-                    Revenue trend for the selected period
+        {/* Visual Analytics */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <Card className="xl:col-span-2 shadow-sm border-none bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[#ECE3CE] pb-6 pt-7 px-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#FAF9F6] rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-[#4F6F52]" />
+                </div>
+                <div>
+                  <CardTitle className="text-[#3A4D39]">
+                    Performance Trend
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Revenue movement over time
                   </CardDescription>
                 </div>
-                <div className="text-xs font-bold bg-[#ECE3CE] text-[#3A4D39] px-3 py-1 rounded-full">
-                  Total: {formatPeso(totalSales)}
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <ChartContainer
-                  config={chartConfig}
-                  className="h-[350px] w-full"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={barData}
-                      margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-                      barSize={40}
+              </div>
+              <div className="text-[10px] font-black bg-[#4F6F52] text-white px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                Live Data
+              </div>
+            </CardHeader>
+            <CardContent className="pt-8 px-4 sm:px-8">
+              <ChartContainer config={chartConfig} className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={barData}
+                    margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      vertical={false}
+                      strokeDasharray="3 3"
+                      stroke="#F1F1F1"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: "#6B6F68", fontSize: 11, fontWeight: 600 }}
+                      dy={10}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: "#6B6F68", fontSize: 11, fontWeight: 600 }}
+                      tickFormatter={(val) =>
+                        `₱${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`
+                      }
+                    />
+                    <ChartTooltip
+                      cursor={{ fill: "#F8F9FA" }}
+                      content={
+                        <ChartTooltipContent className="bg-white border-2 border-[#4F6F52]/10 shadow-xl rounded-xl p-3" />
+                      }
+                    />
+                    <Bar
+                      dataKey="amount"
+                      fill="#4F6F52"
+                      radius={[6, 6, 0, 0]}
+                      animationDuration={1500}
                     >
-                      <CartesianGrid
-                        vertical={false}
-                        strokeDasharray="3 3"
-                        opacity={0.2}
-                      />
-                      <XAxis
-                        dataKey="date"
-                        tickLine={false}
-                        tickMargin={10}
-                        axisLine={false}
-                        className="text-xs font-medium fill-gray-500"
-                      />
-                      <YAxis
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={10}
-                        className="text-xs font-medium fill-gray-500"
-                        unit="₱"
-                      />
+                      {barData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fillOpacity={0.8 - index * 0.02}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
 
-                      <ChartTooltip
-                        cursor={{ fill: "#f8f9fa" }}
-                        content={
-                          <ChartTooltipContent className="bg-white border border-[#4F6F52]/20 shadow-lg text-[#3A4D39] rounded-lg" />
-                        }
-                      />
-
-                      <Legend
-                        verticalAlign="top"
-                        align="right"
-                        iconType="circle"
-                        wrapperStyle={{ paddingBottom: "20px" }}
-                      />
-                      <Bar
-                        dataKey="amount"
-                        fill="var(--color-nitrogen)"
-                        radius={[4, 4, 0, 0]}
-                      ></Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="w-full lg:w-1/3 flex flex-col gap-4 h-fit">
-            <Card className="shadow-md border-none bg-white rounded-xl">
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
+          <Card className="shadow-sm border-none bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300">
+            <CardHeader className="border-b border-[#ECE3CE] pb-6 pt-7 px-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#FAF9F6] rounded-lg">
                   <Package className="h-5 w-5 text-[#4F6F52]" />
-                  <CardTitle className="text-[#3A4D39]">Recent Sales</CardTitle>
                 </div>
-                <CardDescription className="text-sm text-[#4F6F52]/80">
-                  Latest sample transactions for the NutriBin device
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pb-6">
-                <div className="overflow-x-auto">
-                  <Table className="w-full">
-                    <TableHeader className="bg-[#FAF9F6]">
-                      <TableRow>
-                        <TableHead className="font-bold text-[#3A4D39] py-4 pl-6">
-                          DATE
-                        </TableHead>
-                        <TableHead className="font-bold text-[#3A4D39]">
-                          AMOUNT
-                        </TableHead>
-                        <TableHead className="font-bold text-[#3A4D39]">
-                          REGION
-                        </TableHead>
-                        <TableHead className="text-right font-bold text-[#3A4D39] pr-6">
-                          ITEM
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {salesData.map((s) => (
+                <div>
+                  <CardTitle className="text-[#3A4D39]">Recent Sales</CardTitle>
+                  <CardDescription className="text-xs">
+                    Latest transactions
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="max-h-[480px] overflow-y-auto custom-scrollbar">
+                <Table>
+                  <TableHeader className="bg-[#FAF9F6] sticky top-0 z-10">
+                    <TableRow className="border-b border-[#ECE3CE]">
+                      <TableHead className="text-[10px] font-black text-[#6B6F68] uppercase py-4 pl-8">
+                        Date
+                      </TableHead>
+                      <TableHead className="text-[10px] font-black text-[#6B6F68] uppercase text-right pr-8">
+                        Summary
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {salesData.length > 0 ? (
+                      salesData.map((s, idx) => (
                         <TableRow
-                          key={`${s.date}-${s.product}`}
-                          className="hover:bg-[#ECE3CE]/30 transition-all"
+                          key={s.id || idx}
+                          className="border-b border-gray-50 hover:bg-[#FAF9F6]/50 transition-colors"
                         >
-                          <TableCell className="text-[#6B6F68] font-medium italic">
-                            {s.date
-                              ? new Date(s.date).toLocaleDateString()
-                              : "—"}
+                          <TableCell className="py-4 pl-8">
+                            <p className="text-xs font-bold text-[#3A4D39]">
+                              {s.date
+                                ? new Date(s.date).toLocaleDateString(
+                                    undefined,
+                                    { month: "short", day: "numeric" },
+                                  )
+                                : "—"}
+                            </p>
+                            <p className="text-[10px] text-[#6B6F68] italic mt-1">
+                              {s.region}
+                            </p>
                           </TableCell>
-                          <TableCell className="font-mono text-[#4F6F52] font-bold">
-                            {formatPeso(s.amount)}
-                          </TableCell>
-                          <TableCell className="text-[#4F6F52]/90">
-                            {s.region}
-                          </TableCell>
-                          <TableCell className="text-right pr-6 text-[#3A4D39]">
-                            {s.product}
+                          <TableCell className="text-right pr-8">
+                            <p className="text-sm font-black text-[#4F6F52]">
+                              {formatPeso(s.amount)}
+                            </p>
+                            <p className="text-[10px] text-[#6B6F68] uppercase tracking-tighter mt-1">
+                              {s.product}
+                            </p>
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={2}
+                          className="text-center py-10 text-gray-400 italic text-sm"
+                        >
+                          No transactions found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="p-4 border-t border-[#ECE3CE] text-center">
+                <button className="text-[10px] font-black text-[#4F6F52] uppercase tracking-widest hover:underline">
+                  View Comprehensive Ledger →
+                </button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     </div>

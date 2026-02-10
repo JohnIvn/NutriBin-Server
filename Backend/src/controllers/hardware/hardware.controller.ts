@@ -28,6 +28,10 @@ export class HardwareController {
       temperature: number;
       humidity: number;
       reed_switch: number;
+      ph: number;
+      methane: number;
+      hydrogen: number;
+      benzene: number;
     },
   ) {
     const client = this.databaseService.getClient();
@@ -42,12 +46,16 @@ export class HardwareController {
           phosphorus, 
           potassium, 
           temperature, 
+          ph,
           humidity, 
           moisture, 
+          methane,
+          hydrogen,
           smoke,
+          benzene,
           weight_kg,
           reed_switch
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
         [
           data.user_id,
           data.machine_id,
@@ -55,9 +63,13 @@ export class HardwareController {
           data.phosphorus.toString(),
           data.potassium.toString(),
           data.temperature.toString(),
+          data.ph.toString(),
           data.humidity.toString(),
           data.soil_moisture.toString(),
+          data.methane.toString(),
+          data.hydrogen.toString(),
           data.mq135.toString(), // Mapping mq135 to smoke column as it's a gas sensor
+          data.benzene.toString(),
           data.weight_kg.toString(),
           data.reed_switch.toString(),
         ],

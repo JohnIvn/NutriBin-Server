@@ -97,11 +97,12 @@ export class MachineManagementController {
           hydrogen,
           smoke,
           benzene,
+          weight_kg,
+          reed_switch,
           date_created
          FROM fertilizer_analytics
          WHERE machine_id = $1
-         ORDER BY date_created DESC
-         LIMIT 10`,
+         ORDER BY date_created DESC`,
         [machineId],
       );
 

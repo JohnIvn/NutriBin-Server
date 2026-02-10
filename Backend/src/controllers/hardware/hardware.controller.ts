@@ -19,19 +19,19 @@ export class HardwareController {
     data: {
       user_id: string;
       machine_id: string;
-      weight_kg: number;
-      nitrogen: number;
-      phosphorus: number;
-      potassium: number;
-      mq135: number;
-      soil_moisture: number;
-      temperature: number;
-      humidity: number;
-      reed_switch: number;
-      ph: number;
-      methane: number;
-      hydrogen: number;
-      benzene: number;
+      weight_kg?: number | string;
+      nitrogen?: number | string;
+      phosphorus?: number | string;
+      potassium?: number | string;
+      mq135?: number | string;
+      soil_moisture?: number | string;
+      temperature?: number | string;
+      humidity?: number | string;
+      reed_switch?: number | string;
+      ph?: number | string;
+      methane?: number | string;
+      hydrogen?: number | string;
+      benzene?: number | string;
     },
   ) {
     const client = this.databaseService.getClient();
@@ -59,19 +59,19 @@ export class HardwareController {
         [
           data.user_id,
           data.machine_id,
-          data.nitrogen.toString(),
-          data.phosphorus.toString(),
-          data.potassium.toString(),
-          data.temperature.toString(),
-          data.ph.toString(),
-          data.humidity.toString(),
-          data.soil_moisture.toString(),
-          data.methane.toString(),
-          data.hydrogen.toString(),
-          data.mq135.toString(), // Mapping mq135 to smoke column as it's a gas sensor
-          data.benzene.toString(),
-          data.weight_kg.toString(),
-          data.reed_switch.toString(),
+          (data.nitrogen ?? 0).toString(),
+          (data.phosphorus ?? 0).toString(),
+          (data.potassium ?? 0).toString(),
+          (data.temperature ?? 0).toString(),
+          (data.ph ?? 0).toString(),
+          (data.humidity ?? 0).toString(),
+          (data.soil_moisture ?? 0).toString(),
+          (data.methane ?? 0).toString(),
+          (data.hydrogen ?? 0).toString(),
+          (data.mq135 ?? 0).toString(),
+          (data.benzene ?? 0).toString(),
+          (data.weight_kg ?? 0).toString(),
+          (data.reed_switch ?? 0).toString(),
         ],
       );
 

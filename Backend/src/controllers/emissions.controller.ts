@@ -3,6 +3,7 @@ import {
   Get,
   InternalServerErrorException,
   Param,
+  Query,
 } from '@nestjs/common';
 import { DatabaseService } from '../service/database/database.service';
 
@@ -76,11 +77,13 @@ export class EmissionsController {
   }
 
   @Get('history/:machineId')
-  async getMachineEmissionsHistory(@Param('machineId') machineId: string) {
+  async getMachineEmissionsHistory(
+    @Param('machineId') machineId: string,
+    @Query('date') date?: string,
+  ) {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(
-        `
+      let query = `
         SELECT 
           nitrogen,
           methane,
@@ -90,11 +93,17 @@ export class EmissionsController {
           date_created
         FROM fertilizer_analytics
         WHERE machine_id = $1
-        ORDER BY date_created DESC
-        LIMIT 50
-      `,
-        [machineId],
-      );
+      `;
+      const params: any[] = [machineId];
+
+      if (date) {
+        query += ` AND DATE(date_created) = $2`;
+        params.push(date);
+      }
+
+      query += ` ORDER BY date_created DESC LIMIT 100`;
+
+      const result = await client.query(query, params);
 
       return {
         ok: true,

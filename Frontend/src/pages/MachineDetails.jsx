@@ -171,7 +171,7 @@ function MachineDetails() {
                       icon={Thermometer}
                       label="Temperature"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics[0].temperature,
+                        machineDetails.fertilizer_analytics?.[0]?.temperature,
                       )}
                       unit="°C"
                       color="text-orange-500"
@@ -181,7 +181,7 @@ function MachineDetails() {
                       icon={Droplets}
                       label="Humidity"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics[0].humidity,
+                        machineDetails.fertilizer_analytics?.[0]?.humidity,
                       )}
                       unit="%"
                       color="text-blue-500"
@@ -191,7 +191,7 @@ function MachineDetails() {
                       icon={Activity}
                       label="pH Level"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics[0].ph,
+                        machineDetails.fertilizer_analytics?.[0]?.ph,
                       )}
                       unit=""
                       color="text-purple-500"
@@ -201,7 +201,7 @@ function MachineDetails() {
                       icon={Sprout}
                       label="Moisture"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics[0].moisture,
+                        machineDetails.fertilizer_analytics?.[0]?.moisture,
                       )}
                       unit="%"
                       color="text-green-600"
@@ -211,7 +211,7 @@ function MachineDetails() {
                       icon={Wind}
                       label="Methane"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics[0].methane,
+                        machineDetails.fertilizer_analytics?.[0]?.methane,
                       )}
                       unit="ppm"
                       color="text-red-500"
@@ -221,7 +221,7 @@ function MachineDetails() {
                       icon={Wind}
                       label="Hydrogen"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics[0].hydrogen,
+                        machineDetails.fertilizer_analytics?.[0]?.hydrogen,
                       )}
                       unit="ppm"
                       color="text-cyan-500"
@@ -231,7 +231,7 @@ function MachineDetails() {
                       icon={Wind}
                       label="Smoke"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics[0].smoke,
+                        machineDetails.fertilizer_analytics?.[0]?.smoke,
                       )}
                       unit="ppm"
                       color="text-slate-500"
@@ -241,7 +241,7 @@ function MachineDetails() {
                       icon={Wind}
                       label="Benzene"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics[0].benzene,
+                        machineDetails.fertilizer_analytics?.[0]?.benzene,
                       )}
                       unit="ppm"
                       color="text-indigo-500"
@@ -793,6 +793,120 @@ function MachineDetails() {
                   </>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* History Table */}
+        {machineDetails?.fertilizer_analytics?.length > 0 && (
+          <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm mt-0 overflow-hidden">
+            <h3 className="font-bold text-[#3A4D39] mb-8 flex items-center gap-2 text-xl">
+              <Activity className="h-6 w-6 text-[#4F6F52]" /> History
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Date Created
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      N (%)
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      P (%)
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      K (%)
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      pH
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Temp
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Humid
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Moist
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Methane
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Smoke
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Weight
+                    </th>
+                    <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Lid (Reed)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {machineDetails.fertilizer_analytics.map((log, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="py-4 px-4 text-sm text-gray-500 font-medium">
+                        {new Date(log.date_created).toLocaleString()}
+                      </td>
+                      <td className="py-4 px-4 text-sm font-bold text-[#C26A4A]">
+                        {log.nitrogen}%
+                      </td>
+                      <td className="py-4 px-4 text-sm font-bold text-[#D97706]">
+                        {log.phosphorus}%
+                      </td>
+                      <td className="py-4 px-4 text-sm font-bold text-[#739072]">
+                        {log.potassium}%
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs font-bold">
+                          {log.ph}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {log.temperature}°C
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {log.humidity}%
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {log.moisture}%
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {log.methane} ppm
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {log.smoke} ppm
+                      </td>
+                      <td className="py-4 px-4 text-sm font-bold text-blue-600">
+                        {log.weight_kg || 0} kg
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-bold ${
+                            log.reed_switch === "1" ||
+                            log.reed_switch === "true" ||
+                            log.reed_switch === true
+                              ? "bg-red-50 text-red-700"
+                              : "bg-green-50 text-green-700"
+                          }`}
+                        >
+                          {log.reed_switch === "1" ||
+                          log.reed_switch === "true" ||
+                          log.reed_switch === true
+                            ? "OPEN"
+                            : "CLOSED"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

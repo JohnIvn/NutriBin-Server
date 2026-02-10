@@ -13,8 +13,14 @@ import {
   Sprout,
   Cpu,
   FileText,
+  Wifi,
+  Cog,
+  Eye,
+  Zap,
+  Fan,
 } from "lucide-react";
 import Requests from "@/utils/Requests";
+import ModuleCard from "@/components/ui/ModuleCard";
 import { toast } from "sonner";
 
 function MachineDetails() {
@@ -341,88 +347,398 @@ function MachineDetails() {
                   );
                 })()}
 
-                {/* Machine component diagnostics */}
-                <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
-                  <h3 className="font-bold text-[#3A4D39] mb-6 flex items-center gap-2 text-xl">
-                    <Cpu className="h-6 w-6 text-[#4F6F52]" /> Machine
-                    Diagnostics
-                  </h3>
+                {/* Machine Diagnostics - New Design */}
+                <div className="space-y-8">
+                  {/* Header */}
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="flex-1 border-l-4 border-[#3A4D39] pl-6 py-2">
+                      <h2 className="text-4xl font-black text-[#3A4D39] tracking-tight">
+                        Machine Diagnostics
+                      </h2>
+                      <p className="text-[#4F6F52] font-medium mt-1 text-lg">
+                        Quick status overview — click a card for details.
+                      </p>
+                    </div>
+                    <div className="px-4 py-2 bg-white border border-[#3A4D39]/10 rounded-xl shadow-sm">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-[#4F6F52] animate-pulse" />
+                        <span className="font-bold text-[#3A4D39] text-sm">
+                          Diagnostic Running
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                  <p className="text-sm text-gray-500 mb-4">
-                    Quick status overview — click a card for details.
-                  </p>
+                  {/* Main Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+                    {/* Controllers */}
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-3 mb-2 px-1">
+                        <div className="p-2 bg-[#3A4D39]/10 rounded-lg text-[#3A4D39]">
+                          <Cpu className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-bold text-[#3A4D39]">
+                          Controllers
+                        </h3>
+                        <span className="ml-auto text-xs font-bold bg-[#ECE3CE] text-[#739072] px-2 py-1 rounded-full">
+                          5 Units
+                        </span>
+                      </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {[
-                      ["c1", "Arduino Q"],
-                      ["c2", "ESP32 Filter"],
-                      ["c3", "ESP32 Chute"],
-                      ["c4", "ESP32 Grinder"],
-                      ["c5", "ESP32 Exhaust"],
-                      ["s1", "Camera A"],
-                      ["s2", "Camera B"],
-                      ["s3", "Humidity"],
-                      ["s4", "Temperature"],
-                      ["s5", "Gas Methane"],
-                      ["s6", "Gas Nitrogen"],
-                      ["s7", "Water Level"],
-                      ["s8", "NPK Sensor"],
-                      ["s9", "Moisture"],
-                      ["m1", "Servo Lid A"],
-                      ["m2", "Servo Lid B"],
-                      ["m3", "Servo Diverter"],
-                      ["m4", "Motor Grinder"],
-                      ["m5", "Motor Mixer"],
-                      ["m6", "Exhaust Fan In"],
-                      ["m7", "Exhaust Fan Out"],
-                    ].map(([key, label]) => {
-                      const val = machineDetails[key];
-                      // reverse logic: truthy value indicates a problem on the machine
-                      const ok = !(val === true || val === "true" || val === 1);
-
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => {
-                            setSelectedDiag({ key, label, value: val });
+                      <div className="bg-white rounded-3xl p-4 shadow-sm border border-[#3A4D39]/10 space-y-3">
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="c1"
+                          title="Arduino Q"
+                          icon={Cpu}
+                          subtext="Main Logic Unit"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "c1",
+                              label: "Arduino Q",
+                              value: machineDetails.c1,
+                            });
                             setShowDiagModal(true);
                           }}
-                          className={`text-left p-4 rounded-xl border shadow-sm transition transform hover:-translate-y-0.5 focus:outline-none flex flex-col justify-between items-start gap-3 ${
-                            ok
-                              ? "bg-green-50/60 border-green-100 text-green-800"
-                              : "bg-red-50/60 border-red-100 text-red-800"
-                          }`}
-                        >
-                          <div className="w-full flex items-center justify-between">
-                            <span className="text-sm font-bold uppercase tracking-wide truncate max-w-[75%]">
-                              {label}
-                            </span>
-                            <div
-                              className={`inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full ${ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                            >
-                              {ok ? (
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-red-500" />
-                              )}
-                              <span className="uppercase tracking-wider">
-                                {ok ? "OK" : "Issue"}
-                              </span>
-                            </div>
-                          </div>
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="c2"
+                          title="ESP32 Filter"
+                          icon={Wifi}
+                          subtext="Air Filtration"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "c2",
+                              label: "ESP32 Filter",
+                              value: machineDetails.c2,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="c3"
+                          title="ESP32 Chute"
+                          icon={Wifi}
+                          subtext="Waste Intake"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "c3",
+                              label: "ESP32 Chute",
+                              value: machineDetails.c3,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="c4"
+                          title="ESP32 Grinder"
+                          icon={Wifi}
+                          subtext="Processing Unit"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "c4",
+                              label: "ESP32 Grinder",
+                              value: machineDetails.c4,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="c5"
+                          title="ESP32 Exhaust"
+                          icon={Wifi}
+                          subtext="Ventilation Control"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "c5",
+                              label: "ESP32 Exhaust",
+                              value: machineDetails.c5,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                      </div>
+                    </div>
 
-                          <div className="text-xs text-gray-600">
-                            {typeof val === "boolean" ||
-                            val === null ||
-                            val === undefined
-                              ? ok
-                                ? "Operational"
-                                : "Fault detected"
-                              : String(val)}
-                          </div>
-                        </button>
-                      );
-                    })}
+                    {/* Actuators/Motors */}
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-3 mb-2 px-1">
+                        <div className="p-2 bg-orange-50 rounded-lg text-orange-700">
+                          <Cog className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-bold text-[#3A4D39]">
+                          Actuators
+                        </h3>
+                        <span className="ml-auto text-xs font-bold bg-[#ECE3CE] text-[#739072] px-2 py-1 rounded-full">
+                          7 Units
+                        </span>
+                      </div>
+
+                      <div className="bg-white rounded-3xl p-4 shadow-sm border border-[#3A4D39]/10 space-y-3">
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="m4"
+                          title="Grinder Motor"
+                          icon={Cog}
+                          subtext="High Torque"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "m4",
+                              label: "Grinder Motor",
+                              value: machineDetails.m4,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="m5"
+                          title="Mixer Motor"
+                          icon={Cog}
+                          subtext="Mixing Unit"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "m5",
+                              label: "Mixer Motor",
+                              value: machineDetails.m5,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="m6"
+                          title="Exhaust Fan In"
+                          icon={Fan}
+                          subtext="Intake Fan"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "m6",
+                              label: "Exhaust Fan In",
+                              value: machineDetails.m6,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="m7"
+                          title="Exhaust Fan Out"
+                          icon={Fan}
+                          subtext="Output Fan"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "m7",
+                              label: "Exhaust Fan Out",
+                              value: machineDetails.m7,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="m1"
+                          title="Servo Lid A"
+                          icon={Cog}
+                          subtext="Lid Control"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "m1",
+                              label: "Servo Lid A",
+                              value: machineDetails.m1,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="m2"
+                          title="Servo Lid B"
+                          icon={Cog}
+                          subtext="Secondary Lid"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "m2",
+                              label: "Servo Lid B",
+                              value: machineDetails.m2,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="m3"
+                          title="Servo Diverter"
+                          icon={Cog}
+                          subtext="Material Routing"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "m3",
+                              label: "Servo Diverter",
+                              value: machineDetails.m3,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Sensors */}
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-3 mb-2 px-1">
+                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                          <Eye className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-bold text-[#3A4D39]">
+                          Sensors
+                        </h3>
+                        <span className="ml-auto text-xs font-bold bg-[#ECE3CE] text-[#739072] px-2 py-1 rounded-full">
+                          9 Units
+                        </span>
+                      </div>
+
+                      <div className="bg-white rounded-3xl p-4 shadow-sm border border-[#3A4D39]/10 space-y-3">
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s1"
+                          title="Camera A"
+                          icon={Eye}
+                          subtext="Feed Input"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s1",
+                              label: "Camera A",
+                              value: machineDetails.s1,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s2"
+                          title="Camera B"
+                          icon={Eye}
+                          subtext="Processing Bay"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s2",
+                              label: "Camera B",
+                              value: machineDetails.s2,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s3"
+                          title="Humidity"
+                          icon={Droplets}
+                          subtext="DHT22 Sensor"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s3",
+                              label: "Humidity",
+                              value: machineDetails.s3,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s4"
+                          title="Temperature"
+                          icon={Thermometer}
+                          subtext="Internal Probe"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s4",
+                              label: "Temperature",
+                              value: machineDetails.s4,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s5"
+                          title="Gas (Methane)"
+                          icon={Wind}
+                          subtext="MQ-4 Sensor"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s5",
+                              label: "Gas (Methane)",
+                              value: machineDetails.s5,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s6"
+                          title="NPK Sensor"
+                          icon={Activity}
+                          subtext="Soil Probe"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s6",
+                              label: "NPK Sensor",
+                              value: machineDetails.s6,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s7"
+                          title="Water Level"
+                          icon={Droplets}
+                          subtext="Float Sensor"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s7",
+                              label: "Water Level",
+                              value: machineDetails.s7,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s8"
+                          title="Moisture"
+                          icon={Droplets}
+                          subtext="Capacitive Sensor"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s8",
+                              label: "Moisture",
+                              value: machineDetails.s8,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                        <DiagnosticCard
+                          machine={machineDetails}
+                          keyId="s9"
+                          title="Gas (Nitrogen)"
+                          icon={Wind}
+                          subtext="N2 Detection"
+                          onDetails={() => {
+                            setSelectedDiag({
+                              key: "s9",
+                              label: "Gas (Nitrogen)",
+                              value: machineDetails.s9,
+                            });
+                            setShowDiagModal(true);
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {showDiagModal && selectedDiag && (
@@ -522,6 +838,53 @@ function NutrientBar({ label, value, color, textColor }) {
         ></div>
       </div>
     </div>
+  );
+}
+
+function DiagnosticCard({
+  machine,
+  keyId,
+  title,
+  icon: Icon,
+  subtext,
+  onDetails,
+}) {
+  const val = machine?.[keyId];
+  const ok = !(val === true || val === "true" || val === 1);
+
+  return (
+    <button
+      onClick={onDetails}
+      className={`text-left p-4 rounded-2xl border transition-all hover:shadow-md ${
+        ok
+          ? "bg-green-50/50 border-green-100 text-green-700"
+          : "bg-red-50/50 border-red-100 text-red-700"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-3 flex-1">
+          <div
+            className={`p-2.5 rounded-lg ${ok ? "bg-green-100" : "bg-red-100"}`}
+          >
+            <Icon className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm">{title}</p>
+            <p className="text-xs opacity-75">{subtext}</p>
+          </div>
+        </div>
+        <div className="flex-shrink-0">
+          {ok ? (
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          ) : (
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+          )}
+        </div>
+      </div>
+      <p className="text-xs font-semibold">
+        {ok ? "Operational" : "Fault detected"}
+      </p>
+    </button>
   );
 }
 

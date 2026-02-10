@@ -17,6 +17,8 @@ export async function createFertilizerAnalyticsTable(client: Client) {
       hydrogen text,
       smoke text,
       benzene text,
+      weight_kg text,
+      reed_switch text,
       date_created timestamptz DEFAULT now()
     );
   `);

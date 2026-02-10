@@ -25,6 +25,7 @@ import { BackupController } from './controllers/backup.controller';
 import { EmissionsController } from './controllers/emissions.controller';
 import { FertilizerController } from './controllers/fertilizer.controller';
 import { CameraLogsController } from './controllers/camera-logs.controller';
+import { HardwareController } from './controllers/hardware/hardware.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
@@ -64,6 +65,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
     EmissionsController,
     FertilizerController,
     CameraLogsController,
+    HardwareController,
   ],
   providers: [
     AppService,

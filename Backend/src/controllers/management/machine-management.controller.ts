@@ -105,59 +105,46 @@ export class MachineManagementController {
         [machineId],
       );
 
-      // Get module analytics (error diagnostics)
-      const moduleResult = await client.query(
-        `SELECT 
-          esp32,
-          arduino_q,
-          arduino_r3,
-          ultrasonic,
-          reed,
-          moisture,
-          temperature,
-          humidity,
-          gas,
-          ph,
-          npk,
-          camera_1,
-          camera_2,
-          stepper_motor,
-          heating_pad,
-          exhaust_fan,
-          dc_motor,
-          grinder_motor,
-          power_supply,
-          servo_motor,
-          date_created
-         FROM module_analytics
-        WHERE user_id = $1
-        ORDER BY date_created DESC
-        LIMIT 10`,
-        [machineInfo.user_id],
-      );
+      // Calculate component status from machines table
+      const machineComponents = machineInfo as Record<string, unknown>;
+      let workingComponents = 0;
+      let totalComponents = 0;
 
-      // Calculate error rate from module analytics
-      let errorRate = 0;
-      if (moduleResult.rows.length > 0) {
-        const latestModule = moduleResult.rows[0] as Record<string, unknown>;
-        const totalModules = 20; // Total number of modules
-        let workingModules = 0;
-
-        Object.keys(latestModule).forEach((key) => {
-          if (key !== 'date_created' && latestModule[key] === true) {
-            workingModules++;
-          }
-        });
-
-        errorRate = ((totalModules - workingModules) / totalModules) * 100;
+      // Count microcontrollers (C1-C5)
+      for (let i = 1; i <= 5; i++) {
+        const key = `C${i}`;
+        totalComponents++;
+        if (machineComponents[key] === true) {
+          workingComponents++;
+        }
       }
+
+      // Count sensors (S1-S9)
+      for (let i = 1; i <= 9; i++) {
+        const key = `S${i}`;
+        totalComponents++;
+        if (machineComponents[key] === true) {
+          workingComponents++;
+        }
+      }
+
+      // Count motors (M1-M7)
+      for (let i = 1; i <= 7; i++) {
+        const key = `M${i}`;
+        totalComponents++;
+        if (machineComponents[key] === true) {
+          workingComponents++;
+        }
+      }
+
+      const errorRate =
+        ((totalComponents - workingComponents) / totalComponents) * 100;
 
       return {
         ok: true,
         machine: {
           ...machineInfo,
           fertilizer_analytics: fertilizerResult.rows,
-          module_analytics: moduleResult.rows,
           error_rate: errorRate.toFixed(2),
         },
       };

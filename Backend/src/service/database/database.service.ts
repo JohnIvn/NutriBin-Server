@@ -12,7 +12,6 @@ import { createFertilizerAnalyticsTable } from './models/fertilizer-analytics.mo
 import { createMachineSerialTable } from './models/machine_serial';
 import { createMachinesTable } from './models/machines.model';
 import { createMachineCustomersTable } from './models/machine_customers.model';
-import { createModuleAnalyticsTable } from './models/module-analytics.model';
 import { createRepairTable } from './models/repair.module';
 import { createAnnouncementsTable } from './models/announcements.model';
 import { createSalesTable } from './models/sales.model';
@@ -63,7 +62,6 @@ export class DatabaseService implements OnModuleInit {
     await createMachineSerialTable(this.client);
     await createMachinesTable(this.client);
     await createMachineCustomersTable(this.client);
-    await createModuleAnalyticsTable(this.client);
     await createFertilizerAnalyticsTable(this.client);
     await createCameraLogsTable(this.client);
     await createRepairTable(this.client);

@@ -57,7 +57,6 @@ import {
 } from "lucide-react";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
-import { z } from "zod";
 
 function Serial() {
   const [serials, setSerials] = useState([]);
@@ -73,7 +72,7 @@ function Serial() {
   });
 
   const createForm = useForm({
-    defaultValues: { serial_number: "" },
+    defaultValues: { numbers: "", alphanumeric: "" },
   });
 
   const fetchSerials = async () => {
@@ -101,11 +100,13 @@ function Serial() {
   const onCreateSerial = async (data) => {
     try {
       setIsSubmitting(true);
+      // Combine the three parts into the serial number format
+      const serialNumber = `Serial-${data.numbers}-${data.alphanumeric}`;
       const response = await Requests({
         url: "/management/serials",
         method: "POST",
         credentials: true,
-        data: data,
+        data: { serial_number: serialNumber },
       });
 
       if (response.data.ok) {
@@ -242,25 +243,66 @@ function Serial() {
                   onSubmit={createForm.handleSubmit(onCreateSerial)}
                   className="space-y-4"
                 >
-                  <FormField
-                    control={createForm.control}
-                    name="serial_number"
-                    render={({ field }) => (
-                      <FormItem>
-                        <label className="text-sm font-medium text-[#4F6F52]">
-                          Serial Number
-                        </label>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter serial number"
-                            className="border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div>
+                    <label className="text-sm font-medium text-[#4F6F52] block mb-3">
+                      Serial Number Format: Serial-{"(13 numbers)"}-(9 alphanumeric)
+                    </label>
+                    <div className="flex gap-2 items-end">
+                      <div className="flex-shrink-0">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Serial</div>
+                        <div className="h-11 px-3 py-2 bg-gray-100 border border-gray-200 rounded-md flex items-center text-gray-500 font-medium">
+                          Serial
+                        </div>
+                      </div>
+                      <span className="text-xl font-bold text-gray-400 mb-2">-</span>
+                      <FormField
+                        control={createForm.control}
+                        name="numbers"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <label className="text-sm font-medium text-gray-700">13 Numbers</label>
+                            <FormControl>
+                              <Input
+                                placeholder="0000000000000"
+                                maxLength="13"
+                                pattern="\d{13}"
+                                className="border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
+                                {...field}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, '').slice(0, 13);
+                                  field.onChange(value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <span className="text-xl font-bold text-gray-400 mb-2">-</span>
+                      <FormField
+                        control={createForm.control}
+                        name="alphanumeric"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <label className="text-sm font-medium text-gray-700">9 Alphanumeric</label>
+                            <FormControl>
+                              <Input
+                                placeholder="ABCD12345"
+                                maxLength="9"
+                                className="border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] uppercase"
+                                {...field}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^A-Z0-9]/g, '').slice(0, 9).toUpperCase();
+                                  field.onChange(value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
                   <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
                     <Button
                       type="button"

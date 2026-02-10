@@ -96,6 +96,7 @@ function Account() {
   const getInitials = (first, last) =>
     `${first?.[0] || ""}${last?.[0] || ""}`.toUpperCase();
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     const userId = user?.staff_id || user?.admin_id;
     if (userId) {
@@ -105,6 +106,7 @@ function Account() {
       setLoading(false);
     }
   }, [user?.staff_id, user?.admin_id]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const fetchProfile = async () => {
     const userId = user?.staff_id || user?.admin_id;

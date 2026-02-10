@@ -80,6 +80,7 @@ export class SerialManagementController {
       return {
         ok: true,
         message: 'Serial created successfully',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         serial: result.rows[0],
       };
     } catch (error) {
@@ -123,6 +124,7 @@ export class SerialManagementController {
       return {
         ok: true,
         message: 'Serial updated successfully',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         serial: result.rows[0],
       };
     } catch (error) {

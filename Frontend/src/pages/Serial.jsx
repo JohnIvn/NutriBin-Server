@@ -21,24 +21,59 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { serialFilter } from "@/schema/serial";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Search, Key, MoreHorizontalIcon } from "lucide-react";
+import {
+  Search,
+  Key,
+  MoreHorizontalIcon,
+  Plus,
+  Trash2,
+  Ban,
+} from "lucide-react";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
+import { z } from "zod";
 
 function Serial() {
   const [serials, setSerials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionStates, setActionStates] = useState({});
 
   const filterForm = useForm({
     resolver: zodResolver(serialFilter),
     defaultValues: { count: "10", term: "" },
+  });
+
+  const createForm = useForm({
+    defaultValues: { serial_number: "" },
   });
 
   const fetchSerials = async () => {
@@ -60,6 +95,87 @@ function Serial() {
       toast.error("An error occurred while fetching serials");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onCreateSerial = async (data) => {
+    try {
+      setIsSubmitting(true);
+      const response = await Requests({
+        url: "/management/serials",
+        method: "POST",
+        credentials: true,
+        data: data,
+      });
+
+      if (response.data.ok) {
+        toast.success("Serial created successfully");
+        createForm.reset();
+        setOpenDialog(false);
+        fetchSerials();
+      } else {
+        toast.error(response.data.message || "Failed to create serial");
+      }
+    } catch (error) {
+      console.error("Error creating serial:", error);
+      toast.error("An error occurred while creating serial");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onDeleteSerial = async (serialId) => {
+    try {
+      setActionStates((prev) => ({ ...prev, [serialId]: "deleting" }));
+      const response = await Requests({
+        url: `/management/serials/${serialId}`,
+        method: "DELETE",
+        credentials: true,
+      });
+
+      if (response.data.ok) {
+        toast.success("Serial deleted successfully");
+        fetchSerials();
+      } else {
+        toast.error(response.data.message || "Failed to delete serial");
+      }
+    } catch (error) {
+      console.error("Error deleting serial:", error);
+      toast.error("An error occurred while deleting serial");
+    } finally {
+      setActionStates((prev) => {
+        const newState = { ...prev };
+        delete newState[serialId];
+        return newState;
+      });
+    }
+  };
+
+  const onSetInactive = async (serialId) => {
+    try {
+      setActionStates((prev) => ({ ...prev, [serialId]: "inactivating" }));
+      const response = await Requests({
+        url: `/management/serials/${serialId}`,
+        method: "PATCH",
+        credentials: true,
+        data: { is_active: false },
+      });
+
+      if (response.data.ok) {
+        toast.success("Serial marked as inactive");
+        fetchSerials();
+      } else {
+        toast.error(response.data.message || "Failed to update serial");
+      }
+    } catch (error) {
+      console.error("Error updating serial:", error);
+      toast.error("An error occurred while updating serial");
+    } finally {
+      setActionStates((prev) => {
+        const newState = { ...prev };
+        delete newState[serialId];
+        return newState;
+      });
     }
   };
 
@@ -105,6 +221,67 @@ function Serial() {
               Manage and view all registered machine serial numbers.
             </p>
           </div>
+          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#4F6F52] hover:bg-[#3A4D39] text-white gap-2 h-11">
+                <Plus className="h-5 w-5" />
+                Add Serial
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] bg-white border-[#4F6F52] border-2">
+              <DialogHeader className="border-b-2 border-[#4F6F52] pb-4 mb-2">
+                <DialogTitle className="text-[#4F6F52] text-2xl font-bold">
+                  Create New Serial Number
+                </DialogTitle>
+                <DialogDescription className="text-gray-600">
+                  Add a new machine serial number to the system.
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...createForm}>
+                <form
+                  onSubmit={createForm.handleSubmit(onCreateSerial)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={createForm.control}
+                    name="serial_number"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="text-sm font-medium text-[#4F6F52]">
+                          Serial Number
+                        </label>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter serial number"
+                            className="border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setOpenDialog(false)}
+                      className="border-[#4F6F52] text-[#4F6F52] hover:bg-[#4F6F52]/10"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="bg-[#4F6F52] hover:bg-[#3A4D39] text-white"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Creating..." : "Create Serial"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-xl overflow-hidden w-full">
@@ -263,13 +440,50 @@ function Serial() {
                         {formatDate(serial.date_created)}
                       </TableCell>
                       <TableCell className="text-right pr-6">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 rounded-full text-[#3A4D39] hover:bg-[#4F6F52]/10 hover:text-[#4F6F52] transition-colors cursor-pointer"
-                        >
-                          <MoreHorizontalIcon className="h-5 w-5" />
-                        </Button>
+                        {!serial.is_used ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 rounded-full text-[#3A4D39] hover:bg-[#4F6F52]/10 hover:text-[#4F6F52] transition-colors cursor-pointer"
+                              >
+                                <MoreHorizontalIcon className="h-5 w-5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  onSetInactive(serial.machine_serial_id)
+                                }
+                                disabled={
+                                  actionStates[serial.machine_serial_id] ===
+                                  "inactivating"
+                                }
+                              >
+                                <Ban className="mr-2 h-4 w-4" />
+                                <span>Set Inactive</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  onDeleteSerial(serial.machine_serial_id)
+                                }
+                                disabled={
+                                  actionStates[serial.machine_serial_id] ===
+                                  "deleting"
+                                }
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Delete</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        ) : (
+                          <span className="text-xs text-gray-400 font-medium">
+                            No actions
+                          </span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

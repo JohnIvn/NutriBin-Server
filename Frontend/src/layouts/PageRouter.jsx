@@ -30,6 +30,8 @@ import CameraLogs from "@/pages/CameraLogs";
 import Home from "@/pages/Home";
 import LoginRecords from "@/pages/LoginRecords";
 import MfaRecords from "@/pages/MfaRecords";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import CookiePolicy from "@/pages/CookiePolicy";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -234,6 +236,8 @@ function PageRouter() {
       <Route path="/guide" element={<Guide />} />
       <Route path="/home" element={<Home />} />
       <Route path="/guides" element={<Guide />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/cookie-policy" element={<CookiePolicy />} />
     </Routes>
   );
 }

@@ -52,12 +52,18 @@ export default function Footer() {
           </p>
 
           <div className="flex items-center gap-6">
-            <span className="cursor-pointer hover:text-[#ECE3CE] transition-colors">
+            <Link
+              to="/privacy-policy"
+              className="cursor-pointer hover:text-[#ECE3CE] transition-colors"
+            >
               Privacy Policy
-            </span>
-            <span className="cursor-pointer hover:text-[#ECE3CE] transition-colors">
+            </Link>
+            <Link
+              to="/cookie-policy"
+              className="cursor-pointer hover:text-[#ECE3CE] transition-colors"
+            >
               Cookie Policy
-            </span>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,9 +1,22 @@
 import { useMemo, useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ResponsiveContainer, AreaChart, Area } from "recharts";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function Sparkline({ data, dataKey, color }) {
   return (
@@ -32,6 +45,12 @@ export default function Emissions() {
   const [deviceData, setDeviceData] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [selectedDeviceName, setSelectedDeviceName] = useState("");
+  const [historyData, setHistoryData] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Example (placeholder) telemetry for each gas — replace with real API data later
   const gases = useMemo(
     () => [
@@ -58,6 +77,26 @@ export default function Emissions() {
       toast.error("Failed to fetch emissions data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHistory = async (machineId, fullName) => {
+    try {
+      setHistoryLoading(true);
+      setSelectedDevice(machineId);
+      setSelectedDeviceName(fullName);
+      setIsModalOpen(true);
+      const res = await Requests({
+        url: `/emissions/history/${machineId}`,
+        method: "GET",
+      });
+      if (res.data.ok) {
+        setHistoryData(res.data.history.reverse());
+      }
+    } catch {
+      toast.error("Failed to fetch history");
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -167,6 +206,7 @@ export default function Emissions() {
                   <thead>
                     <tr className="text-left text-xs text-gray-500 border-b">
                       <th className="py-2 pr-4">Device ID</th>
+                      <th className="py-2 pr-4">Full Name</th>
                       <th className="py-2 pr-4">Methane (ppm)</th>
                       <th className="py-2 pr-4">Hydrogen (ppm)</th>
                       <th className="py-2 pr-4">Benzene (ppm)</th>
@@ -185,8 +225,18 @@ export default function Emissions() {
                           key={dev.machine_id}
                           className="align-top hover:bg-gray-50/50"
                         >
-                          <td className="py-3 pr-4 font-medium text-[#3A4D39]">
-                            {dev.machine_id.slice(0, 8)}...
+                          <td className="py-3 pr-4 font-medium">
+                            <button
+                              onClick={() =>
+                                fetchHistory(dev.machine_id, dev.full_name)
+                              }
+                              className="text-[#4F6F52] hover:underline transition-all"
+                            >
+                              {dev.machine_id.slice(0, 8)}...
+                            </button>
+                          </td>
+                          <td className="py-3 pr-4 font-normal text-gray-700">
+                            {dev.full_name || "Unknown"}
                           </td>
                           <td className="py-3 pr-4">{dev.methane || "0"}</td>
                           <td className="py-3 pr-4">{dev.hydrogen || "0"}</td>
@@ -202,7 +252,7 @@ export default function Emissions() {
                     {deviceData.length === 0 && (
                       <tr>
                         <td
-                          colSpan={7}
+                          colSpan={8}
                           className="py-10 text-center text-gray-400"
                         >
                           No device telemetry found.
@@ -225,6 +275,124 @@ export default function Emissions() {
           </Card>
         </div>
       </section>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-[#3A4D39]">
+              Emissions History
+              <span className="ml-2 text-sm font-normal text-gray-500">
+                ({selectedDeviceName || "No Owner"} — {selectedDevice})
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+
+          {historyLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-6 pt-4">
+              <div className="h-[300px] w-full bg-gray-50 rounded-xl p-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={historyData}>
+                    <defs>
+                      {gases.map((g) => (
+                        <linearGradient
+                          key={g.id}
+                          id={`modal-grad-${g.id}`}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor={g.color}
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={g.color}
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <XAxis
+                      dataKey="date_created"
+                      tickFormatter={(str) =>
+                        new Date(str).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      }
+                      fontSize={10}
+                      tickMargin={10}
+                    />
+                    <YAxis fontSize={10} />
+                    <Tooltip
+                      labelFormatter={(label) =>
+                        new Date(label).toLocaleString()
+                      }
+                      contentStyle={{
+                        borderRadius: "12px",
+                        border: "none",
+                        boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                      }}
+                    />
+                    {gases.map((g) => (
+                      <Area
+                        key={g.id}
+                        type="monotone"
+                        dataKey={g.id}
+                        stroke={g.color}
+                        fill={`url(#modal-grad-${g.id})`}
+                        strokeWidth={2}
+                      />
+                    ))}
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-medium">Time</th>
+                      {gases.map((g) => (
+                        <th
+                          key={g.id}
+                          className="px-4 py-3 text-left font-medium"
+                        >
+                          {g.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {historyData
+                      .slice()
+                      .reverse()
+                      .map((entry, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50/50">
+                          <td className="px-4 py-3 text-gray-500 tabular-nums">
+                            {new Date(entry.date_created).toLocaleString()}
+                          </td>
+                          {gases.map((g) => (
+                            <td key={g.id} className="px-4 py-3 font-medium">
+                              {entry[g.id] || "0"}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

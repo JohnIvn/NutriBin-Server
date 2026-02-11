@@ -219,9 +219,9 @@ function MachineDetails() {
                     />
                     <EnvCard
                       icon={Wind}
-                      label="Hydrogen"
+                      label="Air Quality"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics?.[0]?.hydrogen,
+                        machineDetails.fertilizer_analytics?.[0]?.air_quality,
                       )}
                       unit="ppm"
                       color="text-cyan-500"
@@ -229,9 +229,10 @@ function MachineDetails() {
                     />
                     <EnvCard
                       icon={Wind}
-                      label="Smoke"
+                      label="Carbon Monoxide"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics?.[0]?.smoke,
+                        machineDetails.fertilizer_analytics?.[0]
+                          ?.carbon_monoxide,
                       )}
                       unit="ppm"
                       color="text-slate-500"
@@ -239,9 +240,10 @@ function MachineDetails() {
                     />
                     <EnvCard
                       icon={Wind}
-                      label="Benzene"
+                      label="Combustible Gases"
                       value={toNumber(
-                        machineDetails.fertilizer_analytics?.[0]?.benzene,
+                        machineDetails.fertilizer_analytics?.[0]
+                          ?.combustible_gases,
                       )}
                       unit="ppm"
                       color="text-indigo-500"
@@ -835,7 +837,7 @@ function MachineDetails() {
                       Methane
                     </th>
                     <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                      Smoke
+                      Carbon Monoxide
                     </th>
                     <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
                       Weight
@@ -881,7 +883,7 @@ function MachineDetails() {
                         {log.methane} ppm
                       </td>
                       <td className="py-4 px-4 text-sm text-gray-600">
-                        {log.smoke} ppm
+                        {log.carbon_monoxide} ppm
                       </td>
                       <td className="py-4 px-4 text-sm font-bold text-blue-600">
                         {log.weight_kg || 0} kg

@@ -124,7 +124,7 @@ function Analytics() {
     avgPh: 0,
     avgMoisture: 0,
     avgMethane: 0,
-    avgSmoke: 0,
+    avgCarbonMonoxide: 0,
   });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -166,7 +166,9 @@ function Analytics() {
           avgPh: parseFloat(health.avg_ph || 0).toFixed(1),
           avgMoisture: parseFloat(health.avg_moisture || 0).toFixed(1),
           avgMethane: parseFloat(health.avg_methane || 0).toFixed(1),
-          avgSmoke: parseFloat(health.avg_smoke || 0).toFixed(1),
+          avgCarbonMonoxide: parseFloat(
+            health.avg_carbon_monoxide || 0,
+          ).toFixed(1),
         });
 
         const recent = (body?.recent_sales || []).map((r) => ({
@@ -331,10 +333,10 @@ function Analytics() {
                       </div>
                       <div className="bg-[#FAF9F6] p-2.5 rounded-lg border border-[#ECE3CE]">
                         <div className="text-[10px] text-gray-400 uppercase">
-                          Gases/Smoke
+                          Carbon Monoxide
                         </div>
                         <div className="text-sm font-bold text-[#3A4D39]">
-                          {stats.avgSmoke}{" "}
+                          {stats.avgCarbonMonoxide}{" "}
                           <span className="text-[10px] font-normal">ppm</span>
                         </div>
                       </div>

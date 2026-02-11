@@ -14,9 +14,9 @@ export async function createFertilizerAnalyticsTable(client: Client) {
       humidity text,
       moisture text,
       methane text,
-      hydrogen text,
-      smoke text,
-      benzene text,
+      air_quality text,
+      carbon_monoxide text,
+      combustible_gases text,
       weight_kg text,
       reed_switch text,
       date_created timestamptz DEFAULT now()

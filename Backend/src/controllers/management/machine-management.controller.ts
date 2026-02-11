@@ -94,9 +94,9 @@ export class MachineManagementController {
           humidity,
           moisture,
           methane,
-          hydrogen,
-          smoke,
-          benzene,
+          air_quality,
+          carbon_monoxide,
+          combustible_gases,
           weight_kg,
           reed_switch,
           date_created

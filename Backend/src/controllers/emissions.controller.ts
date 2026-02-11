@@ -19,9 +19,9 @@ export class EmissionsController {
         SELECT 
           nitrogen,
           methane,
-          hydrogen,
-          smoke,
-          benzene,
+          air_quality,
+          carbon_monoxide,
+          combustible_gases,
           date_created
         FROM fertilizer_analytics
         ORDER BY date_created DESC
@@ -52,9 +52,9 @@ export class EmissionsController {
             ELSE TRIM(CONCAT(uc.first_name, ' ', uc.last_name))
           END as full_name,
           fa.methane,
-          fa.hydrogen,
-          fa.benzene,
-          fa.smoke,
+          fa.air_quality,
+          fa.combustible_gases,
+          fa.carbon_monoxide,
           fa.nitrogen,
           fa.date_created as last_reading
         FROM machines m
@@ -87,9 +87,9 @@ export class EmissionsController {
         SELECT 
           nitrogen,
           methane,
-          hydrogen,
-          smoke,
-          benzene,
+          air_quality,
+          carbon_monoxide,
+          combustible_gases,
           date_created
         FROM fertilizer_analytics
         WHERE machine_id = $1

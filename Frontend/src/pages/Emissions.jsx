@@ -58,9 +58,24 @@ export default function Emissions() {
   const gases = useMemo(
     () => [
       { id: "methane", label: "Methane", unit: "ppm", color: "#4F6F52" },
-      { id: "hydrogen", label: "Hydrogen", unit: "ppm", color: "#C26A4A" },
-      { id: "benzene", label: "Benzene", unit: "ppm", color: "#6C5CE7" },
-      { id: "smoke", label: "Smoke/Ammonia", unit: "ppm", color: "#F6C85F" },
+      {
+        id: "air_quality",
+        label: "Air Quality",
+        unit: "ppm",
+        color: "#C26A4A",
+      },
+      {
+        id: "combustible_gases",
+        label: "Combustible Gases",
+        unit: "ppm",
+        color: "#6C5CE7",
+      },
+      {
+        id: "carbon_monoxide",
+        label: "Carbon Monoxide",
+        unit: "ppm",
+        color: "#F6C85F",
+      },
       { id: "nitrogen", label: "Nitrogen", unit: "ppm", color: "#3A8DFF" },
     ],
     [],
@@ -123,9 +138,9 @@ export default function Emissions() {
     return summaryData.map((d, i) => ({
       t: i,
       methane: toNumber(d.methane),
-      hydrogen: toNumber(d.hydrogen),
-      benzene: toNumber(d.benzene),
-      smoke: toNumber(d.smoke),
+      air_quality: toNumber(d.air_quality),
+      combustible_gases: toNumber(d.combustible_gases),
+      carbon_monoxide: toNumber(d.carbon_monoxide),
       nitrogen: toNumber(d.nitrogen),
     }));
   }, [summaryData]);
@@ -217,9 +232,9 @@ export default function Emissions() {
                       <th className="py-2 pr-4">Device ID</th>
                       <th className="py-2 pr-4">Full Name</th>
                       <th className="py-2 pr-4">Methane (ppm)</th>
-                      <th className="py-2 pr-4">Hydrogen (ppm)</th>
-                      <th className="py-2 pr-4">Benzene (ppm)</th>
-                      <th className="py-2 pr-4">Smoke (ppm)</th>
+                      <th className="py-2 pr-4">Air Quality (ppm)</th>
+                      <th className="py-2 pr-4">Combustible Gases (ppm)</th>
+                      <th className="py-2 pr-4">Carbon Monoxide (ppm)</th>
                       <th className="py-2 pr-4">Nitrogen (ppm)</th>
                       <th className="py-2 pr-4">Last Sync</th>
                     </tr>
@@ -248,9 +263,15 @@ export default function Emissions() {
                             {dev.full_name || "Unknown"}
                           </td>
                           <td className="py-3 pr-4">{dev.methane || "0"}</td>
-                          <td className="py-3 pr-4">{dev.hydrogen || "0"}</td>
-                          <td className="py-3 pr-4">{dev.benzene || "0"}</td>
-                          <td className="py-3 pr-4">{dev.smoke || "0"}</td>
+                          <td className="py-3 pr-4">
+                            {dev.air_quality || "0"}
+                          </td>
+                          <td className="py-3 pr-4">
+                            {dev.combustible_gases || "0"}
+                          </td>
+                          <td className="py-3 pr-4">
+                            {dev.carbon_monoxide || "0"}
+                          </td>
                           <td className="py-3 pr-4">{dev.nitrogen || "0"}</td>
                           <td className="py-3 pr-4 text-xs text-gray-500">
                             {lastSync}

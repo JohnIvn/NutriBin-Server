@@ -34,7 +34,7 @@ type HealthDashboardStats = {
   avg_ph: string | number;
   avg_moisture: string | number;
   avg_methane: string | number;
-  avg_smoke: string | number;
+  avg_carbon_monoxide: string | number;
 };
 
 type MachineSummary = {
@@ -81,7 +81,7 @@ export class DashboardController {
           AVG(NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric) as avg_ph,
           AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) as avg_moisture,
           AVG(NULLIF(regexp_replace(methane, '[^0-9.]', '', 'g'), '')::numeric) as avg_methane,
-          AVG(NULLIF(regexp_replace(smoke, '[^0-9.]', '', 'g'), '')::numeric) as avg_smoke
+          AVG(NULLIF(regexp_replace(carbon_monoxide, '[^0-9.]', '', 'g'), '')::numeric) as avg_carbon_monoxide
         FROM fertilizer_analytics
       `);
 
@@ -101,7 +101,7 @@ export class DashboardController {
           avg_ph: 0,
           avg_moisture: 0,
           avg_methane: 0,
-          avg_smoke: 0,
+          avg_carbon_monoxide: 0,
         },
         recent_sales: recentSalesQ.rows || [],
       };

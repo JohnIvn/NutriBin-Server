@@ -30,8 +30,8 @@ export class HardwareController {
       reed_switch?: number | string;
       ph?: number | string;
       methane?: number | string;
-      hydrogen?: number | string;
-      benzene?: number | string;
+      air_quality?: number | string;
+      combustible_gases?: number | string;
     },
   ) {
     const client = this.databaseService.getClient();
@@ -50,9 +50,9 @@ export class HardwareController {
           humidity, 
           moisture, 
           methane,
-          hydrogen,
-          smoke,
-          benzene,
+          air_quality,
+          carbon_monoxide,
+          combustible_gases,
           weight_kg,
           reed_switch
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
@@ -67,9 +67,9 @@ export class HardwareController {
           (data.humidity ?? 0).toString(),
           (data.soil_moisture ?? 0).toString(),
           (data.methane ?? 0).toString(),
-          (data.hydrogen ?? 0).toString(),
+          (data.air_quality ?? 0).toString(),
           (data.mq135 ?? 0).toString(),
-          (data.benzene ?? 0).toString(),
+          (data.combustible_gases ?? 0).toString(),
           (data.weight_kg ?? 0).toString(),
           (data.reed_switch ?? 0).toString(),
         ],

@@ -289,6 +289,21 @@ export class BackupService {
     const escapeString = (raw: string | undefined): string =>
       `'${(raw ?? '').replace(/'/g, "''")}'`;
 
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return "'{}'";
+      }
+      const values = value.map((v) => {
+        if (v === null) return 'NULL';
+        if (typeof v === 'number') return String(v);
+        if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
+        if (typeof v === 'string') return escapeString(v);
+        if (v instanceof Date) return escapeString(v.toISOString());
+        return escapeString(JSON.stringify(v));
+      });
+      return `ARRAY[${values.join(', ')}]`;
+    }
+
     if (typeof value === 'string') {
       return escapeString(value);
     }

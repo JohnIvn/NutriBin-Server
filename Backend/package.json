@@ -21,7 +21,8 @@
     "test:e2e": "jest --config ./test/e2e/jest-e2e.json",
     "test:email": "ts-node scripts/test-email.ts",
     "seed:admin": "ts-node scripts/seed-admin.ts",
-    "backup:create": "ts-node scripts/create-backup.ts"
+    "backup:create": "ts-node scripts/create-backup.ts",
+    "backup:restore": "ts-node scripts/restore-backup.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.13",

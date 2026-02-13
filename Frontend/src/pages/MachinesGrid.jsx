@@ -1,6 +1,19 @@
-import { useState, useEffect } from "react";
-import { User, Mail, Cpu, Grid3x3, Users, Search } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+  User,
+  Mail,
+  Cpu,
+  Grid3x3,
+  Users,
+  Search,
+  ChevronRight,
+  ExternalLink,
+  ShieldCheck,
+  Activity,
+  Filter,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
 import { useUser } from "@/contexts/UserContext";
@@ -11,6 +24,7 @@ function MachinesGrid() {
   const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("machines");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (user && user.role !== "admin" && user.role !== "staff") {
@@ -40,7 +54,7 @@ function MachinesGrid() {
   };
 
   // Group machines by machine_id
-  const groupMachinesByMachineId = () => {
+  const machinesByMachineId = useMemo(() => {
     const grouped = {};
     machines.forEach((record) => {
       if (!grouped[record.machine_id]) {
@@ -58,11 +72,25 @@ function MachinesGrid() {
         });
       }
     });
-    return Object.values(grouped);
-  };
+
+    let result = Object.values(grouped);
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      result = result.filter(
+        (m) =>
+          m.machine_id.toLowerCase().includes(s) ||
+          m.users.some(
+            (u) =>
+              `${u.first_name} ${u.last_name}`.toLowerCase().includes(s) ||
+              u.email.toLowerCase().includes(s),
+          ),
+      );
+    }
+    return result;
+  }, [machines, searchTerm]);
 
   // Group machines by user
-  const groupMachinesByUser = () => {
+  const machinesByUser = useMemo(() => {
     const grouped = {};
     machines.forEach((record) => {
       if (record.user_id) {
@@ -81,220 +109,287 @@ function MachinesGrid() {
         });
       }
     });
-    return Object.values(grouped);
-  };
 
-  const machinesByMachineId = groupMachinesByMachineId();
-  const machinesByUser = groupMachinesByUser();
+    let result = Object.values(grouped);
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      result = result.filter(
+        (u) =>
+          `${u.first_name} ${u.last_name}`.toLowerCase().includes(s) ||
+          u.email.toLowerCase().includes(s) ||
+          u.machines.some((m) => m.machine_id.toLowerCase().includes(s)),
+      );
+    }
+    return result;
+  }, [machines, searchTerm]);
 
   return (
-    <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
-      <section className="flex flex-col w-full px-4 md:px-8 pt-6 space-y-6 animate-in fade-in duration-500">
-        {/* header*/}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-[#4F6F52] pl-6">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[black]">
-              Machines Directory
+    <div className="w-full bg-[#FDFCFB] min-h-screen pb-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-[#4F6F52] font-semibold tracking-wider uppercase text-xs">
+              <ShieldCheck className="w-4 h-4" />
+              Infrastructure Management
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] tracking-tight">
+              Eco-Fleet <span className="text-[#4F6F52]">Directory</span>
             </h1>
-            <p className="text-sm text-muted-foreground italic mt-1">
-              Monitor and manage all NutriBin units.
+            <p className="text-gray-500 max-w-xl">
+              Real-time monitoring and administrative control for every NutriBin
+              unit across your global network.
             </p>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex bg-[#F3F4F1] p-1 rounded-xl border border-gray-200 shadow-inner">
             <button
               onClick={() => setViewMode("machines")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold transition-all duration-300 ${
                 viewMode === "machines"
-                  ? "bg-[#4F6F52] text-white shadow-md"
-                  : "bg-white text-[#4F6F52] border border-gray-200 hover:border-[#4F6F52]"
+                  ? "bg-white text-[#4F6F52] shadow-sm transform scale-[1.02]"
+                  : "text-gray-500 hover:text-[#4F6F52]"
               }`}
             >
               <Grid3x3 className="h-4 w-4" />
-              Machines
+              By Unit
             </button>
             <button
               onClick={() => setViewMode("users")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold transition-all duration-300 ${
                 viewMode === "users"
-                  ? "bg-[#4F6F52] text-white shadow-md"
-                  : "bg-white text-[#4F6F52] border border-gray-200 hover:border-[#4F6F52]"
+                  ? "bg-white text-[#4F6F52] shadow-sm transform scale-[1.02]"
+                  : "text-gray-500 hover:text-[#4F6F52]"
               }`}
             >
               <Users className="h-4 w-4" />
-              Users
+              By Client
             </button>
           </div>
         </div>
 
-        {/* machines grid*/}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center h-64 gap-3">
-            <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
-            <p className="text-[#4F6F52] font-medium">Loading Machines...</p>
+        {/* Search & Filter Bar */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-[#4F6F52] transition-colors" />
+            <input
+              type="text"
+              placeholder="Search by serial, name, or email..."
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:border-[#4F6F52] focus:ring-0 rounded-xl text-gray-800 placeholder-gray-400 transition-all font-medium"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-        ) : viewMode === "machines" ? (
-          // MACHINES VIEW - Group by machine, show users under each
-          <>
-            {machinesByMachineId.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-gray-400 font-medium bg-white rounded-xl border border-gray-100 shadow-sm">
-                <Search className="h-10 w-10 mb-2 opacity-20" />
-                No machines found.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {machinesByMachineId.map((machineGroup) => (
-                  <div
-                    key={machineGroup.machine_id}
-                    className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300"
-                  >
-                    <div
-                      onClick={() =>
-                        navigate(`/machine/${machineGroup.machine_id}`)
-                      }
-                      className="p-6 cursor-pointer hover:bg-gray-50 transition-colors group border-b border-gray-100"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#ECE3CE] flex items-center justify-center group-hover:bg-[#4F6F52] transition-colors">
-                          <Cpu className="h-6 w-6 text-[#4F6F52] group-hover:text-white transition-colors" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-lg text-[black] group-hover:text-[#4F6F52] transition-colors">
-                            Machine
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            {machineGroup.machine_id}
-                          </p>
-                        </div>
-                        <div className="ml-auto text-xs font-semibold bg-[#4F6F52]/10 text-[#4F6F52] px-3 py-1 rounded-full">
-                          {machineGroup.users.length}{" "}
-                          {machineGroup.users.length === 1 ? "User" : "Users"}
-                        </div>
-                      </div>
-                    </div>
-                    {machineGroup.users.length > 0 && (
-                      <div className="divide-y divide-gray-100">
-                        {machineGroup.users.map((userRecord, idx) => (
-                          <div
-                            key={idx}
-                            className="p-4 hover:bg-gray-50 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                  <User className="h-5 w-5 text-gray-600" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-[black]">
-                                    {userRecord.first_name}{" "}
-                                    {userRecord.last_name}
-                                  </p>
-                                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                                    <Mail className="h-3 w-3" />{" "}
-                                    {userRecord.email}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            {machinesByMachineId.length > 0 && (
-              <div className="text-center pb-8">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-white px-4 py-1 rounded-full border border-gray-100">
-                  Total Machines: {machinesByMachineId.length}
-                </span>
-              </div>
-            )}
-          </>
+          <button className="flex items-center justify-center gap-2 px-6 py-3 bg-[#4F6F52]/10 text-[#4F6F52] rounded-xl font-bold hover:bg-[#4F6F52] hover:text-white transition-all">
+            <Filter className="h-5 w-5" />
+            Filters
+          </button>
+        </div>
+
+        {/* Content Area */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-96 gap-4">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-[#4F6F52]/20 rounded-full" />
+              <div className="absolute top-0 w-16 h-16 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+            </div>
+            <p className="text-[#4F6F52] font-bold animate-pulse">
+              Syncing fleet data...
+            </p>
+          </div>
         ) : (
-          // USERS VIEW - Group by user, show machines under each
-          <>
-            {machinesByUser.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-gray-400 font-medium bg-white rounded-xl border border-gray-100 shadow-sm">
-                <Search className="h-10 w-10 mb-2 opacity-20" />
-                No users found.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {machinesByUser.map((userGroup) => (
-                  <div
-                    key={userGroup.user_id}
-                    className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300"
-                  >
-                    <div className="p-6 border-b border-gray-100 bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#ECE3CE] flex items-center justify-center">
-                          <User className="h-6 w-6 text-[#4F6F52]" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-lg text-[black]">
-                            {userGroup.first_name} {userGroup.last_name}
-                          </h3>
-                          <p className="text-sm text-gray-500 flex items-center gap-1">
-                            <Mail className="h-3 w-3" /> {userGroup.email}
-                          </p>
-                        </div>
-                        <div className="ml-auto text-xs font-semibold bg-[#4F6F52]/10 text-[#4F6F52] px-3 py-1 rounded-full">
-                          {userGroup.machines.length}{" "}
-                          {userGroup.machines.length === 1
-                            ? "Machine"
-                            : "Machines"}
-                        </div>
-                      </div>
-                    </div>
-                    {userGroup.machines.length > 0 && (
-                      <div className="divide-y divide-gray-100">
-                        {userGroup.machines.map((machineRecord, idx) => (
-                          <div
-                            key={idx}
-                            onClick={() =>
-                              navigate(`/machine/${machineRecord.machine_id}`)
-                            }
-                            className="p-4 hover:bg-gray-50 transition-colors cursor-pointer group"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-[#ECE3CE] flex items-center justify-center group-hover:bg-[#4F6F52] transition-colors">
-                                  <Cpu className="h-5 w-5 text-[#4F6F52] group-hover:text-white transition-colors" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-[black] group-hover:text-[#4F6F52] transition-colors">
-                                    Machine
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {machineRecord.machine_id}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            {machinesByUser.length > 0 && (
-              <div className="text-center pb-8">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-white px-4 py-1 rounded-full border border-gray-100">
-                  Total Users: {machinesByUser.length}
-                </span>
-              </div>
-            )}
-          </>
+          <div className="grid grid-cols-1 gap-6">
+            <AnimatePresence mode="popLayout">
+              {viewMode === "machines" ? (
+                machinesByMachineId.length === 0 ? (
+                  <NoResults
+                    icon={Cpu}
+                    text="No units found matching your criteria."
+                  />
+                ) : (
+                  machinesByMachineId.map((m, idx) => (
+                    <MachineCard
+                      key={m.machine_id}
+                      machine={m}
+                      index={idx}
+                      navigate={navigate}
+                    />
+                  ))
+                )
+              ) : machinesByUser.length === 0 ? (
+                <NoResults
+                  icon={Users}
+                  text="No clients found matching your criteria."
+                />
+              ) : (
+                machinesByUser.map((u, idx) => (
+                  <UserCard
+                    key={u.user_id}
+                    user={u}
+                    index={idx}
+                    navigate={navigate}
+                  />
+                ))
+              )}
+            </AnimatePresence>
+          </div>
         )}
       </section>
     </div>
   );
 }
 
-// sub-components for cleaner code
+function MachineCard({ machine, index, navigate }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#4F6F52]/30 transition-all duration-500 overflow-hidden group"
+    >
+      <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-gray-50">
+        {/* Machine Info */}
+        <div
+          onClick={() => navigate(`/machine/${machine.machine_id}`)}
+          className="p-6 lg:w-1/3 cursor-pointer hover:bg-[#FDFCFB] transition-colors"
+        >
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 rounded-2xl bg-[#ECE3CE] flex items-center justify-center group-hover:bg-[#4F6F52] transition-all duration-500 rotate-3 group-hover:rotate-0 shadow-sm">
+              <Cpu className="h-7 w-7 text-[#4F6F52] group-hover:text-white transition-colors" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-extrabold text-xl text-gray-900 group-hover:text-[#4F6F52] transition-colors">
+                  NutriBin
+                </h3>
+                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                  Active
+                </span>
+              </div>
+              <p className="text-sm font-mono text-gray-400 group-hover:text-[#4F6F52]/60 transition-colors uppercase">
+                {machine.machine_id}
+              </p>
+            </div>
+          </div>
+        </div>
 
-// Machine and User cards are rendered within the main component for flexibility
+        {/* Users Section */}
+        <div className="p-6 flex-1 bg-gray-50/30">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+              <Users className="w-3 h-3" />
+              Assigned Access ({machine.users.length})
+            </span>
+            {machine.users.length > 0 && (
+              <div className="flex -space-x-2">
+                {machine.users.slice(0, 3).map((u, i) => (
+                  <div
+                    key={i}
+                    className="w-7 h-7 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center text-[10px] font-bold text-[#4F6F52]"
+                  >
+                    {u.first_name[0]}
+                  </div>
+                ))}
+                {machine.users.length > 3 && (
+                  <div className="w-7 h-7 rounded-full bg-[#4F6F52] border-2 border-white flex items-center justify-center text-[10px] font-bold text-white">
+                    +{machine.users.length - 3}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {machine.users.length > 0 ? (
+              machine.users.map((u, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm flex items-center gap-2 hover:border-[#4F6F52] transition-colors"
+                >
+                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="text-xs font-bold text-gray-700">
+                    {u.first_name} {u.last_name}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <span className="text-xs text-gray-400 italic">
+                No assigned users
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Action Panel */}
+        <div className="p-6 lg:w-48 flex items-center justify-center bg-[#FDFCFB]">
+          <button
+            onClick={() => navigate(`/machine/${machine.machine_id}`)}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold bg-[#4F6F52] text-white hover:bg-[#3A4D39] shadow-lg shadow-[#4F6F52]/20 active:scale-95 transition-all"
+          >
+            Metrics
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function UserCard({ user, index, navigate }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.05 }}
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row group hover:shadow-lg transition-all"
+    >
+      <div className="p-6 md:w-1/3 flex items-center gap-4 bg-gray-50/50">
+        <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100">
+          <User className="h-8 w-8 text-[#4F6F52]" />
+        </div>
+        <div className="min-w-0">
+          <h3 className="font-extrabold text-gray-900 truncate">
+            {user.first_name} {user.last_name}
+          </h3>
+          <p className="text-xs text-gray-500 flex items-center gap-1 truncate">
+            <Mail className="h-3 w-3" /> {user.email}
+          </p>
+        </div>
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col justify-center">
+        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+          <Activity className="w-3 h-3 text-emerald-500" />
+          Active Units ({user.machines.length})
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {user.machines.map((m, idx) => (
+            <button
+              key={idx}
+              onClick={() => navigate(`/machine/${m.machine_id}`)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#ECE3CE]/30 border border-[#ECE3CE] rounded-xl text-xs font-bold text-[#4F6F52] hover:bg-[#4F6F52] hover:text-white hover:border-[#4F6F52] transition-all group/btn"
+            >
+              <Cpu className="h-3 w-3" />
+              {m.machine_id}
+              <ExternalLink className="h-3 w-3 opacity-0 group-hover/btn:opacity-100" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function NoResults({ icon: Icon, text }) {
+  return (
+    <div className="flex flex-col items-center justify-center p-20 text-gray-400 font-medium bg-white rounded-2xl border border-dashed border-gray-200">
+      <Icon className="h-16 w-16 mb-4 opacity-10" />
+      <p className="text-lg">{text}</p>
+      <p className="text-sm opacity-60">
+        Try adjusting your filters or search terms.
+      </p>
+    </div>
+  );
+}
+
 export default MachinesGrid;

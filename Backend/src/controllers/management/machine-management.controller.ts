@@ -52,7 +52,7 @@ export class MachineManagementController {
     const client = this.databaseService.getClient();
 
     try {
-      // Get machine owner info
+      // Get all users associated with the machine and the machine details
       const machineResult = await client.query(
         `SELECT 
           m.machine_id,
@@ -66,8 +66,7 @@ export class MachineManagementController {
          FROM machines m
          LEFT JOIN machine_customers mc ON m.machine_id = mc.machine_id
          LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
-         WHERE m.machine_id = $1
-         LIMIT 1`,
+         WHERE m.machine_id = $1`,
         [machineId],
       );
 
@@ -75,13 +74,16 @@ export class MachineManagementController {
         throw new NotFoundException('Machine not found');
       }
 
-      const machineInfo = machineResult.rows[0] as {
-        machine_id: string;
-        user_id: string | null;
-        first_name: string | null;
-        last_name: string | null;
-        email: string | null;
-      };
+      // Extract machine info from the first row and all users
+      const machineInfo = machineResult.rows[0];
+      const users = machineResult.rows
+        .filter((row) => row.user_id)
+        .map((row) => ({
+          user_id: row.user_id,
+          first_name: row.first_name,
+          last_name: row.last_name,
+          email: row.email,
+        }));
 
       // Get fertilizer analytics (NPK data)
       const fertilizerResult = await client.query(
@@ -107,7 +109,7 @@ export class MachineManagementController {
       );
 
       // Calculate component status from machines table
-      const machineComponents = machineInfo as Record<string, unknown>;
+      const machineComponents = machineInfo as Record<string, any>;
       let workingComponents = 0;
       let totalComponents = 0;
 
@@ -145,6 +147,7 @@ export class MachineManagementController {
         ok: true,
         machine: {
           ...machineInfo,
+          users,
           fertilizer_analytics: fertilizerResult.rows,
           error_rate: errorRate.toFixed(2),
         },

@@ -74,9 +74,7 @@ function Account() {
                 <div className="text-sm font-bold text-[#3A4D39]">
                   {user?.first_name} {user?.last_name}
                 </div>
-                <div className="text-[12px] text-gray-500">
-                  {user?.email}
-                </div>
+                <div className="text-[12px] text-gray-500">{user?.email}</div>
               </div>
             </div>
 
@@ -227,7 +225,7 @@ function Account() {
             <div className="flex flex-wrap gap-4 pt-4">
               <Button
                 type="button"
-                className={`${editMode ? "hidden" : "inline-flex"} min-w-[140px] h-11 bg-[#4F6F52] hover:bg-[#A34906] text-white cursor-pointer`}
+                className={`${editMode ? "hidden" : "inline-flex"} min-w-[140px] h-11 bg-[#4F6F52] hover:bg-[#3A4335] text-white cursor-pointer`}
                 onClick={() => setEditMode(true)}
               >
                 Edit Profile

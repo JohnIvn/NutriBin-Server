@@ -19,7 +19,7 @@ type RepairRow = {
   repair_id: string;
   user_id: string | null;
   machine_id: string | null;
-  repair_status: string;
+  status: string;
   date_created: string;
   first_name?: string | null;
   last_name?: string | null;
@@ -89,7 +89,15 @@ export class RepairManagementController {
 
     try {
       const result = await client.query<RepairRow>(
-        `SELECT r.repair_id, r.user_id, r.machine_id, r.repair_status, r.date_created, uc.first_name, uc.last_name, r.description
+        `SELECT 
+          r.repair_id, 
+          r.user_id, 
+          r.machine_id, 
+          r.repair_status as status, 
+          r.date_created, 
+          uc.first_name, 
+          uc.last_name, 
+          r.description
          FROM repair r
          LEFT JOIN user_customer uc ON r.user_id = uc.customer_id
          ORDER BY r.date_created DESC`,
@@ -99,7 +107,8 @@ export class RepairManagementController {
         ok: true,
         repairs: result.rows,
       };
-    } catch {
+    } catch (error) {
+      console.error('GetAllRepairs Error:', error);
       throw new InternalServerErrorException('Failed to fetch repair list');
     }
   }
@@ -110,9 +119,16 @@ export class RepairManagementController {
 
     try {
       const result = await client.query<RepairRow>(
-        `SELECT r.repair_id, r.user_id, r.machine_id, r.repair_status, r.date_created, uc.first_name, uc.last_name, r.description, ${repairComponentColumns
-          .map((c) => `m.${c}`)
-          .join(', ')}
+        `SELECT 
+          r.repair_id, 
+          r.user_id, 
+          r.machine_id, 
+          r.repair_status as status, 
+          r.date_created, 
+          uc.first_name, 
+          uc.last_name, 
+          r.description, 
+          ${repairComponentColumns.map((c) => `m.${c}`).join(', ')}
          FROM repair r
          LEFT JOIN user_customer uc ON r.user_id = uc.customer_id
          LEFT JOIN machines m ON r.machine_id = m.machine_id
@@ -132,6 +148,7 @@ export class RepairManagementController {
       if (error instanceof NotFoundException) {
         throw error;
       }
+      console.error('GetRepairById Error:', error);
       throw new InternalServerErrorException('Failed to fetch repair');
     }
   }
@@ -142,26 +159,40 @@ export class RepairManagementController {
     createData: {
       user_id?: string;
       machine_id?: string;
+      description?: string;
       repair_status?: string;
     },
   ) {
     const client = this.databaseService.getClient();
 
     try {
-      const { user_id, machine_id, repair_status } = createData;
+      const { user_id, machine_id, description, repair_status } = createData;
+
+      if (!machine_id) {
+        throw new BadRequestException('machine_id is required');
+      }
 
       const result = await client.query<RepairRow>(
-        `INSERT INTO repair (user_id, machine_id, repair_status)
-         VALUES ($1, $2, $3)
-         RETURNING repair_id, user_id, machine_id, repair_status, date_created`,
-        [user_id || null, machine_id || null, repair_status || 'active'],
+        `INSERT INTO repair (user_id, machine_id, description, repair_status)
+         VALUES ($1, $2, $3, $4)
+         RETURNING repair_id, user_id, machine_id, repair_status as status, date_created`,
+        [
+          user_id || null,
+          machine_id,
+          description || null,
+          repair_status || 'active',
+        ],
       );
 
       return {
         ok: true,
         repair: result.rows[0],
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error('CreateRepair Error:', error);
       throw new InternalServerErrorException('Failed to create repair');
     }
   }
@@ -173,20 +204,21 @@ export class RepairManagementController {
     updateData: {
       user_id?: string;
       machine_id?: string;
+      description?: string;
       repair_status?: string;
     },
   ) {
     const client = this.databaseService.getClient();
 
     try {
-      const { user_id, machine_id, repair_status } = updateData;
+      const { user_id, machine_id, description, repair_status } = updateData;
 
       const result = await client.query<RepairRow>(
         `UPDATE repair
-         SET user_id = $1, machine_id = $2, repair_status = $3
-         WHERE repair_id = $4
-         RETURNING repair_id, user_id, machine_id, repair_status, date_created`,
-        [user_id, machine_id, repair_status, id],
+         SET user_id = $1, machine_id = $2, description = $3, repair_status = $4
+         WHERE repair_id = $5
+         RETURNING repair_id, user_id, machine_id, repair_status as status, date_created`,
+        [user_id, machine_id, description, repair_status, id],
       );
 
       if (result.rows.length === 0) {
@@ -201,6 +233,7 @@ export class RepairManagementController {
       if (error instanceof NotFoundException) {
         throw error;
       }
+      console.error('UpdateRepair Error:', error);
       throw new InternalServerErrorException('Failed to update repair');
     }
   }
@@ -223,7 +256,7 @@ export class RepairManagementController {
         `UPDATE repair
          SET repair_status = $1
          WHERE repair_id = $2
-         RETURNING repair_id, user_id, machine_id, repair_status, date_created`,
+         RETURNING repair_id, user_id, machine_id, repair_status as status, description, date_created`,
         [status, id],
       );
 
@@ -237,7 +270,7 @@ export class RepairManagementController {
       try {
         if (
           ['accepted', 'cancelled', 'postponed'].includes(
-            (repair.repair_status || '').toLowerCase(),
+            (status || '').toLowerCase(),
           ) &&
           repair.user_id
         ) {
@@ -255,7 +288,7 @@ export class RepairManagementController {
               await this.mailer.sendRepairNotification(to, {
                 machineId,
                 issueType,
-                status: repair.repair_status,
+                status: status,
                 description: repair.description ?? undefined,
               });
             }
@@ -276,6 +309,7 @@ export class RepairManagementController {
       ) {
         throw error;
       }
+      console.error('UpdateRepairStatus Error:', error);
       throw new InternalServerErrorException('Failed to update repair status');
     }
   }
@@ -302,6 +336,7 @@ export class RepairManagementController {
       if (error instanceof NotFoundException) {
         throw error;
       }
+      console.error('DeleteRepair Error:', error);
       throw new InternalServerErrorException('Failed to delete repair');
     }
   }

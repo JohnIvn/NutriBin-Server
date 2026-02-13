@@ -431,7 +431,7 @@ function Analytics() {
                   </span>
                 </Link>
                 <Link
-                  to="/repair"
+                  to="/repairs"
                   className="flex items-center gap-3 p-3 rounded-md border border-[#ECE3CE] hover:shadow-md"
                 >
                   <Wrench className="h-5 w-5 text-[#4F6F52]" />

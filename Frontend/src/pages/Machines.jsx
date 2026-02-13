@@ -16,6 +16,7 @@ import {
   History,
   ShieldAlert,
   HardDrive,
+  Ban,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -172,7 +173,7 @@ function Machines() {
   const totalPages = Math.ceil(filteredRepairs.length / entriesCount);
 
   const stats = {
-    pending: repairList.filter((r) => r.status === "pending").length,
+    pending: repairList.filter((r) => r.status === "active").length,
     active: repairList.filter((r) => r.status === "accepted").length,
     total: repairList.length,
   };
@@ -297,11 +298,13 @@ function Machines() {
                     <div className="flex items-center gap-5 lg:w-1/4">
                       <div
                         className={`p-4 rounded-2xl ${
-                          repair.status === "pending"
+                          repair.status === "active"
                             ? "bg-amber-50 text-amber-600"
                             : repair.status === "accepted"
                               ? "bg-emerald-50 text-emerald-600"
-                              : "bg-gray-50 text-gray-400"
+                              : repair.status === "cancelled"
+                                ? "bg-rose-50 text-rose-600"
+                                : "bg-gray-50 text-gray-400"
                         }`}
                       >
                         <ShieldAlert className="w-6 h-6" />
@@ -346,23 +349,29 @@ function Machines() {
                         </span>
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-                            repair.status === "pending"
+                            repair.status === "active"
                               ? "bg-amber-100 text-amber-700"
                               : repair.status === "accepted"
                                 ? "bg-emerald-100 text-emerald-700"
-                                : "bg-gray-100 text-gray-600"
+                                : repair.status === "cancelled"
+                                  ? "bg-rose-100 text-rose-700"
+                                  : "bg-gray-100 text-gray-600"
                           }`}
                         >
                           <div
                             className={`w-1.5 h-1.5 rounded-full ${
-                              repair.status === "pending"
+                              repair.status === "active"
                                 ? "bg-amber-500 animate-pulse"
                                 : repair.status === "accepted"
                                   ? "bg-emerald-500"
-                                  : "bg-gray-400"
+                                  : repair.status === "cancelled"
+                                    ? "bg-rose-500"
+                                    : "bg-gray-400"
                             }`}
                           />
-                          {repair.status}
+                          {repair.status === "active"
+                            ? "active"
+                            : repair.status}
                         </div>
                       </div>
                     </div>
@@ -371,7 +380,7 @@ function Machines() {
                     <div className="flex items-center justify-end gap-3 lg:w-48">
                       <button
                         onClick={() =>
-                          navigate(`/machines/${repair.machine_id}`)
+                          navigate(`/machine/${repair.machine_id}`)
                         }
                         className="p-3 rounded-xl bg-[#FAF9F6] text-gray-400 hover:text-[#4F6F52] hover:bg-[#4F6F52]/10 transition-all flex items-center gap-2 group/btn"
                       >
@@ -382,9 +391,25 @@ function Machines() {
                       </button>
 
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="p-3 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-gray-600 hover:shadow-md transition-all">
-                            <MoreHorizontal className="w-5 h-5" />
+                        <DropdownMenuTrigger
+                          asChild
+                          disabled={["accepted", "cancelled"].includes(
+                            repair.status,
+                          )}
+                        >
+                          <button
+                            disabled={["accepted", "cancelled"].includes(
+                              repair.status,
+                            )}
+                            className="p-3 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-gray-600 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"
+                          >
+                            {["accepted", "cancelled"].includes(
+                              repair.status,
+                            ) ? (
+                              <Ban className="w-5 h-5 text-rose-300" />
+                            ) : (
+                              <MoreHorizontal className="w-5 h-5" />
+                            )}
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent

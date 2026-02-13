@@ -1,6 +1,6 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 export const machinesFilter = z.object({
-	count: z.number().min(10).max(50),
-	term: z.string(),
-})
+  count: z.coerce.number().min(5).max(100),
+  term: z.string().optional().or(z.literal("")),
+});

@@ -12,25 +12,47 @@ export class EmissionsController {
   constructor(private readonly databaseService: DatabaseService) {}
 
   @Get('summary')
-  async getEmissionsSummary() {
+  async getEmissionsSummary(@Query('date') date?: string) {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const selectedDate = date || new Date().toISOString().split('T')[0];
+
+      // Get hourly averages for the selected date
+      const result = await client.query(
+        `
         SELECT 
-          nitrogen,
-          methane,
-          air_quality,
-          carbon_monoxide,
-          combustible_gases,
-          date_created
+          AVG(CASE WHEN methane ~ '^[0-9.]+$' THEN methane::numeric ELSE NULL END) as methane,
+          AVG(CASE WHEN air_quality ~ '^[0-9.]+$' THEN air_quality::numeric ELSE NULL END) as air_quality,
+          AVG(CASE WHEN carbon_monoxide ~ '^[0-9.]+$' THEN carbon_monoxide::numeric ELSE NULL END) as carbon_monoxide,
+          AVG(CASE WHEN combustible_gases ~ '^[0-9.]+$' THEN combustible_gases::numeric ELSE NULL END) as combustible_gases,
+          AVG(CASE WHEN nitrogen ~ '^[0-9.]+$' THEN nitrogen::numeric ELSE NULL END) as nitrogen,
+          DATE_TRUNC('hour', date_created) as time
         FROM fertilizer_analytics
-        ORDER BY date_created DESC
-        LIMIT 20
-      `);
+        WHERE DATE(date_created) = $1
+        GROUP BY time
+        ORDER BY time ASC
+      `,
+        [selectedDate],
+      );
+
+      // Also get the latest reading for global context if the requested date is today
+      let latest = null;
+      if (selectedDate === new Date().toISOString().split('T')[0]) {
+        const latestResult = await client.query(`
+          SELECT 
+            nitrogen, methane, air_quality, carbon_monoxide, combustible_gases, date_created
+          FROM fertilizer_analytics
+          ORDER BY date_created DESC
+          LIMIT 1
+        `);
+        latest = latestResult.rows[0];
+      }
 
       return {
         ok: true,
-        data: result.rows.reverse(),
+        data: result.rows,
+        latest,
+        selectedDate,
       };
     } catch (error) {
       console.error('Emissions Summary Error:', error);
@@ -41,10 +63,14 @@ export class EmissionsController {
   }
 
   @Get('devices')
-  async getDeviceEmissions() {
+  async getDeviceEmissions(@Query('date') date?: string) {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const selectedDate = date || new Date().toISOString().split('T')[0];
+
+      // Fetch the latest reading for each machine on the selected date
+      const result = await client.query(
+        `
         SELECT DISTINCT ON (m.machine_id)
           m.machine_id,
           CASE 
@@ -60,13 +86,16 @@ export class EmissionsController {
         FROM machines m
         LEFT JOIN machine_customers mc ON m.machine_id = mc.machine_id
         LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
-        LEFT JOIN fertilizer_analytics fa ON m.machine_id = fa.machine_id
+        LEFT JOIN fertilizer_analytics fa ON m.machine_id = fa.machine_id AND DATE(fa.date_created) = $1
         ORDER BY m.machine_id, fa.date_created DESC
-      `);
+      `,
+        [selectedDate],
+      );
 
       return {
         ok: true,
         devices: result.rows,
+        selectedDate,
       };
     } catch (error) {
       console.error('Device Emissions Error:', error);

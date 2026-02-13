@@ -21,6 +21,7 @@ import { LoginMonitorController } from './controllers/management/login-monitor.c
 import { LoginRecordsController } from './controllers/management/login-records.controller';
 import { MfaRecordsController } from './controllers/management/mfa-records.controller';
 import { SerialManagementController } from './controllers/management/serial-management.controller';
+import { DatabaseExportController } from './controllers/management/database-export.controller';
 import { IprogSmsController } from './controllers/iprogsms.controller';
 import { BackupController } from './controllers/backup.controller';
 import { EmissionsController } from './controllers/emissions.controller';
@@ -59,6 +60,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
     LoginRecordsController,
     MfaRecordsController,
     SerialManagementController,
+    DatabaseExportController,
     CodesController,
     AnnouncementsController,
     SalesController,

@@ -35,16 +35,11 @@ export class BackupService {
   }
 
   /**
-   * Creates a full SQL backup of all tables and data from Supabase
+   * Generates a full SQL backup of all tables and data as a string
    * @param client - PostgreSQL client instance
-   * @returns Path to the created backup file
+   * @returns SQL content string
    */
-  async createFullBackup(client: Client): Promise<string> {
-    console.log(chalk.yellow('[BACKUP] Starting full database backup...'));
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupFilePath = path.join(this.backupDir, `backup_${timestamp}.sql`);
-
+  async generateFullBackupSql(client: Client): Promise<string> {
     let sqlContent = '';
     sqlContent += `-- NutriBin Server Database Backup\n`;
     sqlContent += `-- Created: ${new Date().toISOString()}\n`;
@@ -61,16 +56,10 @@ export class BackupService {
       `);
 
       const tables = tablesResult.rows.map((row) => row.table_name);
-      console.log(
-        chalk.cyan(`[BACKUP] Found ${tables.length} tables to backup`),
-      );
+      console.log(chalk.cyan(`[BACKUP] Found ${tables.length} tables to dump`));
 
       // Backup each table
       for (const tableName of tables) {
-        console.log(
-          chalk.blueBright(`[BACKUP] Backing up table: ${tableName}`),
-        );
-
         // Get table schema (CREATE TABLE statement)
         const schemaSQL = await this.getTableSchema(client, tableName);
         sqlContent += `\n-- Table: ${tableName}\n`;
@@ -84,6 +73,27 @@ export class BackupService {
         }
       }
 
+      return sqlContent;
+    } catch (error) {
+      console.error(chalk.red('[BACKUP] Error generating SQL:'), error);
+      throw error;
+    }
+  }
+
+  /**
+   * Creates a full SQL backup of all tables and data from Supabase
+   * @param client - PostgreSQL client instance
+   * @returns Path to the created backup file
+   */
+  async createFullBackup(client: Client): Promise<string> {
+    console.log(chalk.yellow('[BACKUP] Starting full database backup...'));
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupFilePath = path.join(this.backupDir, `backup_${timestamp}.sql`);
+
+    try {
+      const sqlContent = await this.generateFullBackupSql(client);
+
       // Write to file
       fs.writeFileSync(backupFilePath, sqlContent, 'utf-8');
 
@@ -92,7 +102,7 @@ export class BackupService {
 
       return backupFilePath;
     } catch (error) {
-      console.error(chalk.red('[BACKUP] Error creating backup:'), error);
+      console.error(chalk.red('[BACKUP] Error creating backup file:'), error);
       throw error;
     }
   }

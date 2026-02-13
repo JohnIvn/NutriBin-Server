@@ -9,6 +9,7 @@ import {
   Wrench,
   DollarSign,
   HardDrive,
+  Database,
   Beaker,
   Cloud,
   Megaphone,
@@ -257,6 +258,13 @@ export default function Sidebar() {
               icon={Archive}
               label="Archives"
               active={isActive("/archives")}
+              collapsed={shouldCollapse}
+            />
+            <NavItem
+              to="/backup"
+              icon={Database}
+              label="Backup & Recovery"
+              active={isActive("/backup")}
               collapsed={shouldCollapse}
             />
           </>

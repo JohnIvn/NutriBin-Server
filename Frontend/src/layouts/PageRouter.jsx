@@ -17,6 +17,7 @@ import Staff from "@/pages/Staff";
 import Users from "@/pages/Users";
 import Serial from "@/pages/Serial";
 import Archives from "@/pages/Archives";
+import Backup from "@/pages/Backup";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import About from "@/pages/About";
 import Faqs from "@/pages/Faqs";
@@ -118,8 +119,14 @@ function PageRouter() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/dashboard"
+      <Route        path="/backup"
+        element={
+          <ProtectedRoute>
+            <Backup />
+          </ProtectedRoute>
+        }
+      />
+      <Route        path="/dashboard"
         element={
           <ProtectedRoute>
             <Analytics />

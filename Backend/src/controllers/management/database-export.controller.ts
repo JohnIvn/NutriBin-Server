@@ -28,7 +28,6 @@ export class DatabaseExportController {
 
     try {
       const client = this.databaseService.getClient();
-      const sqlContent = await this.backupService.generateFullBackupSql(client);
 
       const timestamp = new Date()
         .toISOString()
@@ -42,17 +41,28 @@ export class DatabaseExportController {
         'Content-Disposition',
         `attachment; filename="${filename}"`,
       );
+      res.setHeader('Transfer-Encoding', 'chunked');
 
-      // Send the SQL content
-      return res.send(sqlContent);
+      // Stream the SQL content directly to the response
+      for await (const chunk of this.backupService.generateFullBackupSqlStream(
+        client,
+      )) {
+        res.write(chunk);
+      }
+
+      return res.end();
     } catch (error) {
       console.error(
         chalk.red('[EXPORT] Failed to generate snapshot for download:'),
         error,
       );
-      throw new InternalServerErrorException(
-        'Failed to generate database export',
-      );
+      if (!res.headersSent) {
+        throw new InternalServerErrorException(
+          'Failed to generate database export',
+        );
+      } else {
+        res.end();
+      }
     }
   }
 }

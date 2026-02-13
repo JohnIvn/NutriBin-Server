@@ -35,15 +35,13 @@ export class BackupService {
   }
 
   /**
-   * Generates a full SQL backup of all tables and data as a string
+   * Generates a full SQL backup of all tables and data as a stream (generator)
    * @param client - PostgreSQL client instance
-   * @returns SQL content string
    */
-  async generateFullBackupSql(client: Client): Promise<string> {
-    let sqlContent = '';
-    sqlContent += `-- NutriBin Server Database Backup\n`;
-    sqlContent += `-- Created: ${new Date().toISOString()}\n`;
-    sqlContent += `-- Database: Supabase PostgreSQL\n\n`;
+  async *generateFullBackupSqlStream(client: Client): AsyncGenerator<string> {
+    yield `-- NutriBin Server Database Backup\n`;
+    yield `-- Created: ${new Date().toISOString()}\n`;
+    yield `-- Database: Supabase PostgreSQL\n\n`;
 
     try {
       // Get all tables in the public schema
@@ -62,22 +60,34 @@ export class BackupService {
       for (const tableName of tables) {
         // Get table schema (CREATE TABLE statement)
         const schemaSQL = await this.getTableSchema(client, tableName);
-        sqlContent += `\n-- Table: ${tableName}\n`;
-        sqlContent += `${schemaSQL}\n\n`;
+        yield `\n-- Table: ${tableName}\n`;
+        yield `${schemaSQL}\n\n`;
 
         // Get table data (INSERT statements)
-        const dataSQL = await this.getTableData(client, tableName);
-        if (dataSQL) {
-          sqlContent += dataSQL;
-          sqlContent += `\n\n`;
+        for await (const dataChunk of this.getTableDataStream(
+          client,
+          tableName,
+        )) {
+          yield dataChunk;
         }
+        yield `\n\n`;
       }
-
-      return sqlContent;
     } catch (error) {
-      console.error(chalk.red('[BACKUP] Error generating SQL:'), error);
+      console.error(chalk.red('[BACKUP] Error generating SQL stream:'), error);
       throw error;
     }
+  }
+
+  /**
+   * Generates a full SQL backup of all tables and data as a string
+   * @deprecated Use generateFullBackupSqlStream for large databases
+   */
+  async generateFullBackupSql(client: Client): Promise<string> {
+    let sql = '';
+    for await (const chunk of this.generateFullBackupSqlStream(client)) {
+      sql += chunk;
+    }
+    return sql;
   }
 
   /**
@@ -92,10 +102,13 @@ export class BackupService {
     const backupFilePath = path.join(this.backupDir, `backup_${timestamp}.sql`);
 
     try {
-      const sqlContent = await this.generateFullBackupSql(client);
+      const writeStream = fs.createWriteStream(backupFilePath);
 
-      // Write to file
-      fs.writeFileSync(backupFilePath, sqlContent, 'utf-8');
+      for await (const chunk of this.generateFullBackupSqlStream(client)) {
+        writeStream.write(chunk);
+      }
+
+      writeStream.end();
 
       console.log(chalk.green(`[BACKUP] Backup completed successfully!`));
       console.log(chalk.green(`[BACKUP] File saved to: ${backupFilePath}`));
@@ -235,12 +248,12 @@ export class BackupService {
   }
 
   /**
-   * Gets INSERT statements for all data in a table
+   * Gets INSERT statements for all data in a table as a stream
    */
-  private async getTableData(
+  private async *getTableDataStream(
     client: Client,
     tableName: string,
-  ): Promise<string> {
+  ): AsyncGenerator<string> {
     try {
       // Get all data from the table
       const dataResult = await client.query<Record<string, unknown>>(
@@ -248,20 +261,21 @@ export class BackupService {
       );
 
       if (dataResult.rows.length === 0) {
-        return `-- No data in table ${tableName}\n`;
+        yield `-- No data in table ${tableName}\n`;
+        return;
       }
 
       const columns = Object.keys(dataResult.rows[0]);
       const columnList = columns.map((col) => `"${col}"`).join(', ');
 
-      let insertSQL = `-- Data for table ${tableName}\n`;
+      yield `-- Data for table ${tableName}\n`;
 
-      // Generate INSERT statements in batches for better performance
+      // Generate INSERT statements in batches
       const batchSize = 100;
       for (let i = 0; i < dataResult.rows.length; i += batchSize) {
         const batch = dataResult.rows.slice(i, i + batchSize);
 
-        insertSQL += `INSERT INTO "${tableName}" (${columnList}) VALUES\n`;
+        let insertSQL = `INSERT INTO "${tableName}" (${columnList}) VALUES\n`;
 
         const values = batch.map((row) => {
           const rowValues = columns
@@ -273,6 +287,7 @@ export class BackupService {
 
         insertSQL += values.join(',\n');
         insertSQL += `;\n\n`;
+        yield insertSQL;
       }
 
       console.log(
@@ -280,14 +295,12 @@ export class BackupService {
           `  └─ Backed up ${dataResult.rows.length} rows from ${tableName}`,
         ),
       );
-
-      return insertSQL;
     } catch (error) {
       console.error(
         chalk.red(`[BACKUP] Error getting data for table ${tableName}:`),
         error,
       );
-      return `-- Error backing up data for table ${tableName}\n`;
+      yield `-- Error backing up data for table ${tableName}\n`;
     }
   }
 

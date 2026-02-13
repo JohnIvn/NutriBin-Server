@@ -11,11 +11,13 @@ export class CameraLogsController {
   constructor(private readonly databaseService: DatabaseService) {}
 
   @Get()
-  async getCameraLogs(@Query('limit') limit = 50) {
+  async getCameraLogs(
+    @Query('limit') limit = 100,
+    @Query('classification') classification?: string,
+  ) {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(
-        `
+      let query = `
         SELECT 
           cl.camera_log_id,
           cl.machine_id,
@@ -26,11 +28,17 @@ export class CameraLogsController {
           uc.last_name
         FROM camera_logs cl
         LEFT JOIN user_customer uc ON cl.customer_id = uc.customer_id
-        ORDER BY cl.date_created DESC
-        LIMIT $1
-      `,
-        [limit],
-      );
+      `;
+
+      const params: any[] = [limit];
+      if (classification && classification !== 'all') {
+        query += ` WHERE cl.classification = $2`;
+        params.push(classification);
+      }
+
+      query += ` ORDER BY cl.date_created DESC LIMIT $1`;
+
+      const result = await client.query(query, params);
 
       return {
         ok: true,
@@ -46,7 +54,7 @@ export class CameraLogsController {
   async getSummary() {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const summaryResult = await client.query(`
         SELECT 
           classification,
           COUNT(*) as count
@@ -54,9 +62,20 @@ export class CameraLogsController {
         GROUP BY classification
       `);
 
+      const trendResult = await client.query(`
+        SELECT 
+          DATE_TRUNC('day', date_created) as date,
+          COUNT(*) as count
+        FROM camera_logs
+        WHERE date_created > NOW() - INTERVAL '7 days'
+        GROUP BY DATE_TRUNC('day', date_created)
+        ORDER BY date ASC
+      `);
+
       return {
         ok: true,
-        summary: result.rows,
+        summary: summaryResult.rows,
+        trends: trendResult.rows,
       };
     } catch (error) {
       console.error('Camera Summary Error:', error);

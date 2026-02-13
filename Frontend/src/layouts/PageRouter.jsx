@@ -25,6 +25,7 @@ import Socials from "@/pages/Socials";
 import Studies from "@/pages/Studies";
 import Guide from "@/pages/Guide";
 import Announcements from "@/pages/Announcements";
+import MachineNotifications from "@/pages/MachineNotifications";
 import Emissions from "@/pages/Emissions";
 import CameraLogs from "@/pages/CameraLogs";
 import Home from "@/pages/Home";
@@ -193,6 +194,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Announcements />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/machine-notifications"
+        element={
+          <ProtectedRoute>
+            <MachineNotifications />
           </ProtectedRoute>
         }
       />

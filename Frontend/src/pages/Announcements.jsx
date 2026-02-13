@@ -81,7 +81,6 @@ export default function Announcements() {
   const [body, setBody] = useState("");
   const [priority, setPriority] = useState("medium");
   const [notifyWebsite, setNotifyWebsite] = useState(false);
-  const [notifyApp, setNotifyApp] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [confirm, setConfirm] = useState({
@@ -96,7 +95,6 @@ export default function Announcements() {
 
     const notified = [];
     if (notifyWebsite) notified.push("website");
-    if (notifyApp) notified.push("app");
 
     const payload = {
       title: title.trim(),
@@ -147,12 +145,8 @@ export default function Announcements() {
             toast.success("Announcement created successfully");
           }
 
-          if (notifyWebsite && notifyApp) {
-            toast.success("Notified: website + application");
-          } else if (notifyWebsite) {
+          if (notifyWebsite) {
             toast.success("Notified website users");
-          } else if (notifyApp) {
-            toast.success("Notified app users");
           }
 
           // Reset form
@@ -160,7 +154,6 @@ export default function Announcements() {
           setBody("");
           setPriority("medium");
           setNotifyWebsite(false);
-          setNotifyApp(false);
           setShowCreateForm(false);
           setEditId(null);
         } else {
@@ -347,32 +340,6 @@ export default function Announcements() {
                             Notify Website Users
                           </span>
                         </label>
-
-                        <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
-                          <Checkbox
-                            checked={notifyApp}
-                            onCheckedChange={(v) => setNotifyApp(Boolean(v))}
-                          />
-                          <Smartphone className="h-4 w-4 text-[#4F6F52]" />
-                          <span className="text-sm font-medium">
-                            Notify Mobile App Users
-                          </span>
-                        </label>
-
-                        <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-gray-200 hover:border-[#4F6F52]/50 cursor-pointer transition-all">
-                          <Checkbox
-                            checked={notifyWebsite && notifyApp}
-                            onCheckedChange={(v) => {
-                              const checked = Boolean(v);
-                              setNotifyWebsite(checked);
-                              setNotifyApp(checked);
-                            }}
-                          />
-                          <Bell className="h-4 w-4 text-[#4F6F52]" />
-                          <span className="text-sm font-medium">
-                            Notify All Platforms
-                          </span>
-                        </label>
                       </div>
                     </div>
 
@@ -393,7 +360,6 @@ export default function Announcements() {
                           setBody("");
                           setPriority("medium");
                           setNotifyWebsite(false);
-                          setNotifyApp(false);
                           setShowCreateForm(false);
                           setEditId(null);
                         }}
@@ -490,7 +456,6 @@ export default function Announcements() {
                               setBody(a.body || "");
                               setPriority(a.priority || "medium");
                               setNotifyWebsite(a.notified?.includes("website"));
-                              setNotifyApp(a.notified?.includes("app"));
                               setEditId(a.id);
                               setShowCreateForm(true);
                             }}
@@ -527,9 +492,6 @@ export default function Announcements() {
                           >
                             {platform === "website" && (
                               <Globe className="h-3 w-3 mr-1" />
-                            )}
-                            {platform === "app" && (
-                              <Smartphone className="h-3 w-3 mr-1" />
                             )}
                             {platform}
                           </Badge>

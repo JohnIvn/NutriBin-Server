@@ -10,6 +10,7 @@ import { ArchiveManagementController } from './controllers/management/archive-ma
 import { MachineManagementController } from './controllers/management/machine-management.controller';
 import { MachineHealthController } from './controllers/management/machine-health.controller';
 import { StatusController } from './controllers/management/status.controller';
+import { MachineNotificationsController } from './controllers/management/machine-notifications.controller';
 import { SettingsController } from './controllers/settings/settings.controller';
 import { AuthenticationController } from './controllers/settings/authentication.controller';
 import { CodesController } from './controllers/codes.controller';
@@ -49,6 +50,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
     ArchiveManagementController,
     MachineManagementController,
     MachineHealthController,
+    MachineNotificationsController,
     StatusController,
     SettingsController,
     AuthenticationController,

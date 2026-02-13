@@ -12,6 +12,7 @@ import {
   Beaker,
   Cloud,
   Megaphone,
+  Bell,
   Activity,
   LogIn,
   Users as UsersIcon,
@@ -209,6 +210,13 @@ export default function Sidebar() {
           icon={Megaphone}
           label="Announcements"
           active={isActive("/announcements")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/machine-notifications"
+          icon={Bell}
+          label="Machine Notifications"
+          active={isActive("/machine-notifications")}
           collapsed={shouldCollapse}
         />
         <NavItem

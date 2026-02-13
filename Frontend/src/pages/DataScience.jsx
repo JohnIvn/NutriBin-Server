@@ -10,6 +10,8 @@ import {
   Microscope,
   Leaf,
   Cpu,
+  History,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Card,
@@ -24,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 
 function DataScience() {
   const [data, setData] = useState(null);
+  const [history, setHistory] = useState([]);
   const [machines, setMachines] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -34,9 +37,6 @@ function DataScience() {
       const res = await Requests({ url: "/data-science/machines" });
       if (res?.data?.ok) {
         setMachines(res.data.machines);
-        if (res.data.machines.length > 0 && !selectedMachine) {
-          setSelectedMachine(res.data.machines[0].machine_id);
-        }
       }
     } catch (err) {
       console.error("Failed to fetch machines", err);
@@ -51,6 +51,15 @@ function DataScience() {
         : "/data-science/analytics";
       const res = await Requests({ url });
       setData(res?.data || null);
+
+      // Fetch history
+      const historyUrl = machineId
+        ? `/data-science/history?machine_id=${machineId}`
+        : "/data-science/history";
+      const historyRes = await Requests({ url: historyUrl });
+      if (historyRes?.data?.ok) {
+        setHistory(historyRes.data.history);
+      }
     } catch (err) {
       console.error("Failed to fetch data science metrics", err);
     } finally {
@@ -64,12 +73,7 @@ function DataScience() {
   }, []);
 
   useEffect(() => {
-    if (selectedMachine) {
-      fetchData(selectedMachine);
-    } else if (machines.length === 0 && !loading) {
-      // If no machines found yet, still try to fetch general data
-      fetchData();
-    }
+    fetchData(selectedMachine);
   }, [selectedMachine]);
 
   if (loading && !data) {
@@ -92,9 +96,11 @@ function DataScience() {
         <div className="flex items-center gap-4 w-full h-14 md:h-16 px-4 md:px-8 max-w-7xl mx-auto">
           <div className="flex items-center gap-2 shrink-0 pr-4 border-r border-gray-100 h-8">
             <Cpu className="w-4 h-4 text-[#4F6F52]" />
-            <span className="text-[10px] font-black text-[#4F6F52] uppercase tracking-wider hidden sm:block">Unit Selector</span>
+            <span className="text-[10px] font-black text-[#4F6F52] uppercase tracking-wider hidden sm:block">
+              Unit Selector
+            </span>
           </div>
-          
+
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 min-w-0 h-full">
             <button
               onClick={() => setSelectedMachine(null)}
@@ -138,25 +144,41 @@ function DataScience() {
                 <Cpu className="w-12 h-12" />
               </div>
               <CardContent className="p-6">
-                <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Monitored Units</p>
-                <h3 className="text-4xl font-black">{data.summary.total_machines}</h3>
-                <p className="text-white/40 text-[10px] mt-2">Active hardware units in network</p>
+                <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">
+                  Monitored Units
+                </p>
+                <h3 className="text-4xl font-black">
+                  {data.summary.total_machines}
+                </h3>
+                <p className="text-white/40 text-[10px] mt-2">
+                  Active hardware units in network
+                </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white border-none shadow-xl shadow-gray-100/50 rounded-2xl overflow-hidden relative group">
               <CardContent className="p-6">
-                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Data Points</p>
-                <h3 className="text-4xl font-black text-[#4F6F52]">{data.summary.total_readings.toLocaleString()}</h3>
-                <p className="text-gray-400 text-[10px] mt-2">Aggregated chemical samples</p>
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
+                  Total Data Points
+                </p>
+                <h3 className="text-4xl font-black text-[#4F6F52]">
+                  {data.summary.total_readings.toLocaleString()}
+                </h3>
+                <p className="text-gray-400 text-[10px] mt-2">
+                  Aggregated chemical samples
+                </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white border-none shadow-xl shadow-gray-100/50 rounded-2xl overflow-hidden relative group">
               <CardContent className="p-6">
-                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">System Health</p>
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
+                  System Health
+                </p>
                 <h3 className="text-4xl font-black text-[#4F6F52]">100%</h3>
-                <p className="text-gray-400 text-[10px] mt-2">All sensors reporting correctly</p>
+                <p className="text-gray-400 text-[10px] mt-2">
+                  All sensors reporting correctly
+                </p>
               </CardContent>
             </Card>
           </motion.div>
@@ -166,7 +188,10 @@ function DataScience() {
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-100 pb-8">
           <div className="space-y-1">
             <p className="text-[#4F6F52] font-black text-xs uppercase tracking-[0.2em] mb-1">
-              Dashboard / {selectedMachine ? `Unit ${selectedMachine.substring(0, 8).toUpperCase()}` : "Laboratory Analysis"}
+              Dashboard /{" "}
+              {selectedMachine
+                ? `Unit ${selectedMachine.substring(0, 8).toUpperCase()}`
+                : "Laboratory Analysis"}
             </p>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
               Data Science <span className="text-gray-400">Insights</span>
@@ -184,7 +209,9 @@ function DataScience() {
             disabled={isRefreshing}
             className="bg-[#4F6F52] text-white hover:bg-[#3A4D39] transition-all duration-300 shadow-xl shadow-[#4F6F52]/20 px-8 h-12 rounded-2xl font-bold border-none"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             {selectedMachine ? "Sync Unit Data" : "Update Analytics"}
           </Button>
         </header>
@@ -428,12 +455,140 @@ function DataScience() {
                 <div className="col-span-full py-16 text-center bg-white rounded-3xl border-2 border-dashed border-gray-100 shadow-sm">
                   <FlaskConical className="w-12 h-12 text-gray-200 mx-auto mb-4" />
                   <p className="text-gray-400 font-medium px-4">
-                    No analytical data available for this unit. System awaiting fertilizer
-                    readings.
+                    No analytical data available for this unit. System awaiting
+                    fertilizer readings.
                   </p>
                 </div>
               )}
             </AnimatePresence>
+          </div>
+        </section>
+
+        {/* Historical Logs Section */}
+        <section className="space-y-6 pb-20">
+          <div className="flex items-center gap-4">
+            <div className="bg-white p-3 rounded-2xl shadow-xl shadow-gray-100/50 border border-gray-50">
+              <History className="w-6 h-6 text-[#4F6F52]" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+                Recommendation History
+              </h2>
+              <p className="text-xs text-gray-500 font-medium">
+                Archived CSI processing results for this unit
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-50 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/50 border-b border-gray-100">
+                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Timestamp
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      NPK Profile
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Primary Match (Score)
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Other Recommendations
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {history.length > 0 ? (
+                    history.map((log) => (
+                      <tr
+                        key={log.id}
+                        className="hover:bg-gray-50/30 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <span className="text-xs font-bold text-gray-600">
+                            {new Date(log.date_created).toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] border-orange-100 text-orange-600 bg-orange-50/30"
+                            >
+                              N: {parseFloat(log.n).toFixed(0)}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] border-blue-100 text-blue-600 bg-blue-50/30"
+                            >
+                              P: {parseFloat(log.p).toFixed(0)}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] border-green-100 text-green-600 bg-green-50/30"
+                            >
+                              K: {parseFloat(log.k).toFixed(0)}
+                            </Badge>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-black text-gray-800">
+                              {log.recommended_plants_1}
+                            </span>
+                            <span className="text-[10px] font-bold text-[#4F6F52] bg-[#4F6F52]/10 px-1.5 py-0.5 rounded-full">
+                              {log.csi_score_1}%
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex -space-x-2">
+                            {[
+                              log.recommended_plants_2,
+                              log.recommended_plants_3,
+                              log.recommended_plants_4,
+                              log.recommended_plants_5,
+                            ]
+                              .filter(Boolean)
+                              .map((plant, pIdx) => (
+                                <div
+                                  key={pIdx}
+                                  title={plant}
+                                  className="w-8 h-8 rounded-full bg-white border-2 border-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-400 shadow-sm"
+                                >
+                                  {plant.substring(0, 1)}
+                                </div>
+                              ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1.5 text-[#4F6F52]">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span className="text-[10px] font-black uppercase tracking-tighter">
+                              Processed
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="5"
+                        className="px-6 py-12 text-center text-gray-400 text-sm font-medium"
+                      >
+                        No historical archives found for this selection.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       </main>

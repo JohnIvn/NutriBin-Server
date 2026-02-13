@@ -21,6 +21,7 @@ import { createAuthenticationTable } from './models/authentication';
 import { createLoginAttemptsTable } from './models/login-attempts.model';
 import { createCodesTable } from './models/codes.model';
 import { createMachineNotificationTable } from './models/machine-notification.model';
+import { createDataScienceTable } from './models/data-science.model';
 
 dotenv.config();
 
@@ -75,6 +76,7 @@ export class DatabaseService implements OnModuleInit {
     await createLoginAttemptsTable(this.client);
     await createCodesTable(this.client);
     await createMachineNotificationTable(this.client);
+    await createDataScienceTable(this.client);
 
     console.log(chalk.bgGreen.black('[SUPABASE] All tables are ready!'));
   }

@@ -92,7 +92,7 @@ export class DataScienceController {
           recommendations: [],
           summary: {
             total_machines: parseInt(metadataResult.rows[0].total_machines),
-            total_readings: parseInt(metadataResult.rows[0].total_readings)
+            total_readings: parseInt(metadataResult.rows[0].total_readings),
           },
           formula:
             'Crop Suitability Index (CSI) based on NPK variance and pH range compatibility.',
@@ -133,11 +133,65 @@ export class DataScienceController {
         .sort((a, b) => b.score - a.score)
         .slice(0, 5);
 
+      // Save processed data to data_science table if machineId is provided
+      if (machineId && currentResult.rows.length > 0) {
+        try {
+          // Check if we already saved an entry for this machine with the same reading timestamp
+          // to avoid duplicate entries on every page refresh
+          const lastSaved = await client.query(
+            'SELECT date_created FROM data_science WHERE machine_id = $1 ORDER BY date_created DESC LIMIT 1',
+            [machineId],
+          );
+
+          const readingDate = new Date(currentResult.rows[0].date_created);
+          const lastSavedDate = lastSaved.rows[0]
+            ? new Date(lastSaved.rows[0].date_created)
+            : null;
+
+          // If never saved or the reading is newer than last saved, insert it
+          // Note: This is a simple heuristic. A better one would compare the fertilizer_analytics_id
+          if (!lastSavedDate || readingDate > lastSavedDate) {
+            await client.query(
+              `
+              INSERT INTO data_science (
+                machine_id, n, p, k, ph,
+                recommended_plants_1, csi_score_1,
+                recommended_plants_2, csi_score_2,
+                recommended_plants_3, csi_score_3,
+                recommended_plants_4, csi_score_4,
+                recommended_plants_5, csi_score_5
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            `,
+              [
+                machineId,
+                current.n,
+                current.p,
+                current.k,
+                current.ph,
+                recommendations[0]?.name || null,
+                recommendations[0]?.score || null,
+                recommendations[1]?.name || null,
+                recommendations[1]?.score || null,
+                recommendations[2]?.name || null,
+                recommendations[2]?.score || null,
+                recommendations[3]?.name || null,
+                recommendations[3]?.score || null,
+                recommendations[4]?.name || null,
+                recommendations[4]?.score || null,
+              ],
+            );
+          }
+        } catch (dbError) {
+          console.error('Error saving data science results:', dbError);
+          // Don't throw here, just log so the user still gets the analytics
+        }
+      }
+
       return {
         ok: true,
         summary: {
           total_machines: parseInt(metadataResult.rows[0].total_machines),
-          total_readings: parseInt(metadataResult.rows[0].total_readings)
+          total_readings: parseInt(metadataResult.rows[0].total_readings),
         },
         current_readings: current,
         averages: result.rows[0],
@@ -151,6 +205,33 @@ export class DataScienceController {
       throw new InternalServerErrorException(
         'Failed to process data science metrics',
       );
+    }
+  }
+
+  @Get('history')
+  async getHistory(@Query('machine_id') machineId?: string) {
+    const client = this.databaseService.getClient();
+    try {
+      const filter = machineId ? `WHERE machine_id = $1` : '';
+      const params = machineId ? [machineId] : [];
+
+      const result = await client.query(
+        `
+        SELECT * FROM data_science 
+        ${filter} 
+        ORDER BY date_created DESC 
+        LIMIT 20
+      `,
+        params,
+      );
+
+      return {
+        ok: true,
+        history: result.rows,
+      };
+    } catch (error) {
+      console.error('Data Science History Error:', error);
+      throw new InternalServerErrorException('Failed to fetch history');
     }
   }
 }

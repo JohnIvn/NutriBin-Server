@@ -23,6 +23,7 @@ import {
   LogOut,
   ChevronDown,
   Camera,
+  Binary,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -134,6 +135,13 @@ export default function Sidebar() {
           icon={LayoutDashboard}
           label="Dashboard"
           active={isActive("/dashboard")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/data-science"
+          icon={Binary}
+          label="Data Science"
+          active={isActive("/data-science")}
           collapsed={shouldCollapse}
         />
 

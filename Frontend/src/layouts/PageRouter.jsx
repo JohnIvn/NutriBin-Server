@@ -33,6 +33,7 @@ import LoginRecords from "@/pages/LoginRecords";
 import MfaRecords from "@/pages/MfaRecords";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import CookiePolicy from "@/pages/CookiePolicy";
+import DataScience from "@/pages/DataScience";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -122,6 +123,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/data-science"
+        element={
+          <ProtectedRoute>
+            <DataScience />
           </ProtectedRoute>
         }
       />

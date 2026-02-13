@@ -113,13 +113,31 @@ function Backup() {
   };
 
   const handleDownloadBackup = (filename) => {
-    const downloadUrl = `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/backup/download/${filename}`;
+    // Determine backend URL (matches the logic in Requests.jsx)
+    const rawUrl =
+      import.meta.env.VITE_API_URL ||
+      "https://nutribin-server-backend-production.up.railway.app";
+    const baseUrl =
+      rawUrl.startsWith("http://") || rawUrl.startsWith("https://")
+        ? rawUrl
+        : `https://${rawUrl}`;
+
+    const downloadUrl = `${baseUrl}/backup/download/${filename}`;
     window.open(downloadUrl, "_blank");
     toast.success(`Starting secure download for ${filename}`);
   };
 
   const handleExportSnapshot = () => {
-    const exportUrl = `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/management/export/snapshot`;
+    // Determine backend URL (matches the logic in Requests.jsx)
+    const rawUrl =
+      import.meta.env.VITE_API_URL ||
+      "https://nutribin-server-backend-production.up.railway.app";
+    const baseUrl =
+      rawUrl.startsWith("http://") || rawUrl.startsWith("https://")
+        ? rawUrl
+        : `https://${rawUrl}`;
+
+    const exportUrl = `${baseUrl}/management/export/snapshot`;
     window.open(exportUrl, "_blank");
     toast.info("Generating live snapshot for local save...");
   };

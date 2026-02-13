@@ -498,7 +498,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
               <DialogTitle className="text-2xl font-bold flex items-center gap-2">
                 {isEdit ? "Edit Staff Profile" : "New Staff Registration"}
               </DialogTitle>
-              <DialogDescription className="text-orange-100/90">
+              <DialogDescription className="text-emerald-100/90">
                 {isEdit
                   ? `Currently editing: ${user.firstname || "user"}`
                   : "Fill in the details below to create a new administrative account."}
@@ -692,7 +692,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                             emailAvailable === false ||
                             !email
                           }
-                          className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#A34906]"
+                          className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#3A4335]"
                         >
                           {sendingEmailCode ? "Sending..." : "Send Code"}
                         </Button>
@@ -778,7 +778,7 @@ function AdminModal({ mode, cancel, staff, onSuccess }) {
                             phoneAvailable === false ||
                             !contact
                           }
-                          className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#A34906]"
+                          className="bg-[#4F6F52] text-white cursor-pointer hover:bg-[#3A4335]"
                         >
                           {sendingPhoneCode ? "Sending..." : "Send Code"}
                         </Button>

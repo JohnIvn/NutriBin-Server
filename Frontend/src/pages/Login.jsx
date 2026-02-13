@@ -116,7 +116,7 @@ export function Login() {
       <Header />
       {mfaMessage ? (
         // MFA Verification Message Screen
-        <div className="w-full h-[calc(100vh-48px)] flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
+        <div className="w-full h-[calc(100vh-48px)] flex items-center justify-center bg-gradient-to-br from-emerald-50 to-green-50">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
@@ -145,7 +145,7 @@ export function Login() {
                   setMfaMessage(null);
                   setLoginError(null);
                 }}
-                className="w-full bg-[] text-white hover:bg-[#A34906] font-semibold"
+                className="w-full bg-[#4F6F52] text-white hover:bg-[#3A4335] font-semibold"
               >
                 Back to Login
               </Button>

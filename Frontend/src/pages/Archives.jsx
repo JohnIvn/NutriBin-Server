@@ -339,7 +339,7 @@ function Archives() {
                                   ? "bg-green-500 animate-pulse"
                                   : item.status === "cancelled"
                                     ? "bg-red-500"
-                                    : "bg-orange-500"
+                                    : "bg-emerald-500"
                               }`}
                             />
                             {item.status}

@@ -493,7 +493,7 @@ export default function Emissions() {
                   color = "bg-red-400/20 text-red-100";
                 } else if (val > 50) {
                   status = "Warning";
-                  color = "bg-orange-400/20 text-orange-100";
+                  color = "bg-emerald-400/20 text-emerald-100";
                 }
 
                 return (

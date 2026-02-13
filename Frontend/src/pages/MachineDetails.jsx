@@ -174,8 +174,8 @@ function MachineDetails() {
                         machineDetails.fertilizer_analytics?.[0]?.temperature,
                       )}
                       unit="°C"
-                      color="text-orange-500"
-                      bg="bg-orange-50"
+                      color="text-emerald-500"
+                      bg="bg-emerald-50"
                     />
                     <EnvCard
                       icon={Droplets}
@@ -469,7 +469,7 @@ function MachineDetails() {
                     {/* Actuators/Motors */}
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center gap-3 mb-2 px-1">
-                        <div className="p-2 bg-orange-50 rounded-lg text-orange-700">
+                        <div className="p-2 bg-emerald-50 rounded-lg text-emerald-700">
                           <Cog className="w-5 h-5" />
                         </div>
                         <h3 className="text-xl font-bold text-[#3A4D39]">

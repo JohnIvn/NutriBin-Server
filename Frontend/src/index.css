@@ -50,16 +50,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
-  --background: #ffa630;
-  --foreground: #cd5c08;
+  --background: #fdfcfb;
+  --foreground: #4f6f52;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.97 0 0);
   --primary-foreground: oklch(100% 0.00011 271.152);
-  --secondary: #cd5c08;
-  --secondary-foreground: #ffa630;
+  --secondary: #4f6f52;
+  --secondary-foreground: #fdfcfb;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -169,13 +169,13 @@
   /* Fix text selection highlight color */
   input::selection,
   textarea::selection {
-    background-color: #cd5c08;
+    background-color: #4f6f52;
     color: white;
   }
 
   input::-moz-selection,
   textarea::-moz-selection {
-    background-color: #cd5c08;
+    background-color: #4f6f52;
     color: white;
   }
 }

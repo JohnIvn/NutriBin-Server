@@ -304,7 +304,7 @@ function Analytics() {
                   </div>
                   <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-orange-500 h-full transition-all duration-1000"
+                      className="bg-[#4F6F52] h-full transition-all duration-1000"
                       style={{
                         width: `${(stats.fertilizerYieldKg / (stats.processedWasteKg || 1)) * 100}%`,
                       }}

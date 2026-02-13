@@ -354,7 +354,7 @@ function Machines() {
                               ? "bg-green-50 text-green-700 border border-green-100"
                               : repair.repair_status === "cancelled"
                                 ? "bg-red-50 text-red-700 border border-red-100"
-                                : "bg-orange-50 text-orange-700 border border-orange-100"
+                                : "bg-emerald-50 text-emerald-700 border border-emerald-100"
                           }`}
                         >
                           <div
@@ -363,7 +363,7 @@ function Machines() {
                                 ? "bg-green-500 animate-pulse"
                                 : repair.repair_status === "cancelled"
                                   ? "bg-red-500"
-                                  : "bg-orange-500"
+                                  : "bg-emerald-500"
                             }`}
                           />
                           {repair.repair_status}
@@ -409,7 +409,7 @@ function Machines() {
                                       repair,
                                     )
                                   }
-                                  className="group cursor-pointer focus:bg-orange-600 focus:text-white font-medium rounded-md py-2 transition-colors mb-1"
+                                  className="group cursor-pointer focus:bg-emerald-600 focus:text-white font-medium rounded-md py-2 transition-colors mb-1"
                                 >
                                   <Clock className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
                                   Postpone

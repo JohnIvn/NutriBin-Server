@@ -247,7 +247,7 @@ export default function Announcements() {
                       <Bell className="h-6 w-6" />
                       {editId ? "Edit Announcement" : "New Announcement"}
                     </DialogTitle>
-                    <div className="text-orange-100/90">
+                    <div className="text-emerald-100/90">
                       Publish messages and notify users across platforms
                     </div>
                   </DialogHeader>

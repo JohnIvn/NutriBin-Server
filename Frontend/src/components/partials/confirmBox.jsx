@@ -39,9 +39,9 @@ function ConfirmBox({
         };
       default:
         return {
-          btn: "bg-[#CD5C08] hover:bg-[#A34906]",
-          icon: <AlertTriangle className="w-10 h-10 text-[#CD5C08]" />,
-          bg: "bg-orange-50",
+          btn: "bg-[#4F6F52] hover:bg-[#3A4335]",
+          icon: <AlertTriangle className="w-10 h-10 text-[#4F6F52]" />,
+          bg: "bg-emerald-50",
         };
     }
   };

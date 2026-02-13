@@ -24,7 +24,7 @@ const StudyCard = ({ title, link }) => {
       layout
     >
       {/* Card Header */}
-      <div className="bg-orange-600 p-4 flex items-center gap-2 flex-shrink-0">
+      <div className="bg-[#4F6F52] p-4 flex items-center gap-2 flex-shrink-0">
         <LightBulbIcon className="w-5 h-5 text-white flex-shrink-0" />
         <a
           href={link}

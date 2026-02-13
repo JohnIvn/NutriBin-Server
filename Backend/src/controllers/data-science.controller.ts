@@ -136,21 +136,21 @@ export class DataScienceController {
       // Save processed data to data_science table if machineId is provided
       if (machineId && currentResult.rows.length > 0) {
         try {
-          // Check if we already saved an entry for this machine with the same reading timestamp
-          // to avoid duplicate entries on every page refresh
+          // Check for duplicate data to avoid redundant entries
           const lastSaved = await client.query(
-            'SELECT date_created FROM data_science WHERE machine_id = $1 ORDER BY date_created DESC LIMIT 1',
+            'SELECT n, p, k, ph, recommended_plants_1 FROM data_science WHERE machine_id = $1 ORDER BY date_created DESC LIMIT 1',
             [machineId],
           );
 
-          const readingDate = new Date(currentResult.rows[0].date_created);
-          const lastSavedDate = lastSaved.rows[0]
-            ? new Date(lastSaved.rows[0].date_created)
-            : null;
+          const isDuplicate =
+            lastSaved.rows.length > 0 &&
+            parseFloat(lastSaved.rows[0].n) === current.n &&
+            parseFloat(lastSaved.rows[0].p) === current.p &&
+            parseFloat(lastSaved.rows[0].k) === current.k &&
+            parseFloat(lastSaved.rows[0].ph) === current.ph;
 
-          // If never saved or the reading is newer than last saved, insert it
-          // Note: This is a simple heuristic. A better one would compare the fertilizer_analytics_id
-          if (!lastSavedDate || readingDate > lastSavedDate) {
+          // Only insert if the values have changed
+          if (!isDuplicate) {
             await client.query(
               `
               INSERT INTO data_science (

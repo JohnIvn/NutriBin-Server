@@ -8,6 +8,7 @@ import { UserManagementController } from './controllers/management/user-manageme
 import { RepairManagementController } from './controllers/management/repair-management.controller';
 import { ArchiveManagementController } from './controllers/management/archive-management.controller';
 import { MachineManagementController } from './controllers/management/machine-management.controller';
+import { MachineMapController } from './controllers/management/machine-map.controller';
 import { MachineHealthController } from './controllers/management/machine-health.controller';
 import { StatusController } from './controllers/management/status.controller';
 import { MachineNotificationsController } from './controllers/management/machine-notifications.controller';
@@ -51,6 +52,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
     RepairManagementController,
     ArchiveManagementController,
     MachineManagementController,
+    MachineMapController,
     MachineHealthController,
     MachineNotificationsController,
     StatusController,

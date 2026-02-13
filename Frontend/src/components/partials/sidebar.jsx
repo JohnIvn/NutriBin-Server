@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
   Cpu,
+  MapPin,
   Wrench,
   DollarSign,
   HardDrive,
@@ -173,6 +174,13 @@ export default function Sidebar() {
           icon={Cpu}
           label="Machines"
           active={isActive("/machine")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/machine-map"
+          icon={MapPin}
+          label="Machine Map"
+          active={isActive("/machine-map")}
           collapsed={shouldCollapse}
         />
         <NavItem

@@ -12,6 +12,7 @@ import Machines from "@/pages/Machines";
 import MachinesGrid from "@/pages/MachinesGrid";
 import Modules from "@/pages/Modules";
 import MachineDetails from "@/pages/MachineDetails";
+import MachineMap from "@/pages/MachineMap";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Staff from "@/pages/Staff";
 import Users from "@/pages/Users";
@@ -119,14 +120,16 @@ function PageRouter() {
           </ProtectedRoute>
         }
       />
-      <Route        path="/backup"
+      <Route
+        path="/backup"
         element={
           <ProtectedRoute>
             <Backup />
           </ProtectedRoute>
         }
       />
-      <Route        path="/dashboard"
+      <Route
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <Analytics />
@@ -154,6 +157,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <MachinesGrid />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/machine-map"
+        element={
+          <ProtectedRoute>
+            <MachineMap />
           </ProtectedRoute>
         }
       />

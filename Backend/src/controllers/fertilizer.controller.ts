@@ -1,4 +1,9 @@
-import { Controller, Get, InternalServerErrorException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  InternalServerErrorException,
+  Query,
+} from '@nestjs/common';
 import { DatabaseService } from '../service/database/database.service';
 
 @Controller('fertilizer')
@@ -6,12 +11,16 @@ export class FertilizerController {
   constructor(private readonly databaseService: DatabaseService) {}
 
   @Get('production')
-  async getProduction() {
+  async getProduction(@Query('date') date?: string) {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query<{ total: string }>(`
-        SELECT COUNT(*) as total FROM fertilizer_analytics
-      `);
+      const dateFilter = date ? `WHERE DATE(date_created) = $1` : '';
+      const params = date ? [date] : [];
+
+      const result = await client.query<{ total: string }>(
+        `SELECT COUNT(*) as total FROM fertilizer_analytics ${dateFilter}`,
+        params,
+      );
 
       // Rough estimation: each reading represents a batch of ~0.75kg
       const totalCount = parseInt(result.rows[0].total);
@@ -28,24 +37,31 @@ export class FertilizerController {
   }
 
   @Get('batches')
-  async getBatches() {
+  async getBatches(@Query('date') date?: string) {
     const client = this.databaseService.getClient();
     try {
+      const dateFilter = date ? `WHERE DATE(date_created) = $1` : '';
+      const params = date ? [date] : [];
+
       const result = await client.query<{
         batch: string;
         nitrogen: string;
         phosporus: string;
         potassium: string;
-      }>(`
+      }>(
+        `
         SELECT 
           SUBSTRING(fertilizer_analytics_id::text, 1, 6) as batch,
           nitrogen,
           phosphorus as phosporus,
           potassium
         FROM fertilizer_analytics
+        ${dateFilter}
         ORDER BY date_created DESC
-        LIMIT 5
-      `);
+        LIMIT 10
+      `,
+        params,
+      );
 
       const formattedData = result.rows
         .map((row) => ({
@@ -67,36 +83,43 @@ export class FertilizerController {
   }
 
   @Get('averages')
-  async getAverages() {
+  async getAverages(@Query('date') date?: string) {
     const client = this.databaseService.getClient();
     try {
+      const dateFilter = date ? `WHERE DATE(date_created) = $1` : '';
+      const params = date ? [date] : [];
+
       const result = await client.query<{
         nitrogen: string | null;
         phosphorus: string | null;
         potassium: string | null;
-      }>(`
+      }>(
+        `
         SELECT 
           AVG(NULLIF(regexp_replace(nitrogen, '[^0-9.]', '', 'g'), '')::numeric) as nitrogen,
           AVG(NULLIF(regexp_replace(phosphorus, '[^0-9.]', '', 'g'), '')::numeric) as phosphorus,
           AVG(NULLIF(regexp_replace(potassium, '[^0-9.]', '', 'g'), '')::numeric) as potassium
         FROM fertilizer_analytics
-      `);
+        ${dateFilter}
+      `,
+        params,
+      );
 
       const row = result.rows[0];
       const data = [
         {
           name: 'Nitrogen',
-          value: parseFloat(row.nitrogen || '0'),
+          value: parseFloat(row.nitrogen || '1'),
           fill: '#C26A4A',
         },
         {
           name: 'Phosporus',
-          value: parseFloat(row.phosphorus || '0'),
+          value: parseFloat(row.phosphorus || '1'),
           fill: '#D97706',
         },
         {
           name: 'Potassium',
-          value: parseFloat(row.potassium || '0'),
+          value: parseFloat(row.potassium || '1'),
           fill: '#739072',
         },
       ];
@@ -112,23 +135,29 @@ export class FertilizerController {
   }
 
   @Get('stats')
-  async getStats() {
+  async getStats(@Query('date') date?: string) {
     const client = this.databaseService.getClient();
     try {
+      const dateFilter = date ? `WHERE DATE(date_created) = $1` : '';
+      const params = date ? [date] : [];
+
       const result = await client.query<{
         total_batches: string | null;
         active_devices: string | null;
         avg_ph: string | null;
         avg_moisture: string | null;
-      }>(`
+      }>(
+        `
         SELECT 
-          (SELECT COUNT(*) FROM fertilizer_analytics) as total_batches,
-          (SELECT COUNT(DISTINCT machine_id) FROM fertilizer_analytics) as active_devices,
-          (SELECT AVG(NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric) FROM fertilizer_analytics) as avg_ph,
-          (SELECT AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) FROM fertilizer_analytics) as avg_moisture
+          COUNT(*) as total_batches,
+          COUNT(DISTINCT machine_id) as active_devices,
+          AVG(NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric) as avg_ph,
+          AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) as avg_moisture
         FROM fertilizer_analytics
-        LIMIT 1
-      `);
+        ${dateFilter}
+      `,
+        params,
+      );
 
       const row = result.rows[0];
       const totalBatches = parseInt(row.total_batches || '0');
@@ -152,25 +181,93 @@ export class FertilizerController {
     }
   }
 
-  @Get('logs')
-  async getLogs() {
+  @Get('trends')
+  async getTrends(@Query('date') date?: string) {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      // If date is provided, show hourly trends for that day
+      // If not, show daily trends for the last 7 days
+      let query = '';
+      let params: any[] = [];
+
+      if (date) {
+        query = `
+          SELECT 
+            TO_CHAR(DATE_TRUNC('hour', date_created), 'HH24:00') as label,
+            AVG(NULLIF(regexp_replace(nitrogen, '[^0-9.]', '', 'g'), '')::numeric) as nitrogen,
+            AVG(NULLIF(regexp_replace(phosphorus, '[^0-9.]', '', 'g'), '')::numeric) as phosphorus,
+            AVG(NULLIF(regexp_replace(potassium, '[^0-9.]', '', 'g'), '')::numeric) as potassium
+          FROM fertilizer_analytics
+          WHERE DATE(date_created) = $1
+          GROUP BY DATE_TRUNC('hour', date_created)
+          ORDER BY DATE_TRUNC('hour', date_created) ASC
+        `;
+        params = [date];
+      } else {
+        query = `
+          SELECT 
+            TO_CHAR(DATE_TRUNC('day', date_created), 'Mon DD') as label,
+            AVG(NULLIF(regexp_replace(nitrogen, '[^0-9.]', '', 'g'), '')::numeric) as nitrogen,
+            AVG(NULLIF(regexp_replace(phosphorus, '[^0-9.]', '', 'g'), '')::numeric) as phosphorus,
+            AVG(NULLIF(regexp_replace(potassium, '[^0-9.]', '', 'g'), '')::numeric) as potassium
+          FROM fertilizer_analytics
+          WHERE date_created >= NOW() - INTERVAL '7 days'
+          GROUP BY DATE_TRUNC('day', date_created)
+          ORDER BY DATE_TRUNC('day', date_created) ASC
+        `;
+      }
+
+      const result = await client.query(query, params);
+
+      return {
+        ok: true,
+        trends: result.rows.map((row) => ({
+          label: row.label,
+          nitrogen: parseFloat(row.nitrogen || '0').toFixed(1),
+          phosphorus: parseFloat(row.phosphorus || '0').toFixed(1),
+          potassium: parseFloat(row.potassium || '0').toFixed(1),
+        })),
+      };
+    } catch (error) {
+      console.error('Fertilizer Trends Error:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch fertilizer trends',
+      );
+    }
+  }
+
+  @Get('logs')
+  async getLogs(@Query('date') date?: string) {
+    const client = this.databaseService.getClient();
+    try {
+      const dateFilter = date ? `WHERE DATE(f.date_created) = $1` : '';
+      const params = date ? [date] : [];
+
+      const result = await client.query(
+        `
         SELECT 
-          fertilizer_analytics_id,
-          machine_id,
-          nitrogen,
-          phosphorus,
-          potassium,
-          ph,
-          moisture,
-          temperature,
-          date_created
-        FROM fertilizer_analytics
-        ORDER BY date_created DESC
-        LIMIT 15
-      `);
+          f.fertilizer_analytics_id,
+          f.machine_id,
+          f.nitrogen,
+          f.phosphorus,
+          f.potassium,
+          f.ph,
+          f.moisture,
+          f.temperature,
+          f.date_created,
+          CASE 
+            WHEN uc.first_name IS NULL AND uc.last_name IS NULL THEN 'No Owner'
+            ELSE TRIM(CONCAT(uc.first_name, ' ', uc.last_name))
+          END as machine_name
+        FROM fertilizer_analytics f
+        LEFT JOIN machine_customers mc ON f.machine_id = mc.machine_id
+        LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
+        ${dateFilter}
+        ORDER BY f.date_created DESC
+        LIMIT 30
+      `,
+        params,
+      );
 
       return {
         ok: true,

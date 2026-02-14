@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -14,18 +14,34 @@ import {
   ArrowRight,
   RefreshCw,
   Loader2,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  Navigation,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Helper component to auto-fit bounds
-function SetBounds({ markers }) {
+// Helper component to handle map movements
+function MapController({ bounds, flyToTarget }) {
   const map = useMap();
+
   useEffect(() => {
-    if (markers.length > 0) {
-      const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
+    if (bounds && bounds.isValid()) {
       map.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [markers, map]);
+  }, [bounds, map]);
+
+  useEffect(() => {
+    if (flyToTarget) {
+      map.flyTo(flyToTarget.coords, 14, {
+        duration: 1.5,
+      });
+    }
+  }, [flyToTarget, map]);
+
   return null;
 }
 
@@ -86,6 +102,10 @@ function MachineMap() {
     total: 0,
   });
   const [stats, setStats] = useState({ healthy: 0, needsRepair: 0, total: 0 });
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [flyToTarget, setFlyToTarget] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -128,6 +148,23 @@ function MachineMap() {
       setLoading(false);
     }
   };
+
+  const filteredMachines = useMemo(() => {
+    return geocodedData.filter((m) => {
+      const matchesSearch =
+        m.machine_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.currentLocation.customer_name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+      const matchesStatus = filterStatus === "all" || m.status === filterStatus;
+      return matchesSearch && matchesStatus;
+    });
+  }, [geocodedData, searchQuery, filterStatus]);
+
+  const mapBounds = useMemo(() => {
+    if (geocodedData.length === 0) return null;
+    return L.latLngBounds(geocodedData.map((m) => [m.lat, m.lng]));
+  }, [geocodedData]);
 
   const geocodeAll = async (machineList) => {
     const results = [];
@@ -196,68 +233,47 @@ function MachineMap() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-[#FFF5E4] min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-[#4F6F52] flex items-center gap-3">
-            <MapPin className="w-8 h-8" />
-            Interactive Machine Map
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Real-time geographic distribution of NutriBin units and their
-            operational status.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
+    <div className="flex-1 flex flex-col w-full bg-[#FFF5E4] overflow-hidden">
+      {/* Main Map Content - Now on top */}
+      <div className="flex-1 relative flex flex-col overflow-hidden">
+        {/* Toggle Directory Button */}
+        {!sidebarOpen && (
           <button
-            onClick={fetchData}
-            disabled={
-              loading ||
-              (geocodingProgress.current > 0 &&
-                geocodingProgress.current < geocodingProgress.total)
-            }
-            className="bg-white p-2 rounded-2xl shadow-sm border border-gray-100 text-[#4F6F52] hover:bg-gray-50 transition-colors disabled:opacity-50"
-            title="Refresh Map Data"
+            onClick={() => setSidebarOpen(true)}
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] bg-white px-4 py-2 rounded-xl shadow-lg border border-gray-100 text-[#4F6F52] hover:bg-gray-50 transition-all flex items-center gap-2 font-bold text-sm"
           >
-            <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
+            <ChevronUp className="w-4 h-4" />
+            Show Unit Directory
           </button>
-          <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            <span className="text-sm font-semibold text-gray-700">
-              {stats.healthy} Healthy
-            </span>
-          </div>
-          <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <span className="text-sm font-semibold text-gray-700">
-              {stats.needsRepair} Needs Repair
-            </span>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Geocoding Progress */}
-      {geocodingProgress.total > 0 &&
-        geocodingProgress.current < geocodingProgress.total && (
+        {/* Floating Header */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-md px-4 pointer-events-none">
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="bg-[#4F6F52]/10 border border-[#4F6F52]/20 p-4 rounded-3xl flex items-center gap-4"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="bg-white/80 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-white/50 flex items-center justify-between pointer-events-auto"
           >
-            <Loader2 className="w-5 h-5 text-[#4F6F52] animate-spin" />
-            <div className="flex-1">
-              <div className="flex justify-between text-xs font-bold text-[#4F6F52] mb-1">
-                <span>Geocoding machine locations...</span>
-                <span>
-                  {Math.round(
-                    (geocodingProgress.current / geocodingProgress.total) * 100,
-                  )}
-                  %
-                </span>
+            <div className="flex items-center gap-3">
+              <div className="bg-[#4F6F52] p-2 rounded-xl shadow-inner">
+                <MapPin className="w-5 h-5 text-white" />
               </div>
-              <div className="w-full bg-white rounded-full h-1.5 overflow-hidden">
+              <div>
+                <h1 className="font-black text-gray-800 text-sm leading-tight">
+                  Interactive Map
+                </h1>
+                <p className="text-[10px] text-gray-500 font-bold">
+                  {geocodingProgress.current}/{geocodingProgress.total} units
+                  geocoded
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Progress Mini Bar */}
+          {geocodingProgress.total > 0 &&
+            geocodingProgress.current < geocodingProgress.total && (
+              <div className="mt-2 w-full bg-white/50 backdrop-blur-sm rounded-full h-1 overflow-hidden">
                 <motion.div
                   className="bg-[#4F6F52] h-full"
                   initial={{ width: 0 }}
@@ -266,170 +282,267 @@ function MachineMap() {
                   }}
                 />
               </div>
+            )}
+        </div>
+
+        {/* Map Container */}
+        <div className="h-full w-full">
+          {loading && geocodedData.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#FFF5E4]/50 backdrop-blur-sm z-50">
+              <div className="flex flex-col items-center gap-4 bg-white p-8 rounded-[2.5rem] shadow-2xl border border-white">
+                <div className="relative">
+                  <Loader2 className="w-12 h-12 text-[#4F6F52] animate-spin" />
+                  <Activity className="w-6 h-6 text-[#4F6F52] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                </div>
+                <div className="text-center">
+                  <span className="font-black text-[#4F6F52] text-xl block">
+                    Initializing Map
+                  </span>
+                  <p className="text-xs text-gray-400 font-bold tracking-widest uppercase mt-1">
+                    Fetching Unit Coordinates
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <MapContainer
+              center={[14.5995, 120.9842]} // Default center
+              zoom={6}
+              zoomControl={false}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MapController bounds={mapBounds} flyToTarget={flyToTarget} />
+
+              {filteredMachines.map((marker, idx) => (
+                <Marker
+                  key={`${marker.machine_id}-${idx}`}
+                  position={[marker.lat, marker.lng]}
+                  icon={marker.status === "healthy" ? GreenIcon : RedIcon}
+                >
+                  <Popup className="custom-popup" offset={[0, -20]}>
+                    <div className="p-1 min-w-[220px]">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-black text-gray-800 text-base">
+                              {marker.machine_id}
+                            </span>
+                            {marker.hasMultipleLocations && (
+                              <Info
+                                className="w-3 h-3 text-[#4F6F52]"
+                                title="Multi-user unit"
+                              />
+                            )}
+                          </div>
+                          <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase">
+                            Machine Unit
+                          </span>
+                        </div>
+                        <div
+                          className={`text-[9px] px-2 py-0.5 rounded-lg font-black uppercase tracking-wider ${
+                            marker.status === "healthy"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700 font-black"
+                          }`}
+                        >
+                          {marker.status === "healthy" ? "Healthy" : "Repair"}
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="bg-gray-50 rounded-xl p-2.5 border border-gray-100 italic">
+                          <div className="flex items-center gap-2 text-gray-600 mb-1">
+                            <Users className="w-3.5 h-3.5" />
+                            <span className="font-bold text-[10px] uppercase tracking-wider">
+                              Primary Customer
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold text-[#4F6F52] pl-5">
+                            {marker.currentLocation.customer_name}
+                          </p>
+                        </div>
+
+                        <div className="space-y-1 pl-1">
+                          <div className="flex items-start gap-2 text-gray-400">
+                            <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                            <div className="text-[11px] leading-snug">
+                              {marker.currentLocation.address}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-dashed border-gray-200 flex items-center justify-between">
+                        <button
+                          onClick={() =>
+                            (window.location.href = `/machine/${marker.machine_id}`)
+                          }
+                          className="w-full bg-[#4F6F52] text-white py-2 rounded-xl text-xs font-bold hover:bg-[#3d5a40] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#4F6F52]/20"
+                        >
+                          Machine Analytics{" "}
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          )}
+        </div>
+      </div>
+
+      {/* Directory - Now on Bottom */}
+      <AnimatePresence mode="wait">
+        {sidebarOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "35vh", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-white border-t border-gray-200 flex flex-col w-full z-20 shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)]"
+          >
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <h2 className="text-xl font-black text-[#4F6F52] flex items-center gap-2 shrink-0">
+                  <Activity className="w-5 h-5" />
+                  Unit Directory
+                </h2>
+
+                {/* Stats Summary - Inline */}
+                <div className="hidden sm:flex gap-2">
+                  <div className="bg-green-50 px-3 py-1 rounded-full flex items-center gap-2 border border-green-100">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="text-[10px] font-bold text-green-700 uppercase tracking-widest">
+                      {stats.healthy} Healthy
+                    </span>
+                  </div>
+                  <div className="bg-red-50 px-3 py-1 rounded-full flex items-center gap-2 border border-red-100">
+                    <div className="w-2 h-2 rounded-full bg-red-500" />
+                    <span className="text-[10px] font-bold text-red-700 uppercase tracking-widest">
+                      {stats.needsRepair} Alert
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search & Filters - In header for bottom layout */}
+              <div className="flex-1 flex gap-3 max-w-2xl">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search machines or users..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4F6F52]/20 focus:border-[#4F6F52] transition-all"
+                  />
+                </div>
+                <div className="flex gap-1 p-1 bg-gray-50 rounded-xl border border-gray-100 min-w-[300px]">
+                  {["all", "healthy", "needs_repair"].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setFilterStatus(status)}
+                      className={`flex-1 py-1 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                        filterStatus === status
+                          ? "bg-white text-[#4F6F52] shadow-sm"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
+                    >
+                      {status.replace("_", " ")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchData}
+                  disabled={loading}
+                  className="p-2 hover:bg-gray-100 rounded-xl text-[#4F6F52] transition-all"
+                  title="Refresh Data"
+                >
+                  <RefreshCw
+                    className={`w-5 h-5 ${loading ? "animate-spin" : ""}`}
+                  />
+                </button>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 hover:bg-red-50 rounded-xl text-gray-400 hover:text-red-500 transition-all"
+                >
+                  <ChevronDown className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Grid List for bottom layout */}
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+              {filteredMachines.length === 0 ? (
+                <div className="text-center py-10">
+                  <div className="bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Search className="w-6 h-6 text-gray-300" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-400">
+                    No units found matching your search
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredMachines.map((machine, idx) => (
+                    <motion.div
+                      key={`${machine.machine_id}-${idx}`}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-3 bg-white border border-gray-100 rounded-2xl hover:border-[#4F6F52]/30 hover:shadow-md transition-all group cursor-pointer"
+                      onClick={() =>
+                        setFlyToTarget({
+                          coords: [machine.lat, machine.lng],
+                          id: machine.machine_id,
+                        })
+                      }
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full ${machine.status === "healthy" ? "bg-green-500" : "bg-red-500 animate-pulse"}`}
+                          />
+                          <span className="font-black text-gray-800 text-sm tracking-tight">
+                            {machine.machine_id}
+                          </span>
+                        </div>
+                        <button
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#4F6F52]/10 rounded-lg text-[#4F6F52] transition-all"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `/machine/${machine.machine_id}`;
+                          }}
+                        >
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] text-gray-500 mb-2">
+                        <Users className="w-3 h-3" />
+                        <span className="truncate font-medium">
+                          {machine.currentLocation.customer_name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 pt-2 border-t border-gray-50 opacity-60">
+                        <Navigation className="w-3 h-3 text-[#4F6F52]" />
+                        <span className="text-[10px] text-gray-400 truncate italic">
+                          {machine.currentLocation.address}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
-
-      {/* Map Container */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-[2.5rem] p-4 shadow-xl border border-white/50 overflow-hidden h-[70vh] relative"
-      >
-        {loading && geocodedData.length === 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10 rounded-[2.5rem]">
-            <div className="flex flex-col items-center gap-3 text-[#4F6F52]">
-              <Activity className="w-10 h-10 animate-spin" />
-              <span className="font-bold">Fetching Units...</span>
-            </div>
-          </div>
-        ) : (
-          <MapContainer
-            center={[39.8283, -98.5795]}
-            zoom={4}
-            style={{ height: "100%", width: "100%", borderRadius: "1.5rem" }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <SetBounds markers={geocodedData} />
-            {geocodedData.map((marker, idx) => (
-              <Marker
-                key={`${marker.machine_id}-${idx}`}
-                position={[marker.lat, marker.lng]}
-                icon={marker.status === "healthy" ? GreenIcon : RedIcon}
-              >
-                <Popup className="custom-popup">
-                  <div className="p-2 min-w-[200px]">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="font-black text-[#4F6F52] text-sm">
-                        {marker.machine_id}
-                        {marker.hasMultipleLocations && (
-                          <span
-                            className="ml-2 bg-[#4F6F52] text-white text-[10px] px-1.5 py-0.5 rounded-full"
-                            title="Multiple users associated with this unit"
-                          >
-                            *
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                          marker.status === "healthy"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {marker.status === "healthy"
-                          ? "Healthy"
-                          : "Needs Repair"}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-xs">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Users className="w-3.5 h-3.5" />
-                          <span className="font-semibold">
-                            {marker.hasMultipleLocations
-                              ? "Associated Users:"
-                              : "Customer Name:"}
-                          </span>
-                        </div>
-                        {marker.hasMultipleLocations ? (
-                          <div className="pl-5 space-y-0.5">
-                            {marker.locations.map((loc, lIdx) => (
-                              <div
-                                key={lIdx}
-                                className={`text-gray-500 ${
-                                  loc.customer_id ===
-                                  marker.currentLocation.customer_id
-                                    ? "text-[#4F6F52] font-bold"
-                                    : ""
-                                }`}
-                              >
-                                • {loc.customer_name}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="pl-5 text-gray-500">
-                            {marker.currentLocation.customer_name}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-start gap-2 text-gray-500 pt-1">
-                        <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-semibold text-gray-600 block">
-                            Marker Address:
-                          </span>
-                          {marker.currentLocation.address}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                      <button
-                        onClick={() =>
-                          (window.location.href = `/machine/${marker.machine_id}`)
-                        }
-                        className="text-[#4F6F52] font-bold text-xs flex items-center gap-1 hover:underline"
-                      >
-                        Details <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        )}
-      </motion.div>
-
-      {/* Legend / Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-green-100 text-green-600 rounded-xl">
-              <CheckCircle className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-gray-800">Operational Units</h3>
-          </div>
-          <p className="text-sm text-gray-600">
-            Green markers indicate machines with no active repair tickets and
-            all electronic sensors reporting healthy status.
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-red-100 text-red-600 rounded-xl">
-              <Wrench className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-gray-800">Repair Required</h3>
-          </div>
-          <p className="text-sm text-gray-600">
-            Red markers indicate machines with pending or active repair
-            requests, or system component failures.
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
-              <Info className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-gray-800">Multi-User Units</h3>
-          </div>
-          <p className="text-sm text-gray-600">
-            Units marked with an asterisk (*) are shared by multiple customers.
-            Each customer's location is shown on the map.
-          </p>
-        </div>
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

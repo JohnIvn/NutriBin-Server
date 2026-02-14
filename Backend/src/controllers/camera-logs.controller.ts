@@ -1,10 +1,23 @@
 import {
   Controller,
   Get,
+  Post,
+  Body,
   InternalServerErrorException,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { DatabaseService } from '../service/database/database.service';
+
+interface CameraLog {
+  camera_log_id: string;
+  machine_id: string;
+  user_id: string;
+  customer_id: string;
+  classification: string;
+  details: string;
+  date_created: Date;
+}
 
 @Controller('camera-logs')
 export class CameraLogsController {
@@ -47,6 +60,52 @@ export class CameraLogsController {
     } catch (error) {
       console.error('Camera Logs Fetch Error:', error);
       throw new InternalServerErrorException('Failed to fetch camera logs');
+    }
+  }
+
+  @Post()
+  async createCameraLog(
+    @Body()
+    body: {
+      machine_id: string;
+      user_id: string;
+      customer_id?: string;
+      classification: string;
+      details: any;
+    },
+  ) {
+    const client = this.databaseService.getClient();
+    try {
+      if (!body.machine_id || !body.user_id || !body.classification) {
+        throw new BadRequestException(
+          'Missing required fields: machine_id, user_id, classification',
+        );
+      }
+
+      const result = await client.query<CameraLog>(
+        `
+        INSERT INTO camera_logs 
+          (machine_id, user_id, customer_id, classification, details, date_created)
+        VALUES 
+          ($1, $2, $3, $4, $5, now())
+        RETURNING *
+        `,
+        [
+          body.machine_id,
+          body.user_id,
+          body.customer_id || body.user_id,
+          body.classification,
+          JSON.stringify(body.details),
+        ],
+      );
+
+      return {
+        ok: true,
+        log: result.rows[0],
+      };
+    } catch (error) {
+      console.error('Camera Log Creation Error:', error);
+      throw new InternalServerErrorException('Failed to create camera log');
     }
   }
 

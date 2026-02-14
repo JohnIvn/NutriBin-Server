@@ -38,22 +38,6 @@ export class HardwareController {
     try {
       this.logger.log(`Received sensor data from machine: ${data.machine_id}`);
 
-      // Look up the actual owner (user_id) of the machine
-      const machineQuery = await client.query(
-        `SELECT user_id FROM machines WHERE machine_id = $1`,
-        [data.machine_id],
-      );
-
-      let targetUserId = data.user_id;
-
-      if (machineQuery.rows.length > 0 && machineQuery.rows[0].user_id) {
-        targetUserId = machineQuery.rows[0].user_id;
-      } else {
-        this.logger.warn(
-          `Machine ${data.machine_id} not linked to a user. Attempting to use provided user_id: ${data.user_id}`,
-        );
-      }
-
       await client.query(
         `INSERT INTO fertilizer_analytics (
           user_id, 
@@ -73,7 +57,7 @@ export class HardwareController {
           reed_switch
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
         [
-          targetUserId,
+          data.user_id,
           data.machine_id,
           (data.nitrogen ?? 0).toString(),
           (data.phosphorus ?? 0).toString(),

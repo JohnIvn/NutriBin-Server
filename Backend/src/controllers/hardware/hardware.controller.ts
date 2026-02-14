@@ -38,14 +38,16 @@ export class HardwareController {
     try {
       this.logger.log(`Received sensor data from machine: ${data.machine_id}`);
 
-      // Resolve the serial string to the customer's UUID
+      // Resolve the machine_id to the customer's UUID via machine_customers
       const customerQuery = await client.query<{ customer_id: string }>(
-        `SELECT customer_id FROM user_customer WHERE machine_id = $1`,
-        [data.user_id],
+        `SELECT customer_id FROM machine_customers WHERE machine_id = $1`,
+        [data.machine_id],
       );
 
       if (customerQuery.rows.length === 0) {
-        this.logger.warn(`No customer found with machine_id: ${data.user_id}`);
+        this.logger.warn(
+          `No customer found for machine_id: ${data.machine_id}`,
+        );
         throw new InternalServerErrorException(
           'No customer linked to this serial',
         );

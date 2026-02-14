@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -94,7 +94,6 @@ const SEED_GEO_MAP = {
 };
 
 function MachineMap() {
-  const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [geocodedData, setGeocodedData] = useState([]);
   const [geocodingProgress, setGeocodingProgress] = useState({
@@ -107,11 +106,7 @@ function MachineMap() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [flyToTarget, setFlyToTarget] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setGeocodedData([]);
     setGeocodingProgress({ current: 0, total: 0 });
@@ -122,7 +117,6 @@ function MachineMap() {
         credentials: true,
       });
       if (response.data.ok) {
-        setMachines(response.data.data);
         const data = response.data.data;
 
         // Calculate stats
@@ -142,12 +136,16 @@ function MachineMap() {
 
         geocodeAll(data);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch machine map data");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const filteredMachines = useMemo(() => {
     return geocodedData.filter((m) => {

@@ -85,7 +85,7 @@ function Backup() {
           id,
         });
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred during backup creation", { id });
     } finally {
       setCreating(false);
@@ -105,7 +105,7 @@ function Backup() {
         );
         fetchBackups();
       }
-    } catch (error) {
+    } catch {
       toast.error("Cleanup failed");
     } finally {
       setCleaning(false);

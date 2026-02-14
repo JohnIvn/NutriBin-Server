@@ -78,7 +78,7 @@ export default function CameraLogs() {
         setSummary(summaryRes.data.summary);
         setTrends(summaryRes.data.trends || []);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to fetch camera logs");
     } finally {
       setLoading(false);
@@ -606,7 +606,7 @@ export default function CameraLogs() {
                 <div>
                   <p className="text-sm font-bold text-slate-900">
                     {selectedLog.first_name
-                      ? `${selectedLog.first_name} ${log.last_name}`
+                      ? `${selectedLog.first_name} ${selectedLog.last_name}`
                       : "System Process"}
                   </p>
                   <p className="text-xs text-slate-500">Authorized Operator</p>

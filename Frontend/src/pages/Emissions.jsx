@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardHeader,
@@ -130,55 +130,67 @@ export default function Emissions() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchEmissions = async (date = mainDate) => {
-    try {
-      setLoading(true);
-      const [summaryRes, devicesRes] = await Promise.all([
-        Requests({ url: `/emissions/summary?date=${date}`, method: "GET" }),
-        Requests({ url: `/emissions/devices?date=${date}`, method: "GET" }),
-      ]);
+  const fetchEmissions = useCallback(
+    async (date = mainDate) => {
+      try {
+        setLoading(true);
+        const [summaryRes, devicesRes] = await Promise.all([
+          Requests({ url: `/emissions/summary?date=${date}`, method: "GET" }),
+          Requests({ url: `/emissions/devices?date=${date}`, method: "GET" }),
+        ]);
 
-      if (summaryRes.data.ok) {
-        setSummaryData(summaryRes.data.data);
-        setLatestReading(summaryRes.data.latest);
+        if (summaryRes.data.ok) {
+          setSummaryData(summaryRes.data.data);
+          setLatestReading(summaryRes.data.latest);
+        }
+        if (devicesRes.data.ok) setDeviceData(devicesRes.data.devices);
+      } catch {
+        toast.error("Failed to fetch emissions data");
+      } finally {
+        setLoading(false);
       }
-      if (devicesRes.data.ok) setDeviceData(devicesRes.data.devices);
-    } catch {
-      toast.error("Failed to fetch emissions data");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [mainDate],
+  );
 
-  const fetchHistory = async (machineId, fullName, date = historyDate) => {
-    try {
-      setHistoryLoading(true);
-      setSelectedDevice(machineId);
-      setSelectedDeviceName(fullName);
-      setIsModalOpen(true);
-      const res = await Requests({
-        url: `/emissions/history/${machineId}?date=${date}`,
-        method: "GET",
-      });
-      if (res.data.ok) {
-        setHistoryData(res.data.history.reverse());
+  const fetchHistory = useCallback(
+    async (machineId, fullName, date = historyDate) => {
+      try {
+        setHistoryLoading(true);
+        setSelectedDevice(machineId);
+        setSelectedDeviceName(fullName);
+        setIsModalOpen(true);
+        const res = await Requests({
+          url: `/emissions/history/${machineId}?date=${date}`,
+          method: "GET",
+        });
+        if (res.data.ok) {
+          setHistoryData(res.data.history.reverse());
+        }
+      } catch {
+        toast.error("Failed to fetch history");
+      } finally {
+        setHistoryLoading(false);
       }
-    } catch {
-      toast.error("Failed to fetch history");
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
+    },
+    [historyDate],
+  );
 
   useEffect(() => {
     fetchEmissions(mainDate);
-  }, [mainDate]);
+  }, [mainDate, fetchEmissions]);
 
   useEffect(() => {
     if (isModalOpen && selectedDevice) {
       fetchHistory(selectedDevice, selectedDeviceName, historyDate);
     }
-  }, [historyDate]);
+  }, [
+    historyDate,
+    isModalOpen,
+    selectedDevice,
+    selectedDeviceName,
+    fetchHistory,
+  ]);
 
   const toNumber = (val) => {
     if (val === null || val === undefined) return 0;

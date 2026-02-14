@@ -709,22 +709,21 @@ function ActiveMachinesDisplay() {
     loading: true,
   });
 
-  const fetchStatus = async () => {
-    try {
-      const res = await Requests({
-        url: "/management/status/active-machines",
-        method: "GET",
-      });
-      const json = res?.data;
-      if (json && json.ok && json.status) {
-        setData({ ...json.status, loading: false });
-      }
-    } catch {
-      setData((s) => ({ ...s, loading: false }));
-    }
-  };
-
   useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await Requests({
+          url: "/management/status/active-machines",
+          method: "GET",
+        });
+        const json = res?.data;
+        if (json && json.ok && json.status) {
+          setData({ ...json.status, loading: false });
+        }
+      } catch {
+        setData((s) => ({ ...s, loading: false }));
+      }
+    };
     fetchStatus();
   }, []);
 

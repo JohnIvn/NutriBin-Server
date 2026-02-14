@@ -40,14 +40,14 @@ export class HardwareController {
 
       // Look up the actual owner (user_id) of the machine
       const machineQuery = await client.query(
-        `SELECT owner_id FROM machines WHERE machine_id = $1`,
+        `SELECT user_id FROM machines WHERE machine_id = $1`,
         [data.machine_id],
       );
 
       let targetUserId = data.user_id;
 
-      if (machineQuery.rows.length > 0 && machineQuery.rows[0].owner_id) {
-        targetUserId = machineQuery.rows[0].owner_id;
+      if (machineQuery.rows.length > 0 && machineQuery.rows[0].user_id) {
+        targetUserId = machineQuery.rows[0].user_id;
       } else {
         this.logger.warn(
           `Machine ${data.machine_id} not linked to a user. Attempting to use provided user_id: ${data.user_id}`,

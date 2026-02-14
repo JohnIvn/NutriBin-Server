@@ -19,6 +19,36 @@ interface CameraLog {
   date_created: Date;
 }
 
+// Map detected objects to valid classification sizes
+const classificationMap: { [key: string]: string } = {
+  // Large objects
+  bed: 'large',
+  table: 'large',
+  couch: 'large',
+  sofa: 'large',
+  desk: 'large',
+  wardrobe: 'large',
+  cabinet: 'large',
+  refrigerator: 'large',
+  // Medium objects
+  chair: 'medium',
+  box: 'medium',
+  bag: 'medium',
+  container: 'medium',
+  // Small objects
+  cup: 'small',
+  bottle: 'small',
+  phone: 'small',
+  book: 'small',
+  pen: 'small',
+  key: 'small',
+};
+
+function mapClassification(objectType: string): string {
+  const normalized = objectType.toLowerCase().trim();
+  return classificationMap[normalized] || 'N/A';
+}
+
 @Controller('camera-logs')
 export class CameraLogsController {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -82,6 +112,8 @@ export class CameraLogsController {
         );
       }
 
+      const mappedClassification = mapClassification(body.classification);
+
       const result = await client.query<CameraLog>(
         `
         INSERT INTO camera_logs 
@@ -94,7 +126,7 @@ export class CameraLogsController {
           body.machine_id,
           body.user_id,
           body.customer_id || body.user_id,
-          body.classification,
+          mappedClassification,
           JSON.stringify(body.details),
         ],
       );

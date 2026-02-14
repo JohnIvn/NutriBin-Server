@@ -539,17 +539,15 @@ function Fertilizer() {
                           className="hover:bg-gray-50/50 transition-colors group"
                         >
                           <td className="px-6 py-5">
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-0.5">
                               <span className="font-mono text-xs font-bold text-[#4F6F52] group-hover:underline cursor-pointer">
-                                NB-
-                                {log.fertilizer_analytics_id
-                                  .slice(0, 8)
-                                  .toUpperCase()}
+                                NB-{log.fertilizer_analytics_id.toUpperCase()}
+                              </span>
+                              <span className="text-[10px] font-mono font-medium text-gray-500">
+                                ID: {log.machine_id}
                               </span>
                               <span className="text-[10px] text-gray-400 font-medium">
-                                Machine:{" "}
-                                {log.machine_name ||
-                                  log.machine_id.split("-")[0]}
+                                Owner: {log.machine_name}
                               </span>
                             </div>
                           </td>

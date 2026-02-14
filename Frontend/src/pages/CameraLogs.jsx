@@ -457,7 +457,7 @@ export default function CameraLogs() {
                             </div>
                             <div>
                               <p className="text-xs font-mono font-bold text-slate-700">
-                                {log.machine_id?.slice(0, 8)}
+                                {log.machine_id}
                               </p>
                               <p className="text-[10px] text-slate-400">
                                 Terminal Node

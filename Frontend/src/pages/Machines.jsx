@@ -311,7 +311,7 @@ function Machines() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-[10px] font-black text-gray-300 uppercase leading-none mb-1">
-                          REQ-{repair.repair_id.slice(0, 8)}
+                          REQ-{repair.repair_id}
                         </p>
                         <h3 className="text-lg font-black text-[#1A1A1A] truncate">
                           {repair.first_name} {repair.last_name}

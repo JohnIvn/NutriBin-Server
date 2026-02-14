@@ -123,7 +123,7 @@ function DataScience() {
                     : "bg-white border-gray-100 text-gray-500 hover:border-[#4F6F52]/30 hover:bg-[#4F6F52]/5"
                 }`}
               >
-                UNIT {machine.name.substring(0, 8).toUpperCase()}
+                UNIT {machine.name.toUpperCase()}
               </button>
             ))}
           </div>
@@ -190,7 +190,7 @@ function DataScience() {
             <p className="text-[#4F6F52] font-black text-xs uppercase tracking-[0.2em] mb-1">
               Dashboard /{" "}
               {selectedMachine
-                ? `Unit ${selectedMachine.substring(0, 8).toUpperCase()}`
+                ? `Unit ${selectedMachine.toUpperCase()}`
                 : "Laboratory Analysis"}
             </p>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">

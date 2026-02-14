@@ -58,7 +58,7 @@ export class FertilizerController {
       }>(
         `
         SELECT 
-          SUBSTRING(fertilizer_analytics_id::text, 1, 6) as batch,
+          machine_id as batch,
           nitrogen,
           phosphorus as phosporus,
           potassium
@@ -72,7 +72,7 @@ export class FertilizerController {
 
       const formattedData = result.rows
         .map((row) => ({
-          batch: `NB${row.batch.toUpperCase()}`,
+          batch: row.batch.toUpperCase(),
           nitrogen: this.toNumber(row.nitrogen),
           phosporus: this.toNumber(row.phosporus),
           potassium: this.toNumber(row.potassium),

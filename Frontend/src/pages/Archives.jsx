@@ -302,7 +302,7 @@ function Archives() {
                         className="hover:bg-gray-50/30 transition-all"
                       >
                         <TableCell className="pl-6 font-mono text-xs text-gray-500">
-                          {id?.slice(0, 8)}...
+                          {id}
                         </TableCell>
                         <TableCell className="font-semibold text-gray-800">
                           {item.first_name} {item.last_name}

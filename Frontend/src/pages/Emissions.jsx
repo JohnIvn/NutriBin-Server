@@ -606,7 +606,7 @@ export default function Emissions() {
                             </div>
                             <div>
                               <p className="text-xs font-mono font-bold text-slate-700">
-                                {dev.machine_id.slice(0, 12)}...
+                                {dev.machine_id}
                               </p>
                               <div className="flex items-center gap-1.5 mt-0.5">
                                 <User className="h-3 w-3 text-slate-400" />

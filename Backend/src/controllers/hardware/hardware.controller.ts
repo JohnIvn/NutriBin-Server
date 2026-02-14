@@ -38,6 +38,21 @@ export class HardwareController {
     try {
       this.logger.log(`Received sensor data from machine: ${data.machine_id}`);
 
+      // Resolve the serial string to the customer's UUID
+      const customerQuery = await client.query<{ customer_id: string }>(
+        `SELECT customer_id FROM user_customer WHERE machine_id = $1`,
+        [data.user_id],
+      );
+
+      if (customerQuery.rows.length === 0) {
+        this.logger.warn(`No customer found with machine_id: ${data.user_id}`);
+        throw new InternalServerErrorException(
+          'No customer linked to this serial',
+        );
+      }
+
+      const resolvedUserId = customerQuery.rows[0].customer_id;
+
       await client.query(
         `INSERT INTO fertilizer_analytics (
           user_id, 
@@ -57,7 +72,7 @@ export class HardwareController {
           reed_switch
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
         [
-          data.user_id,
+          resolvedUserId,
           data.machine_id,
           (data.nitrogen ?? 0).toString(),
           (data.phosphorus ?? 0).toString(),

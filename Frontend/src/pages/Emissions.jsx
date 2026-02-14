@@ -576,6 +576,12 @@ export default function Emissions() {
                       Methane
                     </th>
                     <th className="px-6 py-4 text-left text-[11px] font-extrabold text-slate-400 uppercase tracking-widest text-center">
+                      CO Level
+                    </th>
+                    <th className="px-6 py-4 text-left text-[11px] font-extrabold text-slate-400 uppercase tracking-widest text-center">
+                      Combustibles
+                    </th>
+                    <th className="px-6 py-4 text-left text-[11px] font-extrabold text-slate-400 uppercase tracking-widest text-center">
                       Air Quality
                     </th>
                     <th className="px-6 py-4 text-left text-[11px] font-extrabold text-slate-400 uppercase tracking-widest text-center">
@@ -620,6 +626,22 @@ export default function Emissions() {
                         <td className="px-6 py-4 text-center">
                           <span className="text-sm font-bold text-slate-700">
                             {dev.methane || "0"}
+                          </span>
+                          <span className="text-[10px] text-slate-400 ml-1">
+                            ppm
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-bold text-slate-700">
+                            {dev.carbon_monoxide || "0"}
+                          </span>
+                          <span className="text-[10px] text-slate-400 ml-1">
+                            ppm
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-bold text-slate-700">
+                            {dev.combustible_gases || "0"}
                           </span>
                           <span className="text-[10px] text-slate-400 ml-1">
                             ppm

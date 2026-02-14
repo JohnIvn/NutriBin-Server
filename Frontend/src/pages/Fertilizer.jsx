@@ -595,14 +595,34 @@ function Fertilizer() {
                                   {log.moisture}% H2O
                                 </span>
                               </div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                <span className="text-xs font-bold text-gray-700">
+                                  {log.weight}kg Weight
+                                </span>
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-5">
-                            <div className="flex items-center gap-2 bg-gray-50 h-fit w-fit px-2 py-1 rounded-lg border border-gray-100">
-                              <Thermometer className="h-3.5 w-3.5 text-gray-400" />
-                              <span className="text-xs font-bold text-gray-600">
-                                {log.temperature}°C
-                              </span>
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center gap-2 bg-gray-50 h-fit w-fit px-2 py-1 rounded-lg border border-gray-100">
+                                <Thermometer className="h-3.5 w-3.5 text-gray-400" />
+                                <span className="text-xs font-bold text-gray-600">
+                                  {log.temperature}°C
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`w-2 h-2 rounded-full ${log.reed_switch === "1" || log.reed_switch?.toLowerCase() === "closed" ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`}
+                                />
+                                <span className="text-[10px] font-bold text-gray-500 uppercase">
+                                  Lid:{" "}
+                                  {log.reed_switch === "1" ||
+                                  log.reed_switch?.toLowerCase() === "closed"
+                                    ? "Closed"
+                                    : "Open"}
+                                </span>
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-5">

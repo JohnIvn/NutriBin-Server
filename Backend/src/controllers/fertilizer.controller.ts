@@ -24,14 +24,21 @@ export class FertilizerController {
       const dateFilter = date ? `WHERE DATE(date_created) = $1` : '';
       const params = date ? [date] : [];
 
-      const result = await client.query<{ total: string }>(
-        `SELECT COUNT(*) as total FROM fertilizer_analytics ${dateFilter}`,
+      const result = await client.query<{
+        total: string;
+        total_weight: string | null;
+      }>(
+        `SELECT COUNT(*) as total, SUM(NULLIF(regexp_replace(weight_kg, '[^0-9.]', '', 'g'), '')::numeric) as total_weight FROM fertilizer_analytics ${dateFilter}`,
         params,
       );
 
-      // Rough estimation: each reading represents a batch of ~0.75kg
+      // Rough estimation fallback: each reading represents a batch of ~0.75kg
       const totalCount = parseInt(result.rows[0].total);
-      const productionKg = (totalCount * 0.75).toFixed(2);
+      const totalWeight = parseFloat(result.rows[0].total_weight || '0');
+      const productionKg =
+        totalWeight > 0
+          ? totalWeight.toFixed(2)
+          : (totalCount * 0.75).toFixed(2);
 
       return {
         ok: true,
@@ -55,13 +62,15 @@ export class FertilizerController {
         nitrogen: string;
         phosporus: string;
         potassium: string;
+        weight: string;
       }>(
         `
         SELECT 
           machine_id as batch,
           nitrogen,
           phosphorus as phosporus,
-          potassium
+          potassium,
+          weight_kg as weight
         FROM fertilizer_analytics
         ${dateFilter}
         ORDER BY date_created DESC
@@ -76,6 +85,7 @@ export class FertilizerController {
           nitrogen: this.toNumber(row.nitrogen),
           phosporus: this.toNumber(row.phosporus),
           potassium: this.toNumber(row.potassium),
+          weight: this.toNumber(row.weight),
         }))
         .reverse();
 
@@ -153,13 +163,15 @@ export class FertilizerController {
         active_devices: string | null;
         avg_ph: string | null;
         avg_moisture: string | null;
+        total_weight: string | null;
       }>(
         `
         SELECT 
           COUNT(*) as total_batches,
           COUNT(DISTINCT machine_id) as active_devices,
           AVG(NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric) as avg_ph,
-          AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) as avg_moisture
+          AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) as avg_moisture,
+          SUM(NULLIF(regexp_replace(weight_kg, '[^0-9.]', '', 'g'), '')::numeric) as total_weight
         FROM fertilizer_analytics
         ${dateFilter}
       `,
@@ -168,6 +180,7 @@ export class FertilizerController {
 
       const row = result.rows[0];
       const totalBatches = parseInt(row.total_batches || '0');
+      const totalWeight = parseFloat(row.total_weight || '0');
 
       return {
         ok: true,
@@ -175,7 +188,10 @@ export class FertilizerController {
           total_batches: totalBatches,
           active_devices: parseInt(row.active_devices || '0'),
           processed_waste: (totalBatches * 1.25).toFixed(1), // Estimated intake
-          fertilizer_yield: (totalBatches * 0.75).toFixed(1), // Estimated output
+          fertilizer_yield:
+            totalWeight > 0
+              ? totalWeight.toFixed(1)
+              : (totalBatches * 0.75).toFixed(1), // Estimated output fallback
           avg_ph: parseFloat(row.avg_ph || '0').toFixed(1),
           avg_moisture: parseFloat(row.avg_moisture || '0').toFixed(1),
         },
@@ -261,6 +277,8 @@ export class FertilizerController {
           f.ph,
           f.moisture,
           f.temperature,
+          f.weight_kg as weight,
+          f.reed_switch,
           f.date_created,
           CASE 
             WHEN uc.first_name IS NULL AND uc.last_name IS NULL THEN 'No Owner'

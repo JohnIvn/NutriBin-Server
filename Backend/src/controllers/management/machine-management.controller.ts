@@ -27,16 +27,20 @@ export class MachineManagementController {
 
     try {
       const result = await client.query<MachineRow>(
-        `SELECT 
+        `SELECT DISTINCT ON (m.machine_id)
           m.machine_id,
           uc.customer_id as user_id,
           uc.first_name,
           uc.last_name,
-          uc.email
+          uc.email,
+          CASE 
+            WHEN uc.first_name IS NULL AND uc.last_name IS NULL THEN 'No Owner'
+            ELSE TRIM(CONCAT(uc.first_name, ' ', uc.last_name))
+          END as machine_name
          FROM machines m
          LEFT JOIN machine_customers mc ON m.machine_id = mc.machine_id
          LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
-         ORDER BY m.machine_id`,
+         ORDER BY m.machine_id, uc.first_name`,
       );
 
       return {

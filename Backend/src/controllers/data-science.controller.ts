@@ -44,7 +44,7 @@ export class DataScienceController {
   async getMachines() {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const result = await client.query<{ machine_id: string; name: string }>(`
         SELECT DISTINCT m.machine_id, m.machine_id as name
         FROM machines m
         INNER JOIN fertilizer_analytics fa ON m.machine_id = fa.machine_id

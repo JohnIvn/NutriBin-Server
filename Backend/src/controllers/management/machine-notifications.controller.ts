@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   InternalServerErrorException,
   Param,
   Patch,
@@ -17,7 +18,17 @@ export class MachineNotificationsController {
   async getAllNotifications() {
     const client = this.databaseService.getClient();
     try {
-      const result = await client.query(`
+      const result = await client.query<{
+        notification_id: string;
+        machine_id: string;
+        header: string;
+        subheader: string;
+        type: string;
+        description: string;
+        date: string;
+        resolved: boolean;
+        date_created: string;
+      }>(`
         SELECT 
           mn.notification_id,
           mn.machine_id,
@@ -40,6 +51,40 @@ export class MachineNotificationsController {
       throw new InternalServerErrorException(
         'Failed to fetch machine notifications',
       );
+    }
+  }
+
+  @Post()
+  async createNotification(
+    @Body('machine_id') machineId: string,
+    @Body('header') header: string,
+    @Body('subheader') subheader: string,
+    @Body('description') description: string,
+    @Body('type') type: string,
+  ) {
+    const client = this.databaseService.getClient();
+    try {
+      const result = await client.query<{ notification_id: string }>(
+        `
+        INSERT INTO machine_notifications (machine_id, header, subheader, description, type, date, resolved)
+        VALUES ($1, $2, $3, $4, $5, NOW(), false)
+        RETURNING notification_id
+        `,
+        [
+          machineId,
+          header,
+          subheader || null,
+          description || null,
+          type || 'info',
+        ],
+      );
+      return {
+        ok: true,
+        notification_id: result.rows[0].notification_id,
+      };
+    } catch (error) {
+      console.error('Failed to create notification', error);
+      throw new InternalServerErrorException('Failed to create notification');
     }
   }
 

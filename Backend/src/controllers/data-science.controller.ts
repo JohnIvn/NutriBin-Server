@@ -6,6 +6,36 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../service/database/database.service';
 
+interface MetadataRow {
+  total_machines: string;
+  total_readings: string;
+}
+
+interface FertilizerReadingRow {
+  nitrogen: string;
+  phosphorus: string;
+  potassium: string;
+  ph: string;
+  moisture: string;
+  date_created: Date;
+}
+
+interface DataScienceRow {
+  n: string;
+  p: string;
+  k: string;
+  ph: string;
+  recommended_plants_1: string;
+}
+
+interface AverageFertilizerRow {
+  avg_n: string;
+  avg_p: string;
+  avg_k: string;
+  avg_ph: string;
+  avg_moisture: string;
+}
+
 @Controller('data-science')
 export class DataScienceController {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -38,13 +68,13 @@ export class DataScienceController {
       const params = machineId ? [machineId] : [];
 
       // Get metadata for summary
-      const metadataResult = await client.query(`
+      const metadataResult = await client.query<MetadataRow>(`
         SELECT COUNT(DISTINCT machine_id) as total_machines,
         COUNT(*) as total_readings
         FROM fertilizer_analytics
       `);
 
-      const result = await client.query(
+      const result = await client.query<AverageFertilizerRow>(
         `
         SELECT 
           AVG(NULLIF(regexp_replace(nitrogen, '[^0-9.]', '', 'g'), '')::numeric) as avg_n,
@@ -58,7 +88,7 @@ export class DataScienceController {
         params,
       );
 
-      const currentResult = await client.query(
+      const currentResult = await client.query<FertilizerReadingRow>(
         `
         SELECT 
           regexp_replace(nitrogen, '[^0-9.]', '', 'g') as nitrogen,
@@ -137,7 +167,7 @@ export class DataScienceController {
       if (machineId && currentResult.rows.length > 0) {
         try {
           // Check for duplicate data to avoid redundant entries
-          const lastSaved = await client.query(
+          const lastSaved = await client.query<DataScienceRow>(
             'SELECT n, p, k, ph, recommended_plants_1 FROM data_science WHERE machine_id = $1 ORDER BY date_created DESC LIMIT 1',
             [machineId],
           );
@@ -227,7 +257,7 @@ export class DataScienceController {
 
       return {
         ok: true,
-        history: result.rows,
+        history: result.rows as unknown,
       };
     } catch (error) {
       console.error('Data Science History Error:', error);

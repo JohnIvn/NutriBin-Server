@@ -1,6 +1,26 @@
 import { Controller, Get, InternalServerErrorException } from '@nestjs/common';
 import { DatabaseService } from '../../service/database/database.service';
 
+interface MachineMapRow {
+  machine_id: string;
+  customer_id: string;
+  first_name: string;
+  last_name: string;
+  address: string;
+  has_repair_ticket: boolean;
+  [key: string]: string | number | boolean | null;
+}
+
+interface MachineGroup {
+  machine_id: string;
+  status: 'healthy' | 'needs_repair';
+  locations: Array<{
+    customer_id: string;
+    customer_name: string;
+    address: string;
+  }>;
+}
+
 @Controller('management/machine-map')
 export class MachineMapController {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -27,9 +47,9 @@ export class MachineMapController {
         WHERE uc.address IS NOT NULL
       `;
 
-      const result = await client.query(query);
+      const result = await client.query<MachineMapRow>(query);
 
-      const machinesMap = new Map<string, any>();
+      const machinesMap = new Map<string, MachineGroup>();
 
       for (const row of result.rows) {
         // Calculate health from components
@@ -83,11 +103,13 @@ export class MachineMapController {
         }
 
         const machine = machinesMap.get(row.machine_id);
-        machine.locations.push({
-          customer_id: row.customer_id,
-          customer_name: `${row.first_name} ${row.last_name}`,
-          address: row.address,
-        });
+        if (machine) {
+          machine.locations.push({
+            customer_id: row.customer_id,
+            customer_name: `${row.first_name} ${row.last_name}`,
+            address: row.address,
+          });
+        }
       }
 
       // Add hasMultipleLocations flag

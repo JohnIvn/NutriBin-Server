@@ -45,7 +45,7 @@ export class EmissionsController {
           ORDER BY date_created DESC
           LIMIT 1
         `);
-        latest = latestResult.rows[0];
+        latest = latestResult.rows[0] as unknown;
       }
 
       return {

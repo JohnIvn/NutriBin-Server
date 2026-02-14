@@ -14,6 +14,7 @@ type MachineRow = {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+  [key: string]: string | number | boolean | null;
 };
 
 @Controller('management/machines')
@@ -53,7 +54,7 @@ export class MachineManagementController {
 
     try {
       // Get all users associated with the machine and the machine details
-      const machineResult = await client.query(
+      const machineResult = await client.query<MachineRow>(
         `SELECT 
           m.machine_id,
           mc.customer_id as user_id,
@@ -148,7 +149,7 @@ export class MachineManagementController {
         machine: {
           ...machineInfo,
           users,
-          fertilizer_analytics: fertilizerResult.rows,
+          fertilizer_analytics: fertilizerResult.rows as unknown,
           error_rate: errorRate.toFixed(2),
         },
       };

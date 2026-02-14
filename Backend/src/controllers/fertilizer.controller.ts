@@ -6,6 +6,13 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../service/database/database.service';
 
+interface FertilizerTrendRow {
+  label: string;
+  nitrogen: string;
+  phosphorus: string;
+  potassium: string;
+}
+
 @Controller('fertilizer')
 export class FertilizerController {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -217,7 +224,7 @@ export class FertilizerController {
         `;
       }
 
-      const result = await client.query(query, params);
+      const result = await client.query<FertilizerTrendRow>(query, params);
 
       return {
         ok: true,

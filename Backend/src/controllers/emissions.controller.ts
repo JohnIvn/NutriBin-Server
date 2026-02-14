@@ -7,6 +7,15 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../service/database/database.service';
 
+interface LatestReading {
+  nitrogen: string;
+  methane: string;
+  air_quality: string;
+  carbon_monoxide: string;
+  combustible_gases: string;
+  date_created: Date;
+}
+
 @Controller('emissions')
 export class EmissionsController {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -36,21 +45,21 @@ export class EmissionsController {
       );
 
       // Also get the latest reading for global context if the requested date is today
-      let latest = null;
+      let latest: LatestReading | null = null;
       if (selectedDate === new Date().toISOString().split('T')[0]) {
-        const latestResult = await client.query(`
+        const latestResult = await client.query<LatestReading>(`
           SELECT 
             nitrogen, methane, air_quality, carbon_monoxide, combustible_gases, date_created
           FROM fertilizer_analytics
           ORDER BY date_created DESC
           LIMIT 1
         `);
-        latest = latestResult.rows[0] as unknown;
+        latest = latestResult.rows[0] || null;
       }
 
       return {
         ok: true,
-        data: result.rows,
+        data: result.rows as unknown,
         latest,
         selectedDate,
       };

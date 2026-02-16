@@ -72,7 +72,7 @@ function Serial() {
   });
 
   const createForm = useForm({
-    defaultValues: { numbers: "", alphanumeric: "" },
+    defaultValues: { numbers: "", alphanumeric: "", model: "NB-100" },
   });
 
   const fetchSerials = async () => {
@@ -106,7 +106,7 @@ function Serial() {
         url: "/management/serials",
         method: "POST",
         credentials: true,
-        data: { serial_number: serialNumber },
+        data: { serial_number: serialNumber, model: data.model },
       });
 
       if (response.data.ok) {
@@ -198,6 +198,7 @@ function Serial() {
     if (!searchTerm) return true;
     return (
       serial.serial_number.toLowerCase().includes(searchTerm) ||
+      (serial.model && serial.model.toLowerCase().includes(searchTerm)) ||
       (serial.machine_id &&
         serial.machine_id.toLowerCase().includes(searchTerm))
     );
@@ -245,22 +246,29 @@ function Serial() {
                 >
                   <div>
                     <label className="text-sm font-medium text-[#4F6F52] block mb-3">
-                      Serial Number Format: Serial-{"(13 numbers)"}-(9 alphanumeric)
+                      Serial Number Format: Serial-{"(13 numbers)"}-(9
+                      alphanumeric)
                     </label>
                     <div className="flex gap-2 items-end">
                       <div className="flex-shrink-0">
-                        <div className="text-sm font-medium text-gray-700 mb-2">Serial</div>
+                        <div className="text-sm font-medium text-gray-700 mb-2">
+                          Serial
+                        </div>
                         <div className="h-11 px-3 py-2 bg-gray-100 border border-gray-200 rounded-md flex items-center text-gray-500 font-medium">
                           Serial
                         </div>
                       </div>
-                      <span className="text-xl font-bold text-gray-400 mb-2">-</span>
+                      <span className="text-xl font-bold text-gray-400 mb-2">
+                        -
+                      </span>
                       <FormField
                         control={createForm.control}
                         name="numbers"
                         render={({ field }) => (
                           <FormItem className="flex-1">
-                            <label className="text-sm font-medium text-gray-700">13 Numbers</label>
+                            <label className="text-sm font-medium text-gray-700">
+                              13 Numbers
+                            </label>
                             <FormControl>
                               <Input
                                 placeholder="0000000000000"
@@ -269,7 +277,9 @@ function Serial() {
                                 className="border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52]"
                                 {...field}
                                 onChange={(e) => {
-                                  const value = e.target.value.replace(/\D/g, '').slice(0, 13);
+                                  const value = e.target.value
+                                    .replace(/\D/g, "")
+                                    .slice(0, 13);
                                   field.onChange(value);
                                 }}
                               />
@@ -278,13 +288,17 @@ function Serial() {
                           </FormItem>
                         )}
                       />
-                      <span className="text-xl font-bold text-gray-400 mb-2">-</span>
+                      <span className="text-xl font-bold text-gray-400 mb-2">
+                        -
+                      </span>
                       <FormField
                         control={createForm.control}
                         name="alphanumeric"
                         render={({ field }) => (
                           <FormItem className="flex-1">
-                            <label className="text-sm font-medium text-gray-700">9 Alphanumeric</label>
+                            <label className="text-sm font-medium text-gray-700">
+                              9 Alphanumeric
+                            </label>
                             <FormControl>
                               <Input
                                 placeholder="ABCD12345"
@@ -292,7 +306,10 @@ function Serial() {
                                 className="border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] uppercase"
                                 {...field}
                                 onChange={(e) => {
-                                  const value = e.target.value.replace(/[^A-Z0-9]/g, '').slice(0, 9).toUpperCase();
+                                  const value = e.target.value
+                                    .replace(/[^A-Z0-9]/g, "")
+                                    .slice(0, 9)
+                                    .toUpperCase();
                                   field.onChange(value);
                                 }}
                               />
@@ -303,6 +320,36 @@ function Serial() {
                       />
                     </div>
                   </div>
+
+                  <FormField
+                    control={createForm.control}
+                    name="model"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="text-sm font-medium text-gray-700">
+                          Machine Model
+                        </label>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-11 border-gray-200">
+                              <SelectValue placeholder="Select a model" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="NB-100">
+                              NB-100 (Standard)
+                            </SelectItem>
+                            <SelectItem value="NB-200">NB-200 (Pro)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
                     <Button
                       type="button"
@@ -395,6 +442,9 @@ function Serial() {
                     SERIAL NUMBER
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
+                    MODEL
+                  </TableHead>
+                  <TableHead className="font-bold text-gray-700">
                     MACHINE ID
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
@@ -414,7 +464,7 @@ function Serial() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-64 text-center">
+                    <TableCell colSpan={7} className="h-64 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
                         <p className="text-gray-400 font-medium">
@@ -426,7 +476,7 @@ function Serial() {
                 ) : paginatedSerials.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className="h-64 text-center text-gray-400 font-medium"
                     >
                       No serial numbers found.
@@ -440,6 +490,11 @@ function Serial() {
                     >
                       <TableCell className="font-mono text-[#4F6F52] font-bold pl-6">
                         {serial.serial_number}
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-bold text-[#3A4D39]">
+                          {serial.model}
+                        </span>
                       </TableCell>
                       <TableCell className="font-mono text-xs text-gray-500">
                         {serial.machine_id || "Not Linked"}

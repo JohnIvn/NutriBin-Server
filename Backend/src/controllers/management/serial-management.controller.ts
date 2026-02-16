@@ -25,6 +25,7 @@ export class SerialManagementController {
         `SELECT 
           ms.machine_serial_id,
           ms.serial_number,
+          ms.model,
           ms.is_used,
           ms.is_active,
           ms.date_created,
@@ -48,6 +49,7 @@ export class SerialManagementController {
     @Body()
     body: {
       serial_number?: string;
+      model?: string;
     },
   ) {
     const client = this.databaseService.getClient();
@@ -56,8 +58,13 @@ export class SerialManagementController {
       throw new BadRequestException('Serial number is required');
     }
 
+    if (!body?.model || body.model.trim() === '') {
+      throw new BadRequestException('Model is required');
+    }
+
     try {
       const serialNumber = String(body.serial_number).trim();
+      const model = String(body.model).trim();
 
       // Check if serial already exists
       const existingSerial = await client.query(
@@ -71,10 +78,10 @@ export class SerialManagementController {
 
       // Insert new serial
       const result = await client.query(
-        `INSERT INTO machine_serial (serial_number, is_used, is_active, date_created)
-         VALUES ($1, $2, $3, NOW())
-         RETURNING machine_serial_id, serial_number, is_used, is_active, date_created`,
-        [serialNumber, false, true],
+        `INSERT INTO machine_serial (serial_number, model, is_used, is_active, date_created)
+         VALUES ($1, $2, $3, $4, NOW())
+         RETURNING machine_serial_id, serial_number, model, is_used, is_active, date_created`,
+        [serialNumber, model, false, true],
       );
 
       return {

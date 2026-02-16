@@ -143,7 +143,7 @@ function Modules() {
     { code: "s3", label: "Gas_Methane" },
     { code: "s4", label: "Gas_Carbon_monoxide" },
     { code: "s5", label: "Gas_Air_quality" },
-    { code: "s6", label: "Gas_Combustible_gassy" },
+    { code: "s6", label: "Gas_Combustible_gases" },
     { code: "s7", label: "NPK_Sensor" },
     { code: "s8", label: "Moisture" },
     { code: "s9", label: "Reed" },

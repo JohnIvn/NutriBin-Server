@@ -28,7 +28,6 @@ type RepairRow = {
   c2?: boolean;
   c3?: boolean;
   c4?: boolean;
-  c5?: boolean;
   s1?: boolean;
   s2?: boolean;
   s3?: boolean;
@@ -38,13 +37,13 @@ type RepairRow = {
   s7?: boolean;
   s8?: boolean;
   s9?: boolean;
+  s10?: boolean;
+  s11?: boolean;
   m1?: boolean;
   m2?: boolean;
   m3?: boolean;
   m4?: boolean;
   m5?: boolean;
-  m6?: boolean;
-  m7?: boolean;
 };
 
 type CustomerEmailRow = {
@@ -57,7 +56,6 @@ const repairComponentColumns = [
   'c2',
   'c3',
   'c4',
-  'c5',
   's1',
   's2',
   's3',
@@ -67,13 +65,13 @@ const repairComponentColumns = [
   's7',
   's8',
   's9',
+  's10',
+  's11',
   'm1',
   'm2',
   'm3',
   'm4',
   'm5',
-  'm6',
-  'm7',
 ] as const;
 
 @Controller('management/repair')

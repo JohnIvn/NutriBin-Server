@@ -65,9 +65,9 @@ export class MachineManagementController {
           uc.first_name,
           uc.last_name,
           uc.email,
-          m.C1, m.C2, m.C3, m.C4, m.C5,
-          m.S1, m.S2, m.S3, m.S4, m.S5, m.S6, m.S7, m.S8, m.S9,
-          m.M1, m.M2, m.M3, m.M4, m.M5, m.M6, m.M7
+          m.c1, m.c2, m.c3, m.c4,
+          m.s1, m.s2, m.s3, m.s4, m.s5, m.s6, m.s7, m.s8, m.s9, m.s10, m.s11,
+          m.m1, m.m2, m.m3, m.m4, m.m5
          FROM machines m
          LEFT JOIN machine_customers mc ON m.machine_id = mc.machine_id
          LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
@@ -118,27 +118,27 @@ export class MachineManagementController {
       let workingComponents = 0;
       let totalComponents = 0;
 
-      // Count microcontrollers (C1-C5)
+      // Count microcontrollers (c1-c4)
+      for (let i = 1; i <= 4; i++) {
+        const key = `c${i}`;
+        totalComponents++;
+        if (machineComponents[key] === true) {
+          workingComponents++;
+        }
+      }
+
+      // Count sensors (s1-s11)
+      for (let i = 1; i <= 11; i++) {
+        const key = `s${i}`;
+        totalComponents++;
+        if (machineComponents[key] === true) {
+          workingComponents++;
+        }
+      }
+
+      // Count motors (m1-m5)
       for (let i = 1; i <= 5; i++) {
-        const key = `C${i}`;
-        totalComponents++;
-        if (machineComponents[key] === true) {
-          workingComponents++;
-        }
-      }
-
-      // Count sensors (S1-S9)
-      for (let i = 1; i <= 9; i++) {
-        const key = `S${i}`;
-        totalComponents++;
-        if (machineComponents[key] === true) {
-          workingComponents++;
-        }
-      }
-
-      // Count motors (M1-M7)
-      for (let i = 1; i <= 7; i++) {
-        const key = `M${i}`;
+        const key = `m${i}`;
         totalComponents++;
         if (machineComponents[key] === true) {
           workingComponents++;

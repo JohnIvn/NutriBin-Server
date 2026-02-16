@@ -65,6 +65,71 @@ export default function CameraLogs() {
   const [selectedClass, setSelectedClass] = useState("all");
   const [selectedLog, setSelectedLog] = useState(null);
 
+  const renderDetails = (details) => {
+    if (!details)
+      return <span className="text-slate-400 italic">No telemetric data</span>;
+
+    try {
+      const parsed =
+        typeof details === "string" ? JSON.parse(details) : details;
+
+      if (typeof parsed === "object" && parsed !== null) {
+        return (
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(parsed)
+              .filter(([key]) => key.toLowerCase() !== "timestamp")
+              .map(([key, value]) => (
+                <Badge
+                  key={key}
+                  variant="secondary"
+                  className="bg-slate-100 text-[10px] text-slate-600 border-none font-medium normal-case"
+                >
+                  <span className="font-bold mr-1 capitalize">
+                    {key.replace(/_/g, " ")}:
+                  </span>
+                  {String(value)}
+                </Badge>
+              ))}
+          </div>
+        );
+      }
+    } catch (e) {
+      // If it's not JSON, we continue to standard string rendering
+    }
+
+    const isError =
+      details.toLowerCase().includes("fault") ||
+      details.toLowerCase().includes("error");
+
+    if (isError) {
+      return (
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-50 text-red-600 text-[11px] font-medium">
+          <AlertCircle className="h-3 w-3" />
+          {details}
+        </div>
+      );
+    }
+
+    return <span className="text-slate-600 text-sm">{details}</span>;
+  };
+
+  const getSimplifiedDetails = (details) => {
+    if (!details) return "N/A";
+    try {
+      const parsed =
+        typeof details === "string" ? JSON.parse(details) : details;
+      if (typeof parsed === "object" && parsed !== null) {
+        return Object.entries(parsed)
+          .filter(([key]) => key.toLowerCase() !== "timestamp")
+          .map(([key, value]) => `${key.replace(/_/g, " ")}: ${value}`)
+          .join(" | ");
+      }
+    } catch (e) {
+      // Not JSON
+    }
+    return details;
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -141,7 +206,7 @@ export default function CameraLogs() {
         [
           log.camera_log_id,
           log.machine_id,
-          `"${log.details}"`,
+          `"${getSimplifiedDetails(log.details)}"`,
           log.classification,
           `"${log.first_name} ${log.last_name}"`,
           log.date_created,
@@ -467,17 +532,7 @@ export default function CameraLogs() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            {log.details?.toLowerCase().includes("fault") ||
-                            log.details?.toLowerCase().includes("error") ? (
-                              <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-50 text-red-600 text-[11px] font-medium">
-                                <AlertCircle className="h-3 w-3" />
-                                {log.details}
-                              </div>
-                            ) : (
-                              <span className="text-slate-600 text-sm">
-                                {log.details}
-                              </span>
-                            )}
+                            {renderDetails(log.details)}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -593,10 +648,7 @@ export default function CameraLogs() {
                 <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">
                   Telemetric Feed
                 </p>
-                <p className="text-slate-700 leading-relaxed font-medium">
-                  {selectedLog.details ||
-                    "No telemetric description provided for this event."}
-                </p>
+                <div className="pt-1">{renderDetails(selectedLog.details)}</div>
               </div>
 
               <div className="flex items-center gap-4 p-4 bg-[#4F6F52]/5 rounded-xl border border-[#4F6F52]/10">

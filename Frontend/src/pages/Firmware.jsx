@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/contexts/UserContext";
 import {
   Card,
   CardContent,
@@ -50,7 +49,6 @@ async function computeSHA256(file) {
 }
 
 export default function Firmware() {
-  const { user } = useUser();
   const [currentFirmware, setCurrentFirmware] = useState({
     version: "v1.2.3",
     build: "abcdef1234",
@@ -60,7 +58,6 @@ export default function Firmware() {
   });
 
   const [file, setFile] = useState(null);
-  const [fileError, setFileError] = useState("");
   const [checksum, setChecksum] = useState("");
   const [version, setVersion] = useState("");
   const [changelog, setChangelog] = useState("");
@@ -155,7 +152,6 @@ export default function Firmware() {
   }, []);
 
   function handleFileChange(e) {
-    setFileError("");
     setChecksum("");
     const f = e.target.files?.[0];
     if (!f) return;
@@ -163,13 +159,11 @@ export default function Firmware() {
     const allowed = [".bin", ".hex", ".uf2"];
     const ext = f.name.split(".").pop()?.toLowerCase();
     if (!allowed.includes("." + ext)) {
-      setFileError("Unsupported file type. Allowed: .bin, .hex, .uf2");
       setFile(null);
       return;
     }
 
     if (f.size > 10 * 1024 * 1024) {
-      setFileError("File too large. Max 10MB.");
       setFile(null);
       return;
     }
@@ -188,7 +182,7 @@ export default function Firmware() {
       setChecksum(sha);
       toast.success("Checksum computed");
     } catch {
-      setFileError("Failed to compute checksum");
+      // Ignored
     } finally {
       setValidating(false);
     }
@@ -662,7 +656,7 @@ export default function Firmware() {
               </TableHeader>
               <TableBody>
                 {history.length > 0 ? (
-                  history.map((h, i) => (
+                  history.map((h) => (
                     <TableRow
                       key={h.id}
                       className="border-gray-50 hover:bg-[#FAF9F6] transition-colors group"

@@ -22,7 +22,6 @@ import PageHeader from "@/components/ui/pageheader";
 export default function SystemStatus() {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchStatus = async () => {
@@ -30,10 +29,8 @@ export default function SystemStatus() {
     try {
       const response = await Requests({ url: "/health" });
       setStatus(response.data);
-      setError(null);
     } catch (err) {
       console.error("Failed to fetch health status:", err);
-      setError(err.response?.data || "System unreachable");
       if (err.response?.data) {
         setStatus(err.response.data);
       }

@@ -90,7 +90,7 @@ export class BackupController {
         const supabaseFiles = (await supabaseService.listFiles(
           'backups',
           'backup',
-        )) as SupabaseFile[];
+        )) as unknown as SupabaseFile[];
         if (supabaseFiles && Array.isArray(supabaseFiles)) {
           /*
           console.log(
@@ -108,10 +108,11 @@ export class BackupController {
               created: file.created_at,
               modified: file.updated_at,
               source: 'supabase',
-              url: supabaseService.getPublicUrl(
-                'backups',
-                `backup/${file.name}`,
-              ),
+              url:
+                supabaseService.getPublicUrl(
+                  'backups',
+                  `backup/${file.name}`,
+                ) || undefined,
             }));
         }
       } catch (sbError) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   MessageSquare,
   Plus,
@@ -71,13 +71,13 @@ export default function Support() {
 
   useEffect(() => {
     fetchTickets();
-  }, [statusFilter]);
+  }, [fetchTickets]);
 
   useEffect(() => {
     if (selectedTicket) {
       fetchMessages(selectedTicket.ticket_id);
     }
-  }, [selectedTicket]);
+  }, [selectedTicket, fetchMessages]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -85,7 +85,7 @@ export default function Support() {
     }
   }, [messages]);
 
-  async function fetchTickets() {
+  const fetchTickets = useCallback(async () => {
     setLoading(true);
     try {
       const url =
@@ -106,9 +106,9 @@ export default function Support() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [statusFilter, selectedTicket]);
 
-  async function fetchMessages(ticketId) {
+  const fetchMessages = useCallback(async (ticketId) => {
     setMessagesLoading(true);
     try {
       const res = await Requests({
@@ -122,7 +122,7 @@ export default function Support() {
     } finally {
       setMessagesLoading(false);
     }
-  }
+  }, []);
 
   const handleCreateTicket = async () => {
     if (!newTicket.subject || !newTicket.description) {

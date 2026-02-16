@@ -93,7 +93,7 @@ export default function CameraLogs() {
           </div>
         );
       }
-    } catch (e) {
+    } catch {
       // If it's not JSON, we continue to standard string rendering
     }
 
@@ -124,7 +124,7 @@ export default function CameraLogs() {
           .map(([key, value]) => `${key.replace(/_/g, " ")}: ${value}`)
           .join(" | ");
       }
-    } catch (e) {
+    } catch {
       // Not JSON
     }
     return details;

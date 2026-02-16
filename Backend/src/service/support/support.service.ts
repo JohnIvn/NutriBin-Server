@@ -37,7 +37,7 @@ export class SupportService {
     subject: string,
     description: string,
     priority: string = 'medium',
-  ) {
+  ): Promise<SupportTicket> {
     const client = this.databaseService.getClient();
     try {
       const result = await client.query(
@@ -46,14 +46,16 @@ export class SupportService {
          RETURNING *`,
         [customerId, subject, description, priority],
       );
-      return result.rows[0];
+      return result.rows[0] as SupportTicket;
     } catch (error) {
       console.error('Error creating support ticket:', error);
       throw new InternalServerErrorException('Failed to create support ticket');
     }
   }
 
-  async getTickets(filters: { status?: string; customerId?: string } = {}) {
+  async getTickets(
+    filters: { status?: string; customerId?: string } = {},
+  ): Promise<SupportTicket[]> {
     const client = this.databaseService.getClient();
     try {
       let query = `
@@ -78,14 +80,14 @@ export class SupportService {
       query += ` ORDER BY t.date_created DESC`;
 
       const result = await client.query(query, values);
-      return result.rows;
+      return result.rows as SupportTicket[];
     } catch (error) {
       console.error('Error fetching tickets:', error);
       throw new InternalServerErrorException('Failed to fetch support tickets');
     }
   }
 
-  async getTicketById(ticketId: string) {
+  async getTicketById(ticketId: string): Promise<SupportTicket> {
     const client = this.databaseService.getClient();
     try {
       const result = await client.query(
@@ -97,7 +99,7 @@ export class SupportService {
       );
       if (result.rows.length === 0)
         throw new NotFoundException('Ticket not found');
-      return result.rows[0];
+      return result.rows[0] as SupportTicket;
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       console.error('Error fetching ticket by ID:', error);
@@ -105,14 +107,17 @@ export class SupportService {
     }
   }
 
-  async updateTicketStatus(ticketId: string, status: string) {
+  async updateTicketStatus(
+    ticketId: string,
+    status: string,
+  ): Promise<SupportTicket> {
     const client = this.databaseService.getClient();
     try {
       const result = await client.query(
         `UPDATE support_tickets SET status = $1, last_updated = now() WHERE ticket_id = $2 RETURNING *`,
         [status, ticketId],
       );
-      return result.rows[0];
+      return result.rows[0] as SupportTicket;
     } catch (error) {
       console.error('Error updating ticket status:', error);
       throw new InternalServerErrorException('Failed to update ticket status');
@@ -124,7 +129,7 @@ export class SupportService {
     senderId: string,
     senderType: string,
     message: string,
-  ) {
+  ): Promise<TicketMessage> {
     const client = this.databaseService.getClient();
     try {
       const result = await client.query(
@@ -140,21 +145,21 @@ export class SupportService {
         [ticketId],
       );
 
-      return result.rows[0];
+      return result.rows[0] as TicketMessage;
     } catch (error) {
       console.error('Error adding message to ticket:', error);
       throw new InternalServerErrorException('Failed to add message');
     }
   }
 
-  async getMessages(ticketId: string) {
+  async getMessages(ticketId: string): Promise<TicketMessage[]> {
     const client = this.databaseService.getClient();
     try {
       const result = await client.query(
         `SELECT * FROM support_messages WHERE ticket_id = $1 ORDER BY date_sent ASC`,
         [ticketId],
       );
-      return result.rows;
+      return result.rows as TicketMessage[];
     } catch (error) {
       console.error('Error fetching ticket messages:', error);
       throw new InternalServerErrorException('Failed to fetch messages');

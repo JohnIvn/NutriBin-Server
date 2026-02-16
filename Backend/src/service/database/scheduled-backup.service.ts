@@ -127,7 +127,7 @@ export class ScheduledBackupService implements OnModuleInit {
         nextRun: nextRunStr,
         lastRun: lastRunStr,
       };
-    } catch (error) {
+    } catch {
       // Return a clean disabled status instead of throwing/logging an error
       return {
         isScheduled: false,

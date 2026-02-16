@@ -7,7 +7,23 @@ import supabaseService from '../service/storage/supabase.service';
 import chalk from 'chalk';
 import * as path from 'path';
 import * as fs from 'fs';
-
+interface BackupDetail {
+  filename: string;
+  size: number;
+  sizeFormatted: string;
+  created: string | Date;
+  modified: string | Date;
+  source: 'local' | 'supabase';
+  url?: string;
+}
+interface SupabaseFile {
+  name: string;
+  metadata?: {
+    size: number;
+  };
+  created_at: string;
+  updated_at: string;
+}
 @Controller('backup')
 export class BackupController {
   constructor(
@@ -68,13 +84,13 @@ export class BackupController {
       });
 
       // Supabase backups
-      let supabaseDetails: any[] = [];
+      let supabaseDetails: BackupDetail[] = [];
       try {
         // Look specifically in the 'backup' folder within 'backups' bucket
-        const supabaseFiles = await supabaseService.listFiles(
+        const supabaseFiles = (await supabaseService.listFiles(
           'backups',
           'backup',
-        );
+        )) as SupabaseFile[];
         if (supabaseFiles && Array.isArray(supabaseFiles)) {
           /*
           console.log(
@@ -99,13 +115,17 @@ export class BackupController {
             }));
         }
       } catch (sbError) {
+        const message =
+          sbError instanceof Error ? sbError.message : String(sbError);
         console.warn(
           chalk.yellow('[BACKUP] Supabase list failed (maybe bucket missing):'),
-          sbError.message,
+          message,
         );
       }
 
-      const allBackups = [...localDetails, ...supabaseDetails].sort(
+      const allBackups = (
+        [...localDetails, ...supabaseDetails] as BackupDetail[]
+      ).sort(
         (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime(),
       );
 

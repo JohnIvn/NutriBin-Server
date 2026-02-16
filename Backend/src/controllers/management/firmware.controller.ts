@@ -11,7 +11,10 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FirmwareService } from '../../service/firmware/firmware.service';
+import {
+  FirmwareRecord,
+  FirmwareService,
+} from '../../service/firmware/firmware.service';
 import { DatabaseService } from '../../service/database/database.service';
 
 @Controller('management/firmware')
@@ -22,17 +25,19 @@ export class FirmwareController {
   ) {}
 
   @Get('history')
-  async getHistory() {
+  async getHistory(): Promise<FirmwareRecord[]> {
     return this.firmwareService.getAllFirmware();
   }
 
   @Get('latest')
-  async getLatest(@Query('model') model?: string) {
+  async getLatest(
+    @Query('model') model?: string,
+  ): Promise<FirmwareRecord | null> {
     return this.firmwareService.getLatestFirmware(model);
   }
 
   @Get('propagation')
-  async getPropagation() {
+  async getPropagation(): Promise<any[]> {
     const client = this.databaseService.getClient();
     try {
       const result = await client.query(`
@@ -67,11 +72,10 @@ export class FirmwareController {
     @Body('targetModels') targetModels: string | string[],
     @Body('checksum') checksum: string,
     @Body('uploadedBy') uploadedBy: string,
-  ) {
-    const models =
-      typeof targetModels === 'string'
-        ? JSON.parse(targetModels)
-        : targetModels;
+  ): Promise<FirmwareRecord> {
+    const models = (
+      typeof targetModels === 'string' ? JSON.parse(targetModels) : targetModels
+    ) as string[];
     return this.firmwareService.uploadFirmware(
       file,
       version,

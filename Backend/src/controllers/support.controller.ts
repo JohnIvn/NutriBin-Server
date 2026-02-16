@@ -8,7 +8,11 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import { SupportService } from '../service/support/support.service';
+import {
+  SupportService,
+  SupportTicket,
+  TicketMessage,
+} from '../service/support/support.service';
 
 @Controller('support')
 export class SupportController {
@@ -23,7 +27,7 @@ export class SupportController {
       description: string;
       priority?: string;
     },
-  ) {
+  ): Promise<SupportTicket> {
     if (!body.customerId || !body.subject || !body.description) {
       throw new BadRequestException(
         'customerId, subject, and description are required',
@@ -41,17 +45,20 @@ export class SupportController {
   async getTickets(
     @Query('status') status?: string,
     @Query('customerId') customerId?: string,
-  ) {
+  ): Promise<SupportTicket[]> {
     return this.supportService.getTickets({ status, customerId });
   }
 
   @Get('tickets/:id')
-  async getTicketById(@Param('id') id: string) {
+  async getTicketById(@Param('id') id: string): Promise<SupportTicket> {
     return this.supportService.getTicketById(id);
   }
 
   @Patch('tickets/:id/status')
-  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: string,
+  ): Promise<SupportTicket> {
     if (!status) throw new BadRequestException('status is required');
     return this.supportService.updateTicketStatus(id, status);
   }
@@ -65,7 +72,7 @@ export class SupportController {
       senderType: string;
       message: string;
     },
-  ) {
+  ): Promise<TicketMessage> {
     if (!body.senderId || !body.senderType || !body.message) {
       throw new BadRequestException(
         'senderId, senderType, and message are required',
@@ -80,7 +87,7 @@ export class SupportController {
   }
 
   @Get('tickets/:id/messages')
-  async getMessages(@Param('id') id: string) {
+  async getMessages(@Param('id') id: string): Promise<TicketMessage[]> {
     return this.supportService.getMessages(id);
   }
 }

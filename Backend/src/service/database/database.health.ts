@@ -18,9 +18,10 @@ export class DatabaseHealthIndicator extends HealthIndicator {
       await client.query('SELECT 1');
       return this.getStatus(key, true);
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       throw new HealthCheckError(
         'Database Check failed',
-        this.getStatus(key, false, { message: error.message }),
+        this.getStatus(key, false, { message }),
       );
     }
   }

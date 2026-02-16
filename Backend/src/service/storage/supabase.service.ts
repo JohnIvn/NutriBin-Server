@@ -145,7 +145,16 @@ class SupabaseService {
   }
 
   // Lists files in a bucket and path
-  async listFiles(bucket: string, path = '', options: any = {}) {
+  async listFiles(
+    bucket: string,
+    path = '',
+    options?: {
+      limit?: number;
+      offset?: number;
+      sortBy?: { column?: string; order?: string };
+      search?: string;
+    },
+  ) {
     const { data, error } = await this.client.storage
       .from(bucket)
       .list(path, options);

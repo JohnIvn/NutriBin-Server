@@ -551,7 +551,6 @@ export class SettingsController {
   @Post(':staffId/photo')
   @UseInterceptors(
     FileInterceptor('photo', {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       storage: memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     }),

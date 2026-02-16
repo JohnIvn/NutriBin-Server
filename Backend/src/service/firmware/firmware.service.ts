@@ -31,7 +31,7 @@ export class FirmwareService {
     targetModels: string[],
     checksum: string,
     uploadedBy: string,
-  ) {
+  ): Promise<FirmwareRecord> {
     const client = this.databaseService.getClient();
     try {
       // 1. Upload to Supabase Storage
@@ -62,20 +62,20 @@ export class FirmwareService {
         ],
       );
 
-      return result.rows[0];
+      return result.rows[0] as FirmwareRecord;
     } catch (error) {
       console.error('Error uploading firmware:', error);
       throw new InternalServerErrorException('Failed to upload firmware');
     }
   }
 
-  async getAllFirmware() {
+  async getAllFirmware(): Promise<FirmwareRecord[]> {
     const client = this.databaseService.getClient();
     try {
       const result = await client.query(
         'SELECT * FROM firmware ORDER BY created_at DESC',
       );
-      return result.rows;
+      return result.rows as FirmwareRecord[];
     } catch (error) {
       console.error('Error fetching firmware history:', error);
       throw new InternalServerErrorException(
@@ -84,7 +84,7 @@ export class FirmwareService {
     }
   }
 
-  async getLatestFirmware(model?: string) {
+  async getLatestFirmware(model?: string): Promise<FirmwareRecord | null> {
     const client = this.databaseService.getClient();
     try {
       let query = "SELECT * FROM firmware WHERE status = 'Stable'";
@@ -98,7 +98,7 @@ export class FirmwareService {
       query += ' ORDER BY created_at DESC LIMIT 1';
 
       const result = await client.query(query, params);
-      return result.rows[0] || null;
+      return (result.rows[0] as FirmwareRecord) || null;
     } catch (error) {
       console.error('Error fetching latest firmware:', error);
       throw new InternalServerErrorException('Failed to fetch latest firmware');
@@ -116,7 +116,7 @@ export class FirmwareService {
       if (recordResult.rows.length === 0)
         throw new NotFoundException('Firmware not found');
 
-      const fileUrl = recordResult.rows[0].file_url;
+      const fileUrl = (recordResult.rows[0] as { file_url: string }).file_url;
       if (fileUrl) {
         const urlParts = fileUrl.split('/');
         const fileName = urlParts[urlParts.length - 1];

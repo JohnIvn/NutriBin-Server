@@ -11,6 +11,7 @@ import { ArchiveManagementController } from './controllers/management/archive-ma
 import { MachineManagementController } from './controllers/management/machine-management.controller';
 import { MachineMapController } from './controllers/management/machine-map.controller';
 import { MachineHealthController } from './controllers/management/machine-health.controller';
+import { FirmwareController } from './controllers/management/firmware.controller';
 import { StatusController } from './controllers/management/status.controller';
 import { MachineNotificationsController } from './controllers/management/machine-notifications.controller';
 import { SettingsController } from './controllers/settings/settings.controller';
@@ -45,6 +46,7 @@ import { IprogSmsService } from './service/iprogsms/iprogsms.service';
 import { LoginMonitorService } from './service/security/login-monitor.service';
 import { VideoStreamGateway } from './service/video/video-stream.gateway';
 import { SupportService } from './service/support/support.service';
+import { FirmwareService } from './service/firmware/firmware.service';
 
 @Module({
   imports: [ScheduleModule.forRoot(), TerminusModule],
@@ -81,6 +83,7 @@ import { SupportService } from './service/support/support.service';
     DataScienceController,
     SupportController,
     HealthController,
+    FirmwareController,
   ],
   providers: [
     AppService,
@@ -94,6 +97,7 @@ import { SupportService } from './service/support/support.service';
     IprogSmsService,
     VideoStreamGateway,
     SupportService,
+    FirmwareService,
   ],
 })
 export class AppModule {}

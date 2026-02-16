@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Client } from 'pg';
+import { Client, QueryResult } from 'pg';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 
@@ -23,6 +23,7 @@ import { createCodesTable } from './models/codes.model';
 import { createMachineNotificationTable } from './models/machine-notification.model';
 import { createDataScienceTable } from './models/data-science.model';
 import { createSupportTable } from './models/support.model';
+import { createFirmwareTable } from './models/firmware.model';
 
 dotenv.config();
 
@@ -79,11 +80,16 @@ export class DatabaseService implements OnModuleInit {
     await createMachineNotificationTable(this.client);
     await createDataScienceTable(this.client);
     await createSupportTable(this.client);
+    await createFirmwareTable(this.client);
 
     console.log(chalk.bgGreen.black('[SUPABASE] All tables are ready!'));
   }
 
   getClient(): Client {
     return this.client;
+  }
+
+  async query(text: string, params: any[] = []): Promise<QueryResult> {
+    return this.client.query(text, params);
   }
 }

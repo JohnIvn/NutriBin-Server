@@ -54,7 +54,7 @@ export class BackupService {
       `);
 
       const tables = tablesResult.rows.map((row) => row.table_name);
-      console.log(chalk.cyan(`[BACKUP] Found ${tables.length} tables to dump`));
+      // console.log(chalk.cyan(`[BACKUP] Found ${tables.length} tables to dump`));
 
       // Backup each table
       for (const tableName of tables) {

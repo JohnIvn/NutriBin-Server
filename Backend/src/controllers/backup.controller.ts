@@ -76,11 +76,13 @@ export class BackupController {
           'backup',
         );
         if (supabaseFiles && Array.isArray(supabaseFiles)) {
+          /*
           console.log(
             chalk.blue(
               `[BACKUP] Found ${supabaseFiles.length} items in Supabase 'backup' folder`,
             ),
           );
+          */
           supabaseDetails = supabaseFiles
             .filter((file) => file.name.toLowerCase().endsWith('.sql'))
             .map((file) => ({

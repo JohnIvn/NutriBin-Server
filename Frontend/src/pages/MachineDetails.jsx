@@ -416,10 +416,10 @@ function MachineDetails() {
                     <MiniStatus
                       machine={machineDetails}
                       id="c1"
-                      label="Main Core"
+                      label="Arduino Q"
                       onDetails={(v) => {
                         setSelectedDiag({
-                          label: "Main Logic",
+                          label: "Arduino Q",
                           key: "C1",
                           value: v,
                         });
@@ -429,10 +429,10 @@ function MachineDetails() {
                     <MiniStatus
                       machine={machineDetails}
                       id="c2"
-                      label="Air Controller"
+                      label="Filter Core"
                       onDetails={(v) => {
                         setSelectedDiag({
-                          label: "Air Logic",
+                          label: "Filter Core",
                           key: "C2",
                           value: v,
                         });
@@ -442,10 +442,10 @@ function MachineDetails() {
                     <MiniStatus
                       machine={machineDetails}
                       id="c3"
-                      label="Intake Node"
+                      label="Servo & Sensors Node"
                       onDetails={(v) => {
                         setSelectedDiag({
-                          label: "Intake Node",
+                          label: "Servo & Sensors",
                           key: "C3",
                           value: v,
                         });
@@ -455,24 +455,11 @@ function MachineDetails() {
                     <MiniStatus
                       machine={machineDetails}
                       id="c4"
-                      label="Grinder Node"
+                      label="Sensors Node"
                       onDetails={(v) => {
                         setSelectedDiag({
-                          label: "Grinder Logic",
+                          label: "Sensors Logic",
                           key: "C4",
-                          value: v,
-                        });
-                        setShowDiagModal(true);
-                      }}
-                    />
-                    <MiniStatus
-                      machine={machineDetails}
-                      id="c5"
-                      label="Exhaust Node"
-                      onDetails={(v) => {
-                        setSelectedDiag({
-                          label: "Exhaust Node",
-                          key: "C5",
                           value: v,
                         });
                         setShowDiagModal(true);
@@ -489,8 +476,47 @@ function MachineDetails() {
                   <div className="space-y-2">
                     <MiniStatus
                       machine={machineDetails}
+                      id="m1"
+                      label="Lid Servo A"
+                      onDetails={(v) => {
+                        setSelectedDiag({
+                          label: "Servo A",
+                          key: "M1",
+                          value: v,
+                        });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
+                      id="m2"
+                      label="Lid Servo B"
+                      onDetails={(v) => {
+                        setSelectedDiag({
+                          label: "Servo B",
+                          key: "M2",
+                          value: v,
+                        });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
+                      id="m3"
+                      label="Mixer Servo"
+                      onDetails={(v) => {
+                        setSelectedDiag({
+                          label: "Mixer Servo",
+                          key: "M3",
+                          value: v,
+                        });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
                       id="m4"
-                      label="Main Grinder"
+                      label="Grinder Motor"
                       onDetails={(v) => {
                         setSelectedDiag({
                           label: "Grinder",
@@ -503,50 +529,11 @@ function MachineDetails() {
                     <MiniStatus
                       machine={machineDetails}
                       id="m5"
-                      label="Mixer Motor"
+                      label="Exhaust Fan"
                       onDetails={(v) => {
                         setSelectedDiag({
-                          label: "Mixer",
+                          label: "Exhaust",
                           key: "M5",
-                          value: v,
-                        });
-                        setShowDiagModal(true);
-                      }}
-                    />
-                    <MiniStatus
-                      machine={machineDetails}
-                      id="m6"
-                      label="Intake Fan"
-                      onDetails={(v) => {
-                        setSelectedDiag({
-                          label: "Intake Fan",
-                          key: "M6",
-                          value: v,
-                        });
-                        setShowDiagModal(true);
-                      }}
-                    />
-                    <MiniStatus
-                      machine={machineDetails}
-                      id="m7"
-                      label="Output Fan"
-                      onDetails={(v) => {
-                        setSelectedDiag({
-                          label: "Output Fan",
-                          key: "M7",
-                          value: v,
-                        });
-                        setShowDiagModal(true);
-                      }}
-                    />
-                    <MiniStatus
-                      machine={machineDetails}
-                      id="m1"
-                      label="Lid Servo A"
-                      onDetails={(v) => {
-                        setSelectedDiag({
-                          label: "Servo A",
-                          key: "M1",
                           value: v,
                         });
                         setShowDiagModal(true);
@@ -564,10 +551,10 @@ function MachineDetails() {
                     <MiniStatus
                       machine={machineDetails}
                       id="s1"
-                      label="Vision A"
+                      label="Camera"
                       onDetails={(v) => {
                         setSelectedDiag({
-                          label: "Cam A",
+                          label: "Camera",
                           key: "S1",
                           value: v,
                         });
@@ -576,11 +563,24 @@ function MachineDetails() {
                     />
                     <MiniStatus
                       machine={machineDetails}
-                      id="s3"
-                      label="Environment"
+                      id="s2"
+                      label="Humidity"
                       onDetails={(v) => {
                         setSelectedDiag({
-                          label: "Env Probe",
+                          label: "Humidity",
+                          key: "S2",
+                          value: v,
+                        });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
+                      id="s3"
+                      label="Methane"
+                      onDetails={(v) => {
+                        setSelectedDiag({
+                          label: "Methane",
                           key: "S3",
                           value: v,
                         });
@@ -589,30 +589,95 @@ function MachineDetails() {
                     />
                     <MiniStatus
                       machine={machineDetails}
-                      id="s5"
-                      label="Gas Analyzer"
+                      id="s4"
+                      label="CO Gas"
                       onDetails={(v) => {
-                        setSelectedDiag({ label: "Gas", key: "S5", value: v });
+                        setSelectedDiag({
+                          label: "CO Gas",
+                          key: "S4",
+                          value: v,
+                        });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
+                      id="s5"
+                      label="Air Quality"
+                      onDetails={(v) => {
+                        setSelectedDiag({
+                          label: "Air Quality",
+                          key: "S5",
+                          value: v,
+                        });
                         setShowDiagModal(true);
                       }}
                     />
                     <MiniStatus
                       machine={machineDetails}
                       id="s6"
-                      label="NPK Probe"
+                      label="Combustible"
                       onDetails={(v) => {
-                        setSelectedDiag({ label: "NPK", key: "S6", value: v });
+                        setSelectedDiag({
+                          label: "Combustible",
+                          key: "S6",
+                          value: v,
+                        });
                         setShowDiagModal(true);
                       }}
                     />
                     <MiniStatus
                       machine={machineDetails}
                       id="s7"
-                      label="Fluid Sensor"
+                      label="NPK Probe"
+                      onDetails={(v) => {
+                        setSelectedDiag({ label: "NPK", key: "S7", value: v });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
+                      id="s8"
+                      label="Moisture"
                       onDetails={(v) => {
                         setSelectedDiag({
-                          label: "Fluid",
-                          key: "S7",
+                          label: "Moisture",
+                          key: "S8",
+                          value: v,
+                        });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
+                      id="s9"
+                      label="Reed Switch"
+                      onDetails={(v) => {
+                        setSelectedDiag({ label: "Reed", key: "S9", value: v });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
+                      id="s10"
+                      label="Ultrasonic"
+                      onDetails={(v) => {
+                        setSelectedDiag({
+                          label: "Ultrasonic",
+                          key: "S10",
+                          value: v,
+                        });
+                        setShowDiagModal(true);
+                      }}
+                    />
+                    <MiniStatus
+                      machine={machineDetails}
+                      id="s11"
+                      label="Weight"
+                      onDetails={(v) => {
+                        setSelectedDiag({
+                          label: "Weight",
+                          key: "S11",
                           value: v,
                         });
                         setShowDiagModal(true);

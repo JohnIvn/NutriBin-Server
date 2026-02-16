@@ -84,9 +84,9 @@ const ModuleGroup = ({ title, items, icon, columns = "grid-cols-1" }) => (
           {/* side bar */}
           <div
             className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${
-              item.offline 
-                ? "bg-red-400 group-hover:bg-red-700" 
-                : "bg-[#4F6F52] group-hover:bg-[#ECE3CE]" 
+              item.offline
+                ? "bg-red-400 group-hover:bg-red-700"
+                : "bg-[#4F6F52] group-hover:bg-[#ECE3CE]"
             }`}
           />
         </Button>
@@ -105,7 +105,6 @@ function Modules() {
     "c2",
     "c3",
     "c4",
-    "c5",
     "s1",
     "s2",
     "s3",
@@ -115,13 +114,13 @@ function Modules() {
     "s7",
     "s8",
     "s9",
+    "s10",
+    "s11",
     "m1",
     "m2",
     "m3",
     "m4",
     "m5",
-    "m6",
-    "m7",
   ];
 
   const baseFlags = componentCodes.reduce((acc, code) => {
@@ -132,33 +131,32 @@ function Modules() {
   const [componentFlags, setComponentFlags] = useState(baseFlags);
 
   const microcontrollers = [
-    { code: "c1", label: "Arduino-Q" },
-    { code: "c2", label: "ESP32-Filter" },
-    { code: "c3", label: "ESP32-Chute" },
-    { code: "c4", label: "ESP32-Grinder" },
-    { code: "c5", label: "ESP32-Exhaust" },
+    { code: "c1", label: "Arduino Q" },
+    { code: "c2", label: "ESP32_Filter" },
+    { code: "c3", label: "ESP32_Servo_w_sensors" },
+    { code: "c4", label: "ESP32_Sensors" },
   ];
 
   const sensors = [
-    { code: "s1", label: "Camera_A" },
-    { code: "s2", label: "Camera_B" },
-    { code: "s3", label: "Humidity" },
-    { code: "s4", label: "Temperature" },
-    { code: "s5", label: "Gas (Methane)" },
-    { code: "s6", label: "Gas (Nitrogen)" },
-    { code: "s7", label: "Water Level" },
-    { code: "s8", label: "NPK Sensor" },
-    { code: "s9", label: "Moisture" },
+    { code: "s1", label: "Camera" },
+    { code: "s2", label: "Humidity" },
+    { code: "s3", label: "Gas_Methane" },
+    { code: "s4", label: "Gas_Carbon_monoxide" },
+    { code: "s5", label: "Gas_Air_quality" },
+    { code: "s6", label: "Gas_Combustible_gassy" },
+    { code: "s7", label: "NPK_Sensor" },
+    { code: "s8", label: "Moisture" },
+    { code: "s9", label: "Reed" },
+    { code: "s10", label: "Ultrasonic" },
+    { code: "s11", label: "Weight" },
   ];
 
   const motors = [
     { code: "m1", label: "Servo_Lid_A" },
     { code: "m2", label: "Servo_Lid_B" },
-    { code: "m3", label: "Servo_Diverter" },
+    { code: "m3", label: "Servo_Mixer" },
     { code: "m4", label: "Motor_Grinder" },
-    { code: "m5", label: "Motor_Mixer" },
-    { code: "m6", label: "Exhaust Fan In" },
-    { code: "m7", label: "Exhaust Fan Out" },
+    { code: "m5", label: "Exhaust_Fan_Out" },
   ];
 
   const mapStatuses = (items) =>
@@ -195,7 +193,6 @@ function Modules() {
   return (
     <div className="flex flex-grow min-h-screen w-full bg-[#ECE3CE]/20 font-sans">
       <section className="flex-grow flex flex-col w-full max-w-[1600px] mx-auto p-6 md:p-10 space-y-10 animate-in fade-in duration-500 pb-20">
-        
         {/* header section */}
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6 border-l-4 border-[#3A4D39] pl-6 py-2">
           <Button
@@ -206,7 +203,7 @@ function Modules() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          
+
           <div className="space-y-1">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-[black]">
               Machine Diagnostics
@@ -223,7 +220,6 @@ function Modules() {
 
         {/* content grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 items-start">
-          
           {/* microcontrollers */}
           <div className="lg:col-span-3 h-full">
             <ModuleGroup

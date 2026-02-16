@@ -16,9 +16,10 @@ export async function createFertilizerAnalyticsTable(client: Client) {
       methane text,
       air_quality text,
       carbon_monoxide text,
-      combustible_gases text,
+      combustible_gassy text,
       weight_kg text,
       reed_switch text,
+      ultrasonic text,
       date_created timestamptz DEFAULT now()
     );
   `);

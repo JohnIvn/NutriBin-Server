@@ -31,7 +31,8 @@ export class HardwareController {
       ph?: number | string;
       methane?: number | string;
       air_quality?: number | string;
-      combustible_gases?: number | string;
+      combustible_gassy?: number | string;
+      ultrasonic?: number | string;
     },
   ) {
     const client = this.databaseService.getClient();
@@ -69,10 +70,11 @@ export class HardwareController {
           methane,
           air_quality,
           carbon_monoxide,
-          combustible_gases,
+          combustible_gassy,
           weight_kg,
-          reed_switch
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+          reed_switch,
+          ultrasonic
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
         [
           resolvedUserId,
           data.machine_id,
@@ -86,9 +88,10 @@ export class HardwareController {
           (data.methane ?? 0).toString(),
           (data.air_quality ?? 0).toString(),
           (data.mq135 ?? 0).toString(),
-          (data.combustible_gases ?? 0).toString(),
+          (data.combustible_gassy ?? 0).toString(),
           (data.weight_kg ?? 0).toString(),
           (data.reed_switch ?? 0).toString(),
+          (data.ultrasonic ?? 0).toString(),
         ],
       );
 

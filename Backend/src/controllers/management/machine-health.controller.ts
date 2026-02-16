@@ -25,9 +25,9 @@ export class MachineHealthController {
       const result = await client.query(
         `SELECT
           m.machine_id,
-          m.c1, m.c2, m.c3, m.c4, m.c5,
-          m.s1, m.s2, m.s3, m.s4, m.s5, m.s6, m.s7, m.s8, m.s9,
-          m.m1, m.m2, m.m3, m.m4, m.m5, m.m6, m.m7
+          m.c1, m.c2, m.c3, m.c4,
+          m.s1, m.s2, m.s3, m.s4, m.s5, m.s6, m.s7, m.s8, m.s9, m.s10, m.s11,
+          m.m1, m.m2, m.m3, m.m4, m.m5
          FROM machines m
          WHERE m.machine_id = $1
          LIMIT 1`,
@@ -45,7 +45,6 @@ export class MachineHealthController {
         'c2',
         'c3',
         'c4',
-        'c5',
         's1',
         's2',
         's3',
@@ -55,13 +54,13 @@ export class MachineHealthController {
         's7',
         's8',
         's9',
+        's10',
+        's11',
         'm1',
         'm2',
         'm3',
         'm4',
         'm5',
-        'm6',
-        'm7',
       ];
 
       const total = componentKeys.length;

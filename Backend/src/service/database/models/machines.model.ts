@@ -9,7 +9,6 @@ export async function createMachinesTable(client: Client) {
       C2 boolean DEFAULT false,
       C3 boolean DEFAULT false,
       C4 boolean DEFAULT false,
-      C5 boolean DEFAULT false,
       S1 boolean DEFAULT false,
       S2 boolean DEFAULT false,
       S3 boolean DEFAULT false,
@@ -19,13 +18,13 @@ export async function createMachinesTable(client: Client) {
       S7 boolean DEFAULT false,
       S8 boolean DEFAULT false,
       S9 boolean DEFAULT false,
+      S10 boolean DEFAULT false,
+      S11 boolean DEFAULT false,
       M1 boolean DEFAULT false,
       M2 boolean DEFAULT false,
       M3 boolean DEFAULT false,
       M4 boolean DEFAULT false,
       M5 boolean DEFAULT false,
-      M6 boolean DEFAULT false,
-      M7 boolean DEFAULT false,
       date_created timestamptz DEFAULT now()
     );
   `);

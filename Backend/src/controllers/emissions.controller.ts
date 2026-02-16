@@ -44,18 +44,19 @@ export class EmissionsController {
         [selectedDate],
       );
 
-      // Also get the latest reading for global context if the requested date is today
-      let latest: LatestReading | null = null;
-      if (selectedDate === new Date().toISOString().split('T')[0]) {
-        const latestResult = await client.query<LatestReading>(`
-          SELECT 
-            nitrogen, methane, air_quality, carbon_monoxide, combustible_gases, date_created
-          FROM fertilizer_analytics
-          ORDER BY date_created DESC
-          LIMIT 1
-        `);
-        latest = latestResult.rows[0] || null;
-      }
+      // Also get the latest reading for global context for the selected date
+      const latestResult = await client.query<LatestReading>(
+        `
+        SELECT 
+          nitrogen, methane, air_quality, carbon_monoxide, combustible_gases, date_created
+        FROM fertilizer_analytics
+        WHERE DATE(date_created) = $1
+        ORDER BY date_created DESC
+        LIMIT 1
+      `,
+        [selectedDate],
+      );
+      const latest = latestResult.rows[0] || null;
 
       return {
         ok: true,

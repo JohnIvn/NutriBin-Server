@@ -60,6 +60,8 @@ function MachinesGrid() {
       if (!grouped[record.machine_id]) {
         grouped[record.machine_id] = {
           machine_id: record.machine_id,
+          firmware_version: record.firmware_version,
+          update_status: record.update_status,
           users: [],
         };
       }
@@ -265,6 +267,18 @@ function MachineCard({ machine, index, navigate }) {
                 <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
                   Active
                 </span>
+                <div className="hidden sm:flex items-center gap-1.5 ml-2 px-2 py-0.5 bg-gray-50 rounded-full border border-gray-100">
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      machine.update_status === "pending"
+                        ? "bg-amber-400 animate-pulse"
+                        : "bg-[#4F6F52]"
+                    }`}
+                  />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">
+                    {machine.firmware_version || "v1.0.0"}
+                  </span>
+                </div>
               </div>
               <p className="text-sm font-mono text-gray-400 group-hover:text-[#4F6F52]/60 transition-colors uppercase">
                 {machine.machine_id}

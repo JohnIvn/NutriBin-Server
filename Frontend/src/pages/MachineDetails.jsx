@@ -119,8 +119,16 @@ function MachineDetails() {
               <h1 className="text-4xl font-extrabold text-[#1A1A1A] tracking-tight">
                 NutriBin
               </h1>
-              <p className="text-gray-400 font-mono text-xs mt-1">
+              <p className="text-gray-400 font-mono text-xs mt-1 flex items-center gap-2">
                 SERIAL: {machineDetails.machine_id.toUpperCase()}
+                <span className="text-[#4F6F52] bg-[#4F6F52]/10 px-2 py-0.5 rounded-md font-bold uppercase tracking-tighter">
+                  {machineDetails.firmware_version || "v1.0.0"}
+                </span>
+                {machineDetails.update_status === "pending" && (
+                  <span className="bg-amber-100 text-amber-600 px-2 py-0.5 rounded-md text-[9px] font-black animate-pulse">
+                    UPDATE PENDING
+                  </span>
+                )}
               </p>
             </div>
           </div>

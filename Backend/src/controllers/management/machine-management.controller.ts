@@ -27,8 +27,10 @@ export class MachineManagementController {
 
     try {
       const result = await client.query<MachineRow>(
-        `SELECT DISTINCT ON (m.machine_id)
+        `SELECT 
           m.machine_id,
+          m.firmware_version,
+          m.update_status,
           uc.customer_id as user_id,
           uc.first_name,
           uc.last_name,
@@ -61,6 +63,8 @@ export class MachineManagementController {
       const machineResult = await client.query<MachineRow>(
         `SELECT 
           m.machine_id,
+          m.firmware_version,
+          m.update_status,
           mc.customer_id as user_id,
           uc.first_name,
           uc.last_name,

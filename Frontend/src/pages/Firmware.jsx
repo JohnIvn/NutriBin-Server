@@ -100,11 +100,6 @@ export default function Firmware() {
 
   const [history, setHistory] = useState([]);
 
-  useEffect(() => {
-    fetchHistory();
-    fetchLatest();
-  }, []);
-
   const fetchHistory = async () => {
     try {
       const response = await Requests({ url: "/management/firmware/history" });
@@ -132,6 +127,32 @@ export default function Firmware() {
       console.error("Failed to fetch latest", err);
     }
   };
+
+  const fetchPropagation = async () => {
+    try {
+      const response = await Requests({
+        url: "/management/firmware/propagation",
+      });
+      if (response.data) {
+        setDevices(
+          response.data.map((d) => ({
+            ...d,
+            last: d.last ? new Date(d.last).toLocaleString() : "N/A",
+          })),
+        );
+      }
+    } catch (err) {
+      console.error("Failed to fetch propagation", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+    fetchLatest();
+    fetchPropagation();
+    const interval = setInterval(fetchPropagation, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   function handleFileChange(e) {
     setFileError("");

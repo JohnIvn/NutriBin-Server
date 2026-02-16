@@ -25,6 +25,10 @@ export async function createMachinesTable(client: Client) {
       M3 boolean DEFAULT false,
       M4 boolean DEFAULT false,
       M5 boolean DEFAULT false,
+      firmware_version text DEFAULT 'v1.0.0',
+      target_firmware_version text,
+      update_status text DEFAULT 'success',
+      last_update_attempt timestamptz,
       date_created timestamptz DEFAULT now()
     );
   `);

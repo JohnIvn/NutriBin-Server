@@ -12,6 +12,7 @@ import {
   Cpu,
   History,
   CheckCircle2,
+  Beaker,
 } from "lucide-react";
 import {
   Card,
@@ -23,12 +24,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function DataScience() {
   const [data, setData] = useState(null);
   const [history, setHistory] = useState([]);
   const [machines, setMachines] = useState([]);
+  const [readings, setReadings] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState(null);
+  const [selectedFertilizerId, setSelectedFertilizerId] = useState("latest");
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -43,12 +53,34 @@ function DataScience() {
     }
   };
 
-  const fetchData = async (machineId) => {
+  const fetchReadings = async (machineId) => {
+    if (!machineId) {
+      setReadings([]);
+      return;
+    }
+    try {
+      const res = await Requests({
+        url: `/data-science/readings?machine_id=${machineId}`,
+      });
+      if (res?.data?.ok) {
+        setReadings(res.data.readings);
+      }
+    } catch (err) {
+      console.error("Failed to fetch readings", err);
+    }
+  };
+
+  const fetchData = async (machineId, fertilizerId) => {
     try {
       setIsRefreshing(true);
-      const url = machineId
+      let url = machineId
         ? `/data-science/analytics?machine_id=${machineId}`
         : "/data-science/analytics";
+
+      if (fertilizerId && fertilizerId !== "latest") {
+        url += `&fertilizer_id=${fertilizerId}`;
+      }
+
       const res = await Requests({ url });
       setData(res?.data || null);
 
@@ -73,8 +105,18 @@ function DataScience() {
   }, []);
 
   useEffect(() => {
-    fetchData(selectedMachine);
+    if (selectedMachine) {
+      fetchReadings(selectedMachine);
+      setSelectedFertilizerId("latest");
+    } else {
+      setReadings([]);
+      setSelectedFertilizerId("latest");
+    }
   }, [selectedMachine]);
+
+  useEffect(() => {
+    fetchData(selectedMachine, selectedFertilizerId);
+  }, [selectedMachine, selectedFertilizerId]);
 
   if (loading && !data) {
     return (
@@ -127,6 +169,38 @@ function DataScience() {
               </button>
             ))}
           </div>
+
+          {selectedMachine && readings.length > 0 && (
+            <div className="flex items-center gap-2 ml-4 border-l border-gray-100 pl-4 shrink-0">
+              <Beaker className="w-4 h-4 text-[#4F6F52]" />
+              <Select
+                value={selectedFertilizerId}
+                onValueChange={setSelectedFertilizerId}
+              >
+                <SelectTrigger className="w-[180px] h-9 border-gray-100 bg-gray-50/50 text-[10px] font-bold rounded-lg focus:ring-[#4F6F52]/20">
+                  <SelectValue placeholder="Select Record" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="latest" className="text-[10px] font-bold">
+                    Latest Reading
+                  </SelectItem>
+                  {readings.map((reading) => (
+                    <SelectItem
+                      key={reading.fertilizer_analytics_id}
+                      value={reading.fertilizer_analytics_id}
+                      className="text-[10px] font-bold"
+                    >
+                      NB-
+                      {reading.fertilizer_analytics_id
+                        .substring(0, 8)
+                        .toUpperCase()}{" "}
+                      ({new Date(reading.date_created).toLocaleDateString()})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -192,6 +266,12 @@ function DataScience() {
               {selectedMachine
                 ? `Unit ${selectedMachine.toUpperCase()}`
                 : "Laboratory Analysis"}
+              {selectedFertilizerId !== "latest" && (
+                <span className="text-gray-400">
+                  {" "}
+                  / NB-{selectedFertilizerId.substring(0, 8).toUpperCase()}
+                </span>
+              )}
             </p>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
               Data Science <span className="text-gray-400">Insights</span>
@@ -205,7 +285,7 @@ function DataScience() {
 
           <Button
             size="lg"
-            onClick={() => fetchData(selectedMachine)}
+            onClick={() => fetchData(selectedMachine, selectedFertilizerId)}
             disabled={isRefreshing}
             className="bg-[#4F6F52] text-white hover:bg-[#3A4D39] transition-all duration-300 shadow-xl shadow-[#4F6F52]/20 px-8 h-12 rounded-2xl font-bold border-none"
           >

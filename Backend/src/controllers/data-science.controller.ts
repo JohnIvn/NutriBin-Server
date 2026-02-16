@@ -60,12 +60,47 @@ export class DataScienceController {
     }
   }
 
-  @Get('analytics')
-  async getAnalytics(@Query('machine_id') machineId?: string) {
+  @Get('readings')
+  async getReadings(@Query('machine_id') machineId: string) {
     const client = this.databaseService.getClient();
     try {
-      const filter = machineId ? `WHERE machine_id = $1` : '';
-      const params = machineId ? [machineId] : [];
+      const result = await client.query<{
+        fertilizer_analytics_id: string;
+        date_created: Date;
+      }>(
+        `
+        SELECT fertilizer_analytics_id, date_created
+        FROM fertilizer_analytics
+        WHERE machine_id = $1
+        ORDER BY date_created DESC
+        LIMIT 50
+      `,
+        [machineId],
+      );
+      return {
+        ok: true,
+        readings: result.rows,
+      };
+    } catch (error) {
+      console.error('Data Science Readings Error:', error);
+      throw new InternalServerErrorException('Failed to fetch readings');
+    }
+  }
+
+  @Get('analytics')
+  async getAnalytics(
+    @Query('machine_id') machineId?: string,
+    @Query('fertilizer_id') fertilizerId?: string,
+  ) {
+    const client = this.databaseService.getClient();
+    try {
+      let filter = machineId ? `WHERE machine_id = $1` : '';
+      let params = machineId ? [machineId] : [];
+
+      if (fertilizerId) {
+        filter = `WHERE fertilizer_analytics_id = $1`;
+        params = [fertilizerId];
+      }
 
       // Get metadata for summary
       const metadataResult = await client.query<MetadataRow>(`
@@ -83,9 +118,9 @@ export class DataScienceController {
           AVG(NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric) as avg_ph,
           AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) as avg_moisture
         FROM fertilizer_analytics
-        ${filter}
+        ${machineId ? `WHERE machine_id = $1` : ''}
       `,
-        params,
+        machineId ? [machineId] : [],
       );
 
       const currentResult = await client.query<FertilizerReadingRow>(

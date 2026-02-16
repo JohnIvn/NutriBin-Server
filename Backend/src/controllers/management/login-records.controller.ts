@@ -20,13 +20,14 @@ export class LoginRecordsController {
         la.admin_id,
         la.customer_id,
         la.user_type,
+        la.attempt_type,
         la.site_visited,
         la.ip_address,
         la.success,
         la.date_created,
         COALESCE(ua.first_name || ' ' || ua.last_name, us.first_name || ' ' || us.last_name, uc.first_name || ' ' || uc.last_name) AS full_name,
         COALESCE(ua.email, us.email, uc.email) AS email
-      FROM login_attempts la
+      FROM auth_attempts la
       LEFT JOIN user_admin ua ON ua.admin_id::text = la.admin_id
       LEFT JOIN user_staff us ON us.staff_id::text = la.staff_id
       LEFT JOIN user_customer uc ON uc.customer_id = la.customer_id

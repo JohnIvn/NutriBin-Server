@@ -239,7 +239,7 @@ export default function Sidebar() {
         <NavItem
           to="/login-records"
           icon={LogIn}
-          label="Login Records"
+          label="Records"
           active={isActive("/login-records")}
           collapsed={shouldCollapse}
         />

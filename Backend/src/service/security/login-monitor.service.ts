@@ -10,11 +10,12 @@ export class LoginMonitorService {
 
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async recordLogin(params: {
+  async recordAuthAttempt(params: {
     staffId?: string;
     adminId?: string;
     customerId?: string;
     userType?: string;
+    attemptType?: string;
     siteVisited?: string;
     ip?: string;
     success?: boolean;
@@ -25,6 +26,7 @@ export class LoginMonitorService {
       adminId,
       customerId,
       userType = 'N/A',
+      attemptType = 'login',
       ip,
       // siteVisited may be undefined; we'll infer below if missing
       siteVisited,
@@ -45,12 +47,13 @@ export class LoginMonitorService {
 
     try {
       await client.query(
-        `INSERT INTO login_attempts (staff_id, admin_id, customer_id, user_type, site_visited, ip_address, success) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        `INSERT INTO auth_attempts (staff_id, admin_id, customer_id, user_type, attempt_type, site_visited, ip_address, success) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           staffId || null,
           adminId || null,
           customerId || null,
           userType,
+          attemptType,
           siteVisitedValue || null,
           ip || null,
           success,
@@ -63,19 +66,19 @@ export class LoginMonitorService {
       let cnt = 0;
       if (adminId) {
         const { rows } = await client.query<{ cnt: number }>(
-          `SELECT COUNT(*)::int as cnt FROM login_attempts WHERE admin_id = $1 AND success = true AND date_created > (now() - $2::interval)`,
+          `SELECT COUNT(*)::int as cnt FROM auth_attempts WHERE admin_id = $1 AND success = true AND date_created > (now() - $2::interval)`,
           [adminId, interval],
         );
         cnt = rows[0]?.cnt ?? 0;
       } else if (staffId) {
         const { rows } = await client.query<{ cnt: number }>(
-          `SELECT COUNT(*)::int as cnt FROM login_attempts WHERE staff_id = $1 AND success = true AND date_created > (now() - $2::interval)`,
+          `SELECT COUNT(*)::int as cnt FROM auth_attempts WHERE staff_id = $1 AND success = true AND date_created > (now() - $2::interval)`,
           [staffId, interval],
         );
         cnt = rows[0]?.cnt ?? 0;
       } else if (customerId) {
         const { rows } = await client.query<{ cnt: number }>(
-          `SELECT COUNT(*)::int as cnt FROM login_attempts WHERE customer_id = $1::uuid AND success = true AND date_created > (now() - $2::interval)`,
+          `SELECT COUNT(*)::int as cnt FROM auth_attempts WHERE customer_id = $1::uuid AND success = true AND date_created > (now() - $2::interval)`,
           [customerId, interval],
         );
         cnt = rows[0]?.cnt ?? 0;

@@ -13,6 +13,7 @@ export class LoginMonitorController {
       adminId?: string;
       customerId?: string;
       userType?: string;
+      attemptType?: string;
       ip?: string;
       siteVisited?: string;
       success?: boolean;
@@ -43,11 +44,12 @@ export class LoginMonitorController {
       }
     }
 
-    const result = await this.monitor.recordLogin({
+    const result = await this.monitor.recordAuthAttempt({
       staffId: body.staffId,
       adminId: body.adminId,
       customerId: body.customerId,
       userType: body.userType,
+      attemptType: body.attemptType,
       ip: body.ip,
       siteVisited: derivedSite ?? body.siteVisited,
       success: typeof body.success === 'boolean' ? body.success : true,

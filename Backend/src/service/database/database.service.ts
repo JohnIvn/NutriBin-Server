@@ -18,7 +18,7 @@ import { createSalesTable } from './models/sales.model';
 import { createUserStaffArchiveTable } from './models/user-staff-archive.model';
 import { createUserCustomerArchiveTable } from './models/user-customer-archive.model';
 import { createAuthenticationTable } from './models/authentication';
-import { createLoginAttemptsTable } from './models/login-attempts.model';
+import { createAuthAttemptsTable } from './models/auth-attempts.model';
 import { createCodesTable } from './models/codes.model';
 import { createMachineNotificationTable } from './models/machine-notification.model';
 import { createDataScienceTable } from './models/data-science.model';
@@ -73,7 +73,7 @@ export class DatabaseService implements OnModuleInit {
     await createUserStaffArchiveTable(this.client);
     await createUserCustomerArchiveTable(this.client);
     await createAuthenticationTable(this.client);
-    await createLoginAttemptsTable(this.client);
+    await createAuthAttemptsTable(this.client);
     await createCodesTable(this.client);
     await createMachineNotificationTable(this.client);
     await createDataScienceTable(this.client);

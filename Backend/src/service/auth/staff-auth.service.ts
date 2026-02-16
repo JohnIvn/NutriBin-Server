@@ -124,6 +124,17 @@ export class StaffAuthService {
       throw new InternalServerErrorException('Failed to create staff account');
     }
 
+    try {
+      await this.loginMonitor.recordAuthAttempt({
+        staffId: staff.staff_id,
+        userType: 'staff',
+        attemptType: 'signup',
+        success: true,
+      });
+    } catch {
+      /* swallow monitor errors */
+    }
+
     return {
       ok: true,
       staff,
@@ -166,7 +177,7 @@ export class StaffAuthService {
 
       if (!matches) {
         try {
-          await this.loginMonitor.recordLogin({
+          await this.loginMonitor.recordAuthAttempt({
             adminId: admin.id,
             userType: 'admin',
             success: false,
@@ -318,7 +329,7 @@ export class StaffAuthService {
       };
 
       try {
-        await this.loginMonitor.recordLogin({
+        await this.loginMonitor.recordAuthAttempt({
           adminId: admin.id,
           userType: 'admin',
           success: true,
@@ -354,7 +365,7 @@ export class StaffAuthService {
     const matches = await bcrypt.compare(password, staff.password);
     if (!matches) {
       try {
-        await this.loginMonitor.recordLogin({
+        await this.loginMonitor.recordAuthAttempt({
           staffId: staff.staff_id,
           userType: 'staff',
           success: false,
@@ -504,7 +515,7 @@ export class StaffAuthService {
     };
 
     try {
-      await this.loginMonitor.recordLogin({
+      await this.loginMonitor.recordAuthAttempt({
         staffId: staff.staff_id,
         userType: 'staff',
         success: true,
@@ -584,6 +595,17 @@ export class StaffAuthService {
           role: 'admin',
         };
 
+        try {
+          await this.loginMonitor.recordAuthAttempt({
+            adminId: admin.id,
+            userType: 'admin',
+            attemptType: 'login',
+            success: true,
+          });
+        } catch {
+          /* swallow monitor errors */
+        }
+
         return {
           ok: true,
           staff: safeAdmin,
@@ -624,6 +646,17 @@ export class StaffAuthService {
           status: staff.status,
           role: 'staff' as const,
         };
+
+        try {
+          await this.loginMonitor.recordAuthAttempt({
+            staffId: staff.staff_id,
+            userType: 'staff',
+            attemptType: 'login',
+            success: true,
+          });
+        } catch {
+          /* swallow monitor errors */
+        }
 
         return {
           ok: true,
@@ -735,6 +768,17 @@ export class StaffAuthService {
         status: staff.status,
         role: 'staff' as const,
       };
+
+      try {
+        await this.loginMonitor.recordAuthAttempt({
+          staffId: staff.staff_id,
+          userType: 'staff',
+          attemptType: 'signup',
+          success: true,
+        });
+      } catch {
+        /* swallow monitor errors */
+      }
 
       return {
         ok: true,

@@ -26,6 +26,7 @@ import {
   ChevronDown,
   Camera,
   Binary,
+  LifeBuoy,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -248,6 +249,15 @@ export default function Sidebar() {
           icon={Key}
           label="MFA Records"
           active={isActive("/mfa-records")}
+          collapsed={shouldCollapse}
+        />
+
+        <CategoryLabel label="Support" collapsed={shouldCollapse} />
+        <NavItem
+          to="/support"
+          icon={LifeBuoy}
+          label="Tickets"
+          active={isActive("/support")}
           collapsed={shouldCollapse}
         />
 

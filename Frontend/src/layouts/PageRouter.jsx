@@ -36,6 +36,7 @@ import MfaRecords from "@/pages/MfaRecords";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import CookiePolicy from "@/pages/CookiePolicy";
 import DataScience from "@/pages/DataScience";
+import Support from "@/pages/Support";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -274,6 +275,14 @@ function PageRouter() {
       <Route path="/guides" element={<Guide />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/cookie-policy" element={<CookiePolicy />} />
+      <Route
+        path="/support"
+        element={
+          <ProtectedRoute>
+            <Support />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

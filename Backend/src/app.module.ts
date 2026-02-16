@@ -30,6 +30,7 @@ import { FertilizerController } from './controllers/fertilizer.controller';
 import { CameraLogsController } from './controllers/camera-logs.controller';
 import { HardwareController } from './controllers/hardware/hardware.controller';
 import { DataScienceController } from './controllers/data-science.controller';
+import { SupportController } from './controllers/support.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
@@ -40,6 +41,7 @@ import { BrevoService } from './service/email/brevo.service';
 import { IprogSmsService } from './service/iprogsms/iprogsms.service';
 import { LoginMonitorService } from './service/security/login-monitor.service';
 import { VideoStreamGateway } from './service/video/video-stream.gateway';
+import { SupportService } from './service/support/support.service';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
@@ -74,6 +76,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
     CameraLogsController,
     HardwareController,
     DataScienceController,
+    SupportController,
   ],
   providers: [
     AppService,
@@ -85,6 +88,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
     BrevoService,
     IprogSmsService,
     VideoStreamGateway,
+    SupportService,
   ],
 })
 export class AppModule {}

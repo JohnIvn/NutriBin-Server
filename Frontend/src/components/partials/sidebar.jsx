@@ -285,6 +285,13 @@ export default function Sidebar() {
               active={isActive("/backup")}
               collapsed={shouldCollapse}
             />
+            <NavItem
+              to="/system-status"
+              icon={Activity}
+              label="System Status"
+              active={isActive("/system-status")}
+              collapsed={shouldCollapse}
+            />
           </>
         )}
       </nav>

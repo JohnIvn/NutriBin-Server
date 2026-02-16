@@ -37,6 +37,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import CookiePolicy from "@/pages/CookiePolicy";
 import DataScience from "@/pages/DataScience";
 import Support from "@/pages/Support";
+import SystemStatus from "@/pages/SystemStatus";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -280,6 +281,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Support />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/system-status"
+        element={
+          <ProtectedRoute>
+            <SystemStatus />
           </ProtectedRoute>
         }
       />

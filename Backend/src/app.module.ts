@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TerminusModule } from '@nestjs/terminus';
 import { AppController } from './controllers/app.controller';
 import { StaffAuthController } from './controllers/staff/staff-auth.controller';
 import { StaffPhoneController } from './controllers/staff/staff-phone.controller';
@@ -31,9 +32,11 @@ import { CameraLogsController } from './controllers/camera-logs.controller';
 import { HardwareController } from './controllers/hardware/hardware.controller';
 import { DataScienceController } from './controllers/data-science.controller';
 import { SupportController } from './controllers/support.controller';
+import { HealthController } from './controllers/health.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
+import { DatabaseHealthIndicator } from './service/database/database.health';
 import { BackupService } from './service/database/backup.service';
 import { ScheduledBackupService } from './service/database/scheduled-backup.service';
 import { StaffAuthService } from './service/auth/staff-auth.service';
@@ -44,7 +47,7 @@ import { VideoStreamGateway } from './service/video/video-stream.gateway';
 import { SupportService } from './service/support/support.service';
 
 @Module({
-  imports: [ScheduleModule.forRoot()],
+  imports: [ScheduleModule.forRoot(), TerminusModule],
   controllers: [
     AppController,
     StaffAuthController,
@@ -77,10 +80,12 @@ import { SupportService } from './service/support/support.service';
     HardwareController,
     DataScienceController,
     SupportController,
+    HealthController,
   ],
   providers: [
     AppService,
     DatabaseService,
+    DatabaseHealthIndicator,
     BackupService,
     ScheduledBackupService,
     StaffAuthService,

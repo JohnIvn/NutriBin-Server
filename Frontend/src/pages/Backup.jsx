@@ -45,7 +45,7 @@ function Backup() {
   const fetchBackups = async () => {
     setLoading(true);
     try {
-      const response = await Requests.get("/backup/list");
+      const response = await Requests({ url: "/backup/list", method: "GET" });
       if (response.data?.success) {
         setBackups(response.data.backups || []);
       }
@@ -58,7 +58,10 @@ function Backup() {
 
   const fetchScheduleStatus = async () => {
     try {
-      const response = await Requests.get("/backup/schedule");
+      const response = await Requests({
+        url: "/backup/schedule",
+        method: "GET",
+      });
       if (response.data?.success) {
         setScheduleStatus(response.data);
       }
@@ -76,7 +79,10 @@ function Backup() {
     setCreating(true);
     const id = toast.loading("Initializing secure database snapshot...");
     try {
-      const response = await Requests.post("/backup/create");
+      const response = await Requests({
+        url: "/backup/create",
+        method: "POST",
+      });
       if (response.data?.success) {
         toast.success("Snapshot created and encrypted successfully", { id });
         fetchBackups();
@@ -98,7 +104,7 @@ function Backup() {
 
     setCleaning(true);
     try {
-      const response = await Requests.post("/backup/clean");
+      const response = await Requests({ url: "/backup/clean", method: "POST" });
       if (response.data?.success) {
         toast.success(
           `Retention applied. Removed ${response.data.deleted} old records.`,
@@ -112,7 +118,15 @@ function Backup() {
     }
   };
 
-  const handleDownloadBackup = (filename) => {
+  const handleDownloadBackup = (backup) => {
+    if (backup.source === "supabase" && backup.url) {
+      window.open(backup.url, "_blank");
+      toast.success(
+        `Starting secure download from Cloud for ${backup.filename}`,
+      );
+      return;
+    }
+
     // Determine backend URL (matches the logic in Requests.jsx)
     const rawUrl =
       import.meta.env.VITE_API_URL ||
@@ -122,9 +136,9 @@ function Backup() {
         ? rawUrl
         : `https://${rawUrl}`;
 
-    const downloadUrl = `${baseUrl}/backup/download/${filename}`;
+    const downloadUrl = `${baseUrl}/backup/download/${backup.filename}`;
     window.open(downloadUrl, "_blank");
-    toast.success(`Starting secure download for ${filename}`);
+    toast.success(`Starting secure download for ${backup.filename}`);
   };
 
   const handleExportSnapshot = () => {
@@ -385,6 +399,14 @@ function Backup() {
                             <span className="font-semibold text-gray-700">
                               {backup.filename}
                             </span>
+                            {backup.source === "supabase" && (
+                              <Badge
+                                variant="secondary"
+                                className="bg-blue-50 text-blue-600 border-blue-100 text-[9px] h-4 px-1"
+                              >
+                                Cloud
+                              </Badge>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
@@ -401,9 +423,7 @@ function Backup() {
                         <TableCell className="px-8 text-right">
                           <Button
                             size="sm"
-                            onClick={() =>
-                              handleDownloadBackup(backup.filename)
-                            }
+                            onClick={() => handleDownloadBackup(backup)}
                             className="bg-transparent text-gray-500 hover:text-[#4F6F52] hover:bg-[#4F6F52]/10 border-none shadow-none font-bold text-xs"
                           >
                             <Download size={16} className="mr-2" />

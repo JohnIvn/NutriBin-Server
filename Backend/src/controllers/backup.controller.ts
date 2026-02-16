@@ -3,6 +3,7 @@ import type { Response } from 'express';
 import { BackupService } from '../service/database/backup.service';
 import { DatabaseService } from '../service/database/database.service';
 import { ScheduledBackupService } from '../service/database/scheduled-backup.service';
+import supabaseService from '../service/storage/supabase.service';
 import chalk from 'chalk';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -46,12 +47,13 @@ export class BackupController {
    * GET /backup/list
    */
   @Get('list')
-  listBackups() {
+  async listBackups() {
     try {
-      const backups = this.backupService.listBackups();
+      // Local backups
+      const localBackups = this.backupService.listBackups();
       const backupDir = this.backupService.getBackupDirectory();
 
-      const backupDetails = backups.map((filename) => {
+      const localDetails = localBackups.map((filename) => {
         const filePath = path.join(backupDir, filename);
         const stats = fs.statSync(filePath);
 
@@ -61,14 +63,57 @@ export class BackupController {
           sizeFormatted: this.formatBytes(stats.size),
           created: stats.birthtime,
           modified: stats.mtime,
+          source: 'local',
         };
       });
 
+      // Supabase backups
+      let supabaseDetails: any[] = [];
+      try {
+        // Look specifically in the 'backup' folder within 'backups' bucket
+        const supabaseFiles = await supabaseService.listFiles(
+          'backups',
+          'backup',
+        );
+        if (supabaseFiles && Array.isArray(supabaseFiles)) {
+          console.log(
+            chalk.blue(
+              `[BACKUP] Found ${supabaseFiles.length} items in Supabase 'backup' folder`,
+            ),
+          );
+          supabaseDetails = supabaseFiles
+            .filter((file) => file.name.toLowerCase().endsWith('.sql'))
+            .map((file) => ({
+              filename: file.name,
+              size: file.metadata?.size || 0,
+              sizeFormatted: this.formatBytes(file.metadata?.size || 0),
+              created: file.created_at,
+              modified: file.updated_at,
+              source: 'supabase',
+              url: supabaseService.getPublicUrl(
+                'backups',
+                `backup/${file.name}`,
+              ),
+            }));
+        }
+      } catch (sbError) {
+        console.warn(
+          chalk.yellow('[BACKUP] Supabase list failed (maybe bucket missing):'),
+          sbError.message,
+        );
+      }
+
+      const allBackups = [...localDetails, ...supabaseDetails].sort(
+        (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime(),
+      );
+
       return {
         success: true,
-        count: backups.length,
+        count: allBackups.length,
+        localCount: localDetails.length,
+        supabaseCount: supabaseDetails.length,
         backupDirectory: backupDir,
-        backups: backupDetails,
+        backups: allBackups,
       };
     } catch (error) {
       console.error(chalk.red('[BACKUP] Error listing backups:'), error);

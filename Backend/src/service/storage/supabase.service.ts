@@ -143,6 +143,15 @@ class SupabaseService {
     if (error) throw error;
     return data.signedUrl;
   }
+
+  // Lists files in a bucket and path
+  async listFiles(bucket: string, path = '', options: any = {}) {
+    const { data, error } = await this.client.storage
+      .from(bucket)
+      .list(path, options);
+    if (error) throw error;
+    return data;
+  }
 }
 
 const supabaseService = new SupabaseService();

@@ -122,17 +122,18 @@ export class ScheduledBackupService implements OnModuleInit {
       }
 
       return {
-        enabled: true,
+        isScheduled: true,
         cronExpression: process.env.BACKUP_CRON || '0 2 * * *',
         nextRun: nextRunStr,
         lastRun: lastRunStr,
       };
     } catch (error) {
-      console.error('[BACKUP] Status check failed:', error);
+      // Return a clean disabled status instead of throwing/logging an error
       return {
-        enabled: false,
+        isScheduled: false,
         cronExpression: process.env.BACKUP_CRON || '0 2 * * *',
-        error: 'Scheduler not initialized',
+        nextRun: 'N/A',
+        lastRun: 'N/A',
       };
     }
   }

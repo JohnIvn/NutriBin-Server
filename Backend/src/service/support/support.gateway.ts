@@ -8,6 +8,9 @@ import {
 } from '@nestjs/websockets';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Server, Socket } from 'socket.io';
+import ws from 'ws';
+
+(global as any).WebSocket = ws;
 
 // Interfaces based on your Service SQL queries
 interface SupportTicket {
@@ -37,10 +40,15 @@ export class SupportGateway implements OnGatewayInit {
   private supabase: SupabaseClient<any, 'public'>;
 
   constructor() {
-    this.supabase = createClient<any, 'public'>(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_KEY,
-    );
+    this.supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+        },
+        // Essential for keeping proxies like Railway's alive
+        heartbeatIntervalMs: 15000,
+      },
+    });
   }
 
   afterInit() {
@@ -61,9 +69,9 @@ export class SupportGateway implements OnGatewayInit {
   }
 
   private startSupabaseRealtimeListener() {
-    this.supabase
+    this.supabase;
+    const channel = this.supabase
       .channel('support-system-changes')
-      // 1. Listen for new messages
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'support_messages' },
@@ -90,6 +98,34 @@ export class SupportGateway implements OnGatewayInit {
             .emit('ticket_status_updated', updatedTicket);
         },
       )
-      .subscribe();
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Connected to Supabase Realtime');
+        }
+
+        if (status === 'TIMED_OUT') {
+          console.error('❌ Supabase TIMED_OUT. Cleaning up...');
+          // Remove the specific channel before retrying
+          await this.supabase.removeChannel(channel);
+          setTimeout(() => this.startSupabaseRealtimeListener(), 5000);
+        }
+
+        if (status === 'CHANNEL_ERROR') {
+          console.error(
+            '❌ Channel Error. Check if Realtime is enabled in Supabase Dashboard.',
+          );
+        }
+      });
+
+    // Optional: Listen for heartbeat signals specifically
+    this.supabase.realtime.onHeartbeat((hbStatus) => {
+      if (hbStatus === 'timeout') {
+        console.warn('⚠️ Heartbeat timeout detected. Network may be unstable.');
+      }
+    });
+  }
+  async onModuleDestroy() {
+    console.log('Cleaning up Supabase Realtime connections...');
+    await this.supabase.removeAllChannels();
   }
 }

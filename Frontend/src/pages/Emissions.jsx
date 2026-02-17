@@ -299,13 +299,19 @@ export default function Emissions() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <div
+              className="relative cursor-pointer group"
+              onClick={(e) => {
+                const input = e.currentTarget.querySelector("input");
+                if (input && input.showPicker) input.showPicker();
+              }}
+            >
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-hover:text-[#4F6F52] transition-colors" />
               <input
                 type="date"
                 value={mainDate}
                 onChange={(e) => setMainDate(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4F6F52]/20"
+                className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4F6F52]/20 cursor-pointer w-full"
                 max={new Date().toISOString().split("T")[0]}
               />
             </div>
@@ -732,15 +738,24 @@ export default function Emissions() {
                   <span className="font-mono text-xs">{selectedDevice}</span>
                 </DialogDescription>
               </div>
-              <div className="flex items-center gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">
-                  Filter Date:
-                </p>
+              <div
+                className="flex items-center gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100 cursor-pointer group"
+                onClick={(e) => {
+                  const input = e.currentTarget.querySelector("input");
+                  if (input && input.showPicker) input.showPicker();
+                }}
+              >
+                <div className="flex items-center gap-2 pl-2">
+                  <Calendar className="h-3.5 w-3.5 text-slate-400 group-hover:text-[#4F6F52] transition-colors" />
+                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                    Filter Date:
+                  </p>
+                </div>
                 <input
                   type="date"
                   value={historyDate}
                   onChange={(e) => setHistoryDate(e.target.value)}
-                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:outline-none shadow-sm"
+                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:outline-none shadow-sm cursor-pointer"
                   max={new Date().toISOString().split("T")[0]}
                 />
               </div>

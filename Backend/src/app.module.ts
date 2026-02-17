@@ -47,6 +47,7 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
 import { VideoStreamGateway } from './service/video/video-stream.gateway';
 import { SupportService } from './service/support/support.service';
 import { FirmwareService } from './service/firmware/firmware.service';
+import { SupportGateway } from './service/support/support.gateway';
 
 @Module({
   imports: [ScheduleModule.forRoot(), TerminusModule],
@@ -97,6 +98,7 @@ import { FirmwareService } from './service/firmware/firmware.service';
     IprogSmsService,
     VideoStreamGateway,
     SupportService,
+    SupportGateway,
     FirmwareService,
   ],
 })

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { io } from "socket.io-client";
 import {
   MessageSquare,
   Plus,
@@ -45,9 +46,11 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUser } from "@/contexts/UserContext";
+import getBaseUrl from "@/utils/GetBaseUrl";
 import Requests from "@/utils/Requests";
 
 export default function Support() {
+  const socketRef = useRef(null);
   const { user } = useUser();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -154,35 +157,76 @@ export default function Support() {
     }
   };
 
+  // Socket setup
+  useEffect(() => {
+    const baseUrl = getBaseUrl();
+    socketRef.current = io(baseUrl, { transports: ["websocket"] });
+    socketRef.current.on("connect", () =>
+      console.log("Connected to Support WS"),
+    );
+
+    socketRef.current.on("new_message_received", (newMessage) => {
+      setMessages((prev) => {
+        if (prev.find((m) => m.message_id === newMessage.message_id))
+          return prev;
+        return [...prev, newMessage];
+      });
+    });
+
+    socketRef.current.on("ticket_status_updated", (updatedTicket) => {
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.ticket_id === updatedTicket.ticket_id ? updatedTicket : t,
+        ),
+      );
+      setSelectedTicket((current) =>
+        current?.ticket_id === updatedTicket.ticket_id
+          ? updatedTicket
+          : current,
+      );
+      if (updatedTicket.status === "closed")
+        toast.info("This ticket has been marked as closed.");
+    });
+
+    return () => {
+      if (socketRef.current) socketRef.current.disconnect();
+    };
+  }, []);
+
+  // Join ticket room on selection
+  useEffect(() => {
+    if (selectedTicket && socketRef.current) {
+      socketRef.current.emit("joinTicket", {
+        ticketId: selectedTicket.ticket_id,
+      });
+      fetchMessages(selectedTicket.ticket_id);
+    }
+  }, [selectedTicket]);
+
   const handleSendMessage = async () => {
     if (!replyText.trim() || !selectedTicket) return;
-
+    const optimisticId = `temp-${Date.now()}`;
+    const optimistic = {
+      message_id: optimisticId,
+      sender_type: "customer",
+      message: replyText,
+      date_sent: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setReplyText("");
     try {
       const res = await Requests({
         url: `/support/tickets/${selectedTicket.ticket_id}/messages`,
         method: "POST",
-        data: {
-          senderId: user?.id || user?.admin_id || user?.staff_id,
-          senderType: user?.role || "staff",
-          message: replyText,
-        },
+        data: { senderId: user?.id || user?.admin_id || user?.staff_id, senderType: 'admin', message: optimistic.message },
       });
-
-      if (res?.data) {
-        setMessages([...messages, res.data]);
-        setReplyText("");
-        // Update last updated in ticket list
-        setTickets(
-          tickets.map((t) =>
-            t.ticket_id === selectedTicket.ticket_id
-              ? { ...t, last_updated: new Date().toISOString() }
-              : t,
-          ),
+      if (res?.data)
+        setMessages((prev) =>
+          prev.map((m) => (m.message_id === optimisticId ? res.data : m)),
         );
-      }
-    } catch (err) {
-      console.error("Failed to send message", err);
+    } catch {
       toast.error("Failed to send message");
+      setMessages((prev) => prev.filter((m) => m.message_id !== optimisticId));
     }
   };
 

@@ -69,22 +69,6 @@ export default function Support() {
 
   const scrollRef = useRef(null);
 
-  useEffect(() => {
-    fetchTickets();
-  }, [fetchTickets]);
-
-  useEffect(() => {
-    if (selectedTicket) {
-      fetchMessages(selectedTicket.ticket_id);
-    }
-  }, [selectedTicket, fetchMessages]);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
   const fetchTickets = useCallback(async () => {
     setLoading(true);
     try {
@@ -123,6 +107,22 @@ export default function Support() {
       setMessagesLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
+
+  useEffect(() => {
+    if (selectedTicket) {
+      fetchMessages(selectedTicket.ticket_id);
+    }
+  }, [selectedTicket, fetchMessages]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleCreateTicket = async () => {
     if (!newTicket.subject || !newTicket.description) {

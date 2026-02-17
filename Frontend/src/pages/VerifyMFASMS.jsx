@@ -18,24 +18,6 @@ export function VerifyMFASMS() {
   const staffId = searchParams.get("staffId");
   const adminId = searchParams.get("adminId");
 
-  useEffect(() => {
-    if (!staffId && !adminId) {
-      setError("Missing staffId or adminId");
-    }
-  }, [staffId, adminId]);
-
-  // Auto-submit when a full 6-digit code is entered, but avoid repeating
-  useEffect(() => {
-    const trimmed = code.trim();
-    if (
-      /^\d{6}$/.test(trimmed) &&
-      !submitting &&
-      attemptedCodeRef.current !== trimmed
-    ) {
-      handleSubmit();
-    }
-  }, [code, submitting, handleSubmit]);
-
   const handleSubmit = useCallback(async () => {
     if (!code || !/^\d{6}$/.test(code.trim())) {
       setError("Enter a 6-digit code");
@@ -73,6 +55,24 @@ export function VerifyMFASMS() {
       setSubmitting(false);
     }
   }, [code, staffId, adminId, login, navigate]);
+
+  useEffect(() => {
+    if (!staffId && !adminId) {
+      setError("Missing staffId or adminId");
+    }
+  }, [staffId, adminId]);
+
+  // Auto-submit when a full 6-digit code is entered, but avoid repeating
+  useEffect(() => {
+    const trimmed = code.trim();
+    if (
+      /^\d{6}$/.test(trimmed) &&
+      !submitting &&
+      attemptedCodeRef.current !== trimmed
+    ) {
+      handleSubmit();
+    }
+  }, [code, submitting, handleSubmit]);
 
   return (
     <div className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-green-50">

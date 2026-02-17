@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useUser } from "@/contexts/UserContext";
 import { useEffect, useState } from "react";
 import Requests from "@/utils/Requests";
 import {
@@ -132,8 +131,6 @@ function ProgressMetric({ label, value, maxValue, color, icon: Icon, unit }) {
 }
 
 function Analytics() {
-  const { user } = useUser();
-
   const [stats, setStats] = useState({
     machinesActive: 0,
     machinesTotal: 0,
@@ -151,6 +148,7 @@ function Analytics() {
   const [lastBackup, setLastBackup] = useState(null);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const formatPeso = (v) =>
     new Intl.NumberFormat("en-PH", {
@@ -232,6 +230,7 @@ function Analytics() {
         }));
 
         setRecentActivity(recent);
+        setLastUpdated(new Date());
       } catch (e) {
         console.error("Failed to load dashboard data", e);
       } finally {
@@ -244,15 +243,16 @@ function Analytics() {
     };
   }, []);
 
-  const chartData = [
-    { name: "Mon", yield: 4.2 },
-    { name: "Tue", yield: 3.8 },
-    { name: "Wed", yield: 5.1 },
-    { name: "Thu", yield: 4.5 },
-    { name: "Fri", yield: 6.2 },
-    { name: "Sat", yield: 7.4 },
-    { name: "Sun", yield: parseFloat(stats.fertilizerYieldKg) || 0 },
-  ];
+  const chartData = Array.from({ length: 7 }).map((_, i) => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const basePrices = [4.2, 3.8, 5.1, 4.5, 6.2, 7.4];
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return {
+      name: days[d.getDay()],
+      yield: i === 6 ? parseFloat(stats.fertilizerYieldKg) || 0 : basePrices[i],
+    };
+  });
 
   return (
     <div className="w-full bg-[#FAF9F6] min-h-screen pb-12">
@@ -264,7 +264,13 @@ function Analytics() {
               Dashboard Overview
             </h1>
             <p className="text-gray-500 font-medium">
-              Welcome back, {user?.username || "Admin"}. System pulse is looking{" "}
+              {new Date().toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}{" "}
+              • System pulse is looking{" "}
               <span className="text-green-600 font-bold">healthy</span>.
             </p>
           </div>
@@ -403,7 +409,11 @@ function Analytics() {
                       Yield Forecast (kg)
                     </h4>
                     <span className="text-xs text-gray-400 font-medium italic">
-                      Updated Every 10m
+                      Updated{" "}
+                      {lastUpdated.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
                   <div className="h-[220px] w-full">

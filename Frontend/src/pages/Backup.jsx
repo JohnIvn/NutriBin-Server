@@ -40,7 +40,6 @@ function Backup() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [cleaning, setCleaning] = useState(false);
-  const [scheduleStatus, setScheduleStatus] = useState(null);
 
   const fetchBackups = async () => {
     setLoading(true);
@@ -56,23 +55,8 @@ function Backup() {
     }
   };
 
-  const fetchScheduleStatus = async () => {
-    try {
-      const response = await Requests({
-        url: "/backup/schedule",
-        method: "GET",
-      });
-      if (response.data?.success) {
-        setScheduleStatus(response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching schedule status:", error);
-    }
-  };
-
   useEffect(() => {
     fetchBackups();
-    fetchScheduleStatus();
   }, []);
 
   const handleCreateBackup = async () => {

@@ -60,7 +60,7 @@ export class FertilizerController {
       const result = await client.query<{
         batch: string;
         nitrogen: string;
-        phosporus: string;
+        phosphorus: string;
         potassium: string;
         weight: string;
       }>(
@@ -68,7 +68,7 @@ export class FertilizerController {
         SELECT 
           machine_id as batch,
           nitrogen,
-          phosphorus as phosporus,
+          phosphorus,
           potassium,
           weight_kg as weight
         FROM fertilizer_analytics
@@ -83,7 +83,7 @@ export class FertilizerController {
         .map((row) => ({
           batch: row.batch.toUpperCase(),
           nitrogen: this.toNumber(row.nitrogen),
-          phosporus: this.toNumber(row.phosporus),
+          phosphorus: this.toNumber(row.phosphorus),
           potassium: this.toNumber(row.potassium),
           weight: this.toNumber(row.weight),
         }))
@@ -126,17 +126,17 @@ export class FertilizerController {
       const data = [
         {
           name: 'Nitrogen',
-          value: parseFloat(row.nitrogen || '1'),
+          value: parseFloat(row.nitrogen || '0'),
           fill: '#C26A4A',
         },
         {
-          name: 'Phosporus',
-          value: parseFloat(row.phosphorus || '1'),
+          name: 'Phosphorus',
+          value: parseFloat(row.phosphorus || '0'),
           fill: '#D97706',
         },
         {
           name: 'Potassium',
-          value: parseFloat(row.potassium || '1'),
+          value: parseFloat(row.potassium || '0'),
           fill: '#739072',
         },
       ];
@@ -144,6 +144,11 @@ export class FertilizerController {
       return {
         ok: true,
         averages: data,
+        summary: {
+          nitrogen: parseFloat(row.nitrogen || '0').toFixed(1),
+          phosphorus: parseFloat(row.phosphorus || '0').toFixed(1),
+          potassium: parseFloat(row.potassium || '0').toFixed(1),
+        },
       };
     } catch (error) {
       console.error('Fertilizer Averages Error:', error);

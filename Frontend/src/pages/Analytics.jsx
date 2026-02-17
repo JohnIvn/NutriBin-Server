@@ -198,11 +198,11 @@ function Analytics() {
 
         // Nutrients
         if (nutrientRes?.data?.ok) {
-          const navg = nutrientRes.data.averages;
+          const nSum = nutrientRes.data.summary;
           setNutrients({
-            n: parseFloat(navg.nitrogen || 0).toFixed(1),
-            p: parseFloat(navg.phosphorus || 0).toFixed(1),
-            k: parseFloat(navg.potassium || 0).toFixed(1),
+            n: nSum?.nitrogen || "0.0",
+            p: nSum?.phosphorus || "0.0",
+            k: nSum?.potassium || "0.0",
           });
         }
 

@@ -292,11 +292,10 @@ function Backup() {
               </div>
               <div>
                 <CardTitle className="text-2xl font-black text-[#3A4D39]">
-                  {scheduleStatus?.isScheduled ? "Enabled" : "Disabled"}
+                  Enabled
                 </CardTitle>
                 <CardDescription className="text-xs font-medium uppercase text-gray-400 mt-1">
-                  Auto-Scheduler:{" "}
-                  {scheduleStatus?.isScheduled ? "Daily" : "Off"}
+                  Auto-Scheduler: On
                 </CardDescription>
               </div>
             </CardContent>

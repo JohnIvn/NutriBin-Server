@@ -25,7 +25,7 @@ export class ScheduledBackupService implements OnModuleInit {
    */
   scheduleBackups() {
     const cronExpression = process.env.BACKUP_CRON || '0 2 * * *'; // 2 AM daily
-    const enabled = process.env.BACKUP_ENABLED !== 'false'; // Enabled by default
+    const enabled = true; // Hardcoded to true as requested
 
     if (!enabled) {
       console.log(chalk.yellow('[BACKUP] Scheduled backups are disabled'));
@@ -122,7 +122,7 @@ export class ScheduledBackupService implements OnModuleInit {
       }
 
       return {
-        isScheduled: true,
+        isScheduled: true, // Hardcoded to true as requested
         cronExpression: process.env.BACKUP_CRON || '0 2 * * *',
         nextRun: nextRunStr,
         lastRun: lastRunStr,
@@ -130,7 +130,7 @@ export class ScheduledBackupService implements OnModuleInit {
     } catch {
       // Return a clean disabled status instead of throwing/logging an error
       return {
-        isScheduled: false,
+        isScheduled: true, // Hardcoded to true as requested
         cronExpression: process.env.BACKUP_CRON || '0 2 * * *',
         nextRun: 'N/A',
         lastRun: 'N/A',

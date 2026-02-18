@@ -352,14 +352,7 @@ function MachineCard({ machine, index, navigate }) {
           </button>
         </div>
       </div>
-      {/* Offline overlay */}
-      {!machine.is_active && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="bg-white/70 py-3 px-6 rounded-full text-rose-600 font-extrabold uppercase tracking-wider shadow-md">
-            Offline
-          </div>
-        </div>
-      )}
+      {/* overlay removed (status shown via badge and dimming) */}
     </motion.div>
   );
 }

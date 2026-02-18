@@ -128,8 +128,19 @@ export class HardwareController {
         `Received hardware status from machine: ${data.machine_id}`,
       );
 
-      // Invert incoming boolean flags (ESP logic inverted):
-      const invert = (v?: boolean) => (typeof v === 'boolean' ? !v : false);
+      // Invert incoming boolean flags (ESP logic inverted).
+      // Coerce strings/numbers to boolean so values like "false" are handled.
+      const parseBool = (v?: any) => {
+        if (typeof v === 'boolean') return v;
+        if (typeof v === 'string') {
+          const s = v.trim().toLowerCase();
+          return ['true', '1', 't', 'yes', 'y'].includes(s);
+        }
+        if (typeof v === 'number') return v !== 0;
+        return false;
+      };
+
+      const invert = (v?: any) => !parseBool(v);
 
       // Map incoming flags to machines table sensor columns (s1..s10)
       const result = await client.query(

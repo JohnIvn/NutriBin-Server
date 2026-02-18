@@ -128,6 +128,9 @@ export class HardwareController {
         `Received hardware status from machine: ${data.machine_id}`,
       );
 
+      // Invert incoming boolean flags (ESP logic inverted):
+      const invert = (v?: boolean) => (typeof v === 'boolean' ? !v : false);
+
       // Map incoming flags to machines table sensor columns (s1..s10)
       const result = await client.query(
         `UPDATE machines SET
@@ -143,16 +146,16 @@ export class HardwareController {
            s10 = $10
          WHERE machine_id = $11`,
         [
-          data.npk_active ?? false,
-          data.weight_active ?? false,
-          data.mq135_active ?? false,
-          data.mq2_active ?? false,
-          data.mq4_active ?? false,
-          data.mq7_active ?? false,
-          data.soil_moisture_active ?? false,
-          data.dht_active ?? false,
-          data.reed_switch_active ?? false,
-          data.ph_active ?? false,
+          invert(data.npk_active),
+          invert(data.weight_active),
+          invert(data.mq135_active),
+          invert(data.mq2_active),
+          invert(data.mq4_active),
+          invert(data.mq7_active),
+          invert(data.soil_moisture_active),
+          invert(data.dht_active),
+          invert(data.reed_switch_active),
+          invert(data.ph_active),
           data.machine_id,
         ],
       );

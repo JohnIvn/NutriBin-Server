@@ -93,6 +93,12 @@ export class HardwareController {
         ],
       );
 
+      // Update machines last_seen timestamp and mark active
+      await client.query(
+        `UPDATE machines SET last_seen = now(), is_active = true WHERE machine_id = $1`,
+        [data.machine_id],
+      );
+
       return {
         ok: true,
         message: 'Data saved successfully',
@@ -179,6 +185,12 @@ export class HardwareController {
           'Machine not found or not registered',
         );
       }
+
+      // Update last_seen and ensure machine is marked active when it reports status
+      await client.query(
+        `UPDATE machines SET last_seen = now(), is_active = true WHERE machine_id = $1`,
+        [data.machine_id],
+      );
 
       return {
         ok: true,

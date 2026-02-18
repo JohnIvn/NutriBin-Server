@@ -20,8 +20,9 @@ export class MachinesMonitorService {
          RETURNING machine_id`,
       );
 
-      if (res.rowCount > 0) {
-        this.logger.log(`Marked ${res.rowCount} machine(s) inactive`);
+      const count = res.rowCount ?? 0;
+      if (count > 0) {
+        this.logger.log(`Marked ${count} machine(s) inactive`);
       }
     } catch (error) {
       this.logger.error('Error checking machines activity:', error as any);

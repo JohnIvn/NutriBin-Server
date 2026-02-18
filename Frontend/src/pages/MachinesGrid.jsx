@@ -62,6 +62,8 @@ function MachinesGrid() {
           machine_id: record.machine_id,
           firmware_version: record.firmware_version,
           update_status: record.update_status,
+          // Propagate activity flag from API
+          is_active: record.is_active ?? true,
           users: [],
         };
       }
@@ -264,8 +266,10 @@ function MachineCard({ machine, index, navigate }) {
                 <h3 className="font-extrabold text-xl text-gray-900 group-hover:text-[#4F6F52] transition-colors">
                   NutriBin
                 </h3>
-                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                  Active
+                <span
+                  className={`${machine.is_active ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-600"} text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter`}
+                >
+                  {machine.is_active ? "Active" : "Offline"}
                 </span>
                 <div className="hidden sm:flex items-center gap-1.5 ml-2 px-2 py-0.5 bg-gray-50 rounded-full border border-gray-100">
                   <div

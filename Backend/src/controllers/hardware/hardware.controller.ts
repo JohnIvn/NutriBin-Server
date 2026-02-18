@@ -93,6 +93,12 @@ export class HardwareController {
         ],
       );
 
+      // Update machines last_seen timestamp and mark active
+      await client.query(
+        `UPDATE machines SET last_seen = now(), is_active = true WHERE machine_id = $1`,
+        [data.machine_id],
+      );
+
       return {
         ok: true,
         message: 'Data saved successfully',
@@ -100,6 +106,99 @@ export class HardwareController {
     } catch (error) {
       this.logger.error('Error saving sensor data:', error);
       throw new InternalServerErrorException('Failed to save sensor data');
+    }
+  }
+
+  @Post('status')
+  async receiveStatus(
+    @Body()
+    data: {
+      user_id: string;
+      machine_id: string;
+      npk_active?: boolean;
+      weight_active?: boolean;
+      mq135_active?: boolean;
+      mq2_active?: boolean;
+      mq4_active?: boolean;
+      mq7_active?: boolean;
+      soil_moisture_active?: boolean;
+      dht_active?: boolean;
+      reed_switch_active?: boolean;
+      ph_active?: boolean;
+    },
+  ) {
+    const client = this.databaseService.getClient();
+
+    try {
+      this.logger.log(
+        `Received hardware status from machine: ${data.machine_id}`,
+      );
+
+      // Invert incoming boolean flags (ESP logic inverted).
+      // Coerce strings/numbers to boolean so values like "false" are handled.
+      const parseBool = (v?: any) => {
+        if (typeof v === 'boolean') return v;
+        if (typeof v === 'string') {
+          const s = v.trim().toLowerCase();
+          return ['true', '1', 't', 'yes', 'y'].includes(s);
+        }
+        if (typeof v === 'number') return v !== 0;
+        return false;
+      };
+
+      const invert = (v?: any) => !parseBool(v);
+
+      // Map incoming flags to machines table sensor columns (s1..s10)
+      const result = await client.query(
+        `UPDATE machines SET
+           s1 = $1,
+           s2 = $2,
+           s3 = $3,
+           s4 = $4,
+           s5 = $5,
+           s6 = $6,
+           s7 = $7,
+           s8 = $8,
+           s9 = $9,
+           s10 = $10
+         WHERE machine_id = $11`,
+        [
+          invert(data.npk_active),
+          invert(data.weight_active),
+          invert(data.mq135_active),
+          invert(data.mq2_active),
+          invert(data.mq4_active),
+          invert(data.mq7_active),
+          invert(data.soil_moisture_active),
+          invert(data.dht_active),
+          invert(data.reed_switch_active),
+          invert(data.ph_active),
+          data.machine_id,
+        ],
+      );
+
+      if (result.rowCount === 0) {
+        this.logger.warn(
+          `No machine row updated for machine_id=${data.machine_id}`,
+        );
+        throw new InternalServerErrorException(
+          'Machine not found or not registered',
+        );
+      }
+
+      // Update last_seen and ensure machine is marked active when it reports status
+      await client.query(
+        `UPDATE machines SET last_seen = now(), is_active = true WHERE machine_id = $1`,
+        [data.machine_id],
+      );
+
+      return {
+        ok: true,
+        message: 'Status updated successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error updating machine status:', error);
+      throw new InternalServerErrorException('Failed to update machine status');
     }
   }
 }

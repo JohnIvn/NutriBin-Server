@@ -47,6 +47,7 @@ import { LoginMonitorService } from './service/security/login-monitor.service';
 import { VideoStreamGateway } from './service/video/video-stream.gateway';
 import { SupportService } from './service/support/support.service';
 import { FirmwareService } from './service/firmware/firmware.service';
+import { MachinesMonitorService } from './service/scheduler/machines-monitor.service';
 import { SupportGateway } from './service/support/support.gateway';
 
 @Module({
@@ -100,6 +101,7 @@ import { SupportGateway } from './service/support/support.gateway';
     SupportService,
     SupportGateway,
     FirmwareService,
+    MachinesMonitorService,
   ],
 })
 export class AppModule {}

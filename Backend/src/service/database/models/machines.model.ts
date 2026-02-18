@@ -29,6 +29,7 @@ export async function createMachinesTable(client: Client) {
       target_firmware_version text,
       update_status text DEFAULT 'success',
       last_update_attempt timestamptz,
+      last_seen timestamptz,
       date_created timestamptz DEFAULT now()
     );
   `);

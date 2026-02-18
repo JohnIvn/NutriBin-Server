@@ -62,6 +62,8 @@ function MachinesGrid() {
           machine_id: record.machine_id,
           firmware_version: record.firmware_version,
           update_status: record.update_status,
+          // Propagate activity flag from API
+          is_active: record.is_active ?? true,
           users: [],
         };
       }
@@ -247,7 +249,7 @@ function MachineCard({ machine, index, navigate }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#4F6F52]/30 transition-all duration-500 overflow-hidden group"
+      className={`relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#4F6F52]/30 transition-all duration-500 overflow-hidden group ${!machine.is_active ? "opacity-70" : ""}`}
     >
       <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-gray-50">
         {/* Machine Info */}
@@ -264,8 +266,10 @@ function MachineCard({ machine, index, navigate }) {
                 <h3 className="font-extrabold text-xl text-gray-900 group-hover:text-[#4F6F52] transition-colors">
                   NutriBin
                 </h3>
-                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                  Active
+                <span
+                  className={`${machine.is_active ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-600"} text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter`}
+                >
+                  {machine.is_active ? "Active" : "Offline"}
                 </span>
                 <div className="hidden sm:flex items-center gap-1.5 ml-2 px-2 py-0.5 bg-gray-50 rounded-full border border-gray-100">
                   <div
@@ -338,13 +342,14 @@ function MachineCard({ machine, index, navigate }) {
         <div className="p-6 lg:w-48 flex items-center justify-center bg-[#FDFCFB]">
           <button
             onClick={() => navigate(`/machine/${machine.machine_id}`)}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold bg-[#4F6F52] text-white hover:bg-[#3A4D39] shadow-lg shadow-[#4F6F52]/20 active:scale-95 transition-all"
+            className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold shadow-lg active:scale-95 transition-all ${machine.is_active ? "bg-[#4F6F52] text-white hover:bg-[#3A4D39] shadow-[#4F6F52]/20" : "bg-gray-50 text-gray-700 hover:bg-gray-100"}`}
           >
             Metrics
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
+      {/* overlay removed (status shown via badge and dimming) */}
     </motion.div>
   );
 }

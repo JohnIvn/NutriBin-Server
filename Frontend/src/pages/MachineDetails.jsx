@@ -138,10 +138,22 @@ function MachineDetails() {
               <span className="text-[10px] font-bold text-gray-400 uppercase">
                 System Status
               </span>
-              <span className="text-sm font-bold text-emerald-600 flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                ONLINE & SYNCED
+              <span
+                className={`text-sm font-bold flex items-center gap-1.5 ${machineDetails.is_active ? "text-emerald-600" : "text-rose-600"}`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full ${machineDetails.is_active ? "bg-emerald-500 animate-pulse" : "bg-rose-600"}`}
+                />
+                {machineDetails.is_active ? "ONLINE & SYNCED" : "OFFLINE"}
               </span>
+              {!machineDetails.is_active && (
+                <div className="text-xs text-rose-600 font-semibold mt-2">
+                  Last recorded snapshot:{" "}
+                  {machineDetails.last_seen
+                    ? new Date(machineDetails.last_seen).toLocaleString()
+                    : "unknown"}
+                </div>
+              )}
             </div>
             <button className="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm text-gray-500 hover:text-[#4F6F52] transition-all">
               <Share2 className="w-5 h-5" />

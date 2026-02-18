@@ -102,4 +102,77 @@ export class HardwareController {
       throw new InternalServerErrorException('Failed to save sensor data');
     }
   }
+
+  @Post('status')
+  async receiveStatus(
+    @Body()
+    data: {
+      user_id: string;
+      machine_id: string;
+      npk_active?: boolean;
+      weight_active?: boolean;
+      mq135_active?: boolean;
+      mq2_active?: boolean;
+      mq4_active?: boolean;
+      mq7_active?: boolean;
+      soil_moisture_active?: boolean;
+      dht_active?: boolean;
+      reed_switch_active?: boolean;
+      ph_active?: boolean;
+    },
+  ) {
+    const client = this.databaseService.getClient();
+
+    try {
+      this.logger.log(
+        `Received hardware status from machine: ${data.machine_id}`,
+      );
+
+      // Map incoming flags to machines table sensor columns (s1..s10)
+      const result = await client.query(
+        `UPDATE machines SET
+           s1 = $1,
+           s2 = $2,
+           s3 = $3,
+           s4 = $4,
+           s5 = $5,
+           s6 = $6,
+           s7 = $7,
+           s8 = $8,
+           s9 = $9,
+           s10 = $10
+         WHERE machine_id = $11`,
+        [
+          data.npk_active ?? false,
+          data.weight_active ?? false,
+          data.mq135_active ?? false,
+          data.mq2_active ?? false,
+          data.mq4_active ?? false,
+          data.mq7_active ?? false,
+          data.soil_moisture_active ?? false,
+          data.dht_active ?? false,
+          data.reed_switch_active ?? false,
+          data.ph_active ?? false,
+          data.machine_id,
+        ],
+      );
+
+      if (result.rowCount === 0) {
+        this.logger.warn(
+          `No machine row updated for machine_id=${data.machine_id}`,
+        );
+        throw new InternalServerErrorException(
+          'Machine not found or not registered',
+        );
+      }
+
+      return {
+        ok: true,
+        message: 'Status updated successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error updating machine status:', error);
+      throw new InternalServerErrorException('Failed to update machine status');
+    }
+  }
 }

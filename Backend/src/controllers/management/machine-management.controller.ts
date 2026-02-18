@@ -31,6 +31,7 @@ export class MachineManagementController {
           m.machine_id,
           m.firmware_version,
           m.update_status,
+          m.is_active,
           uc.customer_id as user_id,
           uc.first_name,
           uc.last_name,
@@ -63,6 +64,7 @@ export class MachineManagementController {
       const machineResult = await client.query<MachineRow>(
         `SELECT 
           m.machine_id,
+          m.is_active,
           m.firmware_version,
           m.update_status,
           mc.customer_id as user_id,

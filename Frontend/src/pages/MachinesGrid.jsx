@@ -249,7 +249,7 @@ function MachineCard({ machine, index, navigate }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#4F6F52]/30 transition-all duration-500 overflow-hidden group"
+      className={`relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#4F6F52]/30 transition-all duration-500 overflow-hidden group ${!machine.is_active ? "opacity-70" : ""}`}
     >
       <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-gray-50">
         {/* Machine Info */}
@@ -341,14 +341,25 @@ function MachineCard({ machine, index, navigate }) {
         {/* Action Panel */}
         <div className="p-6 lg:w-48 flex items-center justify-center bg-[#FDFCFB]">
           <button
-            onClick={() => navigate(`/machine/${machine.machine_id}`)}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold bg-[#4F6F52] text-white hover:bg-[#3A4D39] shadow-lg shadow-[#4F6F52]/20 active:scale-95 transition-all"
+            onClick={() =>
+              machine.is_active && navigate(`/machine/${machine.machine_id}`)
+            }
+            disabled={!machine.is_active}
+            className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold shadow-lg active:scale-95 transition-all ${machine.is_active ? "bg-[#4F6F52] text-white hover:bg-[#3A4D39] shadow-[#4F6F52]/20" : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"}`}
           >
             Metrics
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
+      {/* Offline overlay */}
+      {!machine.is_active && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="bg-white/70 py-3 px-6 rounded-full text-rose-600 font-extrabold uppercase tracking-wider shadow-md">
+            Offline
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

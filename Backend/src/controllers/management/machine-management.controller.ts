@@ -65,6 +65,7 @@ export class MachineManagementController {
         `SELECT 
           m.machine_id,
           m.is_active,
+          m.last_seen,
           m.firmware_version,
           m.update_status,
           mc.customer_id as user_id,

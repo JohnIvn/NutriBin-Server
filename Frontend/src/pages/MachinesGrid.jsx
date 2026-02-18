@@ -341,11 +341,8 @@ function MachineCard({ machine, index, navigate }) {
         {/* Action Panel */}
         <div className="p-6 lg:w-48 flex items-center justify-center bg-[#FDFCFB]">
           <button
-            onClick={() =>
-              machine.is_active && navigate(`/machine/${machine.machine_id}`)
-            }
-            disabled={!machine.is_active}
-            className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold shadow-lg active:scale-95 transition-all ${machine.is_active ? "bg-[#4F6F52] text-white hover:bg-[#3A4D39] shadow-[#4F6F52]/20" : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"}`}
+            onClick={() => navigate(`/machine/${machine.machine_id}`)}
+            className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold shadow-lg active:scale-95 transition-all ${machine.is_active ? "bg-[#4F6F52] text-white hover:bg-[#3A4D39] shadow-[#4F6F52]/20" : "bg-gray-50 text-gray-700 hover:bg-gray-100"}`}
           >
             Metrics
             <ChevronRight className="h-4 w-4" />

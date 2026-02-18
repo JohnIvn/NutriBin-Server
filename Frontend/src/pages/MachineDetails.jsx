@@ -146,6 +146,14 @@ function MachineDetails() {
                 />
                 {machineDetails.is_active ? "ONLINE & SYNCED" : "OFFLINE"}
               </span>
+              {!machineDetails.is_active && (
+                <div className="text-xs text-rose-600 font-semibold mt-2">
+                  Last recorded snapshot:{" "}
+                  {machineDetails.last_seen
+                    ? new Date(machineDetails.last_seen).toLocaleString()
+                    : "unknown"}
+                </div>
+              )}
             </div>
             <button className="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm text-gray-500 hover:text-[#4F6F52] transition-all">
               <Share2 className="w-5 h-5" />

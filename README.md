@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Project Status](https://img.shields.io/badge/status-Development-green.svg)](#)
 
-A comprehensive system designed for managing and monitoring smart waste bins. This repository contains the source code for both the backend API and the web-based management dashboard.
+A comprehensive system designed for managing and monitoring smart waste bins. This repository contains the source code for both the backend API and the web-based management dashboard. 
 
 --
 

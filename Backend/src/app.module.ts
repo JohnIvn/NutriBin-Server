@@ -49,6 +49,7 @@ import { SupportService } from './service/support/support.service';
 import { FirmwareService } from './service/firmware/firmware.service';
 import { MachinesMonitorService } from './service/scheduler/machines-monitor.service';
 import { SupportGateway } from './service/support/support.gateway';
+import { ThingSpeakService } from './service/thingspeak.service';
 
 @Module({
   imports: [ScheduleModule.forRoot(), TerminusModule],
@@ -102,6 +103,7 @@ import { SupportGateway } from './service/support/support.gateway';
     SupportGateway,
     FirmwareService,
     MachinesMonitorService,
+    ThingSpeakService,
   ],
 })
 export class AppModule {}

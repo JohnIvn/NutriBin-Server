@@ -6,12 +6,16 @@ import {
   Logger,
 } from '@nestjs/common';
 import { DatabaseService } from '../../service/database/database.service';
+import { ThingSpeakService } from '../../service/thingspeak.service';
 
 @Controller('hardware')
 export class HardwareController {
   private readonly logger = new Logger(HardwareController.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly thingSpeakService: ThingSpeakService,
+  ) {}
 
   @Post('sensor-data')
   async receiveSensorData(
@@ -98,6 +102,29 @@ export class HardwareController {
         `UPDATE machines SET last_seen = now(), is_active = true WHERE machine_id = $1`,
         [data.machine_id],
       );
+
+      // --- ThingSpeak Integration ---
+      // We asynchronously update ThingSpeak to avoid blocking the main data flow.
+      // Replace process.env.THINGSPEAK_WRITE_API_KEY with your actual channel API key in .env.
+      const thingSpeakApiKey = process.env.THINGSPEAK_WRITE_API_KEY;
+      if (thingSpeakApiKey) {
+        this.thingSpeakService
+          .updateChannel(thingSpeakApiKey, {
+            nitrogen: data.nitrogen,
+            phosphorus: data.phosphorus,
+            potassium: data.potassium,
+            temperature: data.temperature,
+            ph: data.ph,
+            humidity: data.humidity,
+            soil_moisture: data.soil_moisture,
+            weight_kg: data.weight_kg,
+          })
+          .catch((err: unknown) => {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            this.logger.error(`ThingSpeak Async Error: ${msg}`);
+          });
+      }
+      // ------------------------------
 
       return {
         ok: true,

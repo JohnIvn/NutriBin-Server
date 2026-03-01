@@ -35,7 +35,7 @@ export class MachinesMonitorService {
         this.logger.log(`Marked ${count} machine(s) inactive`);
       }
     } catch (error) {
-      this.logger.error('Error checking machines activity:', error as any);
+      this.logger.error('Error checking machines activity:', error);
     }
   }
 }

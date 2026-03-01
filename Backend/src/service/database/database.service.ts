@@ -6,7 +6,6 @@ import chalk from 'chalk';
 import { createUserCustomerTable } from './models/user-customer.model';
 import { createUserStaffTable } from './models/user-staff.model';
 import { createUserAdminTable } from './models/user-admin.model';
-import { createTrashLogsTable } from './models/trash-logs.model';
 import { createCameraLogsTable } from './models/camera-logs';
 import { createFertilizerAnalyticsTable } from './models/fertilizer-analytics.model';
 import { createMachineSerialTable } from './models/machine_serial';
@@ -71,7 +70,6 @@ export class DatabaseService implements OnModuleInit {
     await createRepairTable(this.client);
     await createSalesTable(this.client);
     await createAnnouncementsTable(this.client);
-    await createTrashLogsTable(this.client);
     await createUserStaffArchiveTable(this.client);
     await createUserCustomerArchiveTable(this.client);
     await createAuthenticationTable(this.client);

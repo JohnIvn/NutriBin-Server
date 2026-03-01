@@ -43,7 +43,7 @@ export class ThingSpeakService {
 
       const url = `${this.baseUrl}/update?${params.toString()}`;
 
-      this.logger.log(`Updating ThingSpeak channel...`);
+      this.logger.log(`Updating ThingSpeak channel: ${url}`);
       const response = await axios.get<number | string>(url);
 
       if (response.data === 0 || response.data === '0') {

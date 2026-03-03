@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Requests from "@/utils/Requests";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
   MapPin,
@@ -100,7 +101,7 @@ function MachineMap() {
     current: 0,
     total: 0,
   });
-  const [stats, setStats] = useState({ healthy: 0, needsRepair: 0, total: 0 });
+  const [stats, setStats] = useState({ online: 0, offline: 0, total: 0 });
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -120,13 +121,11 @@ function MachineMap() {
         const data = response.data.data;
 
         // Calculate stats
-        const healthyCount = data.filter((m) => m.status === "healthy").length;
-        const needsRepairCount = data.filter(
-          (m) => m.status === "needs_repair",
-        ).length;
+        const onlineCount = data.filter((m) => m.is_active === true).length;
+        const offlineCount = data.filter((m) => m.is_active !== true).length;
         setStats({
-          healthy: healthyCount,
-          needsRepair: needsRepairCount,
+          online: onlineCount,
+          offline: offlineCount,
           total: data.length,
         });
 
@@ -146,6 +145,57 @@ function MachineMap() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    let mounted = true;
+
+    const channel = supabase
+      .channel("machine-map-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "machines",
+        },
+        (payload) => {
+          if (mounted && payload.new) {
+            const updatedMachine = payload.new;
+
+            // Update geocodedData with new is_active status
+            setGeocodedData((prev) =>
+              prev.map((machine) =>
+                machine.machine_id === updatedMachine.machine_id
+                  ? { ...machine, is_active: updatedMachine.is_active }
+                  : machine,
+              ),
+            );
+
+            // Update stats
+            setStats((prev) => {
+              const newStats = { ...prev };
+              if (updatedMachine.is_active && !payload.old.is_active) {
+                // Machine came online
+                newStats.online += 1;
+                newStats.offline = Math.max(0, newStats.offline - 1);
+              } else if (!updatedMachine.is_active && payload.old.is_active) {
+                // Machine went offline
+                newStats.offline += 1;
+                newStats.online = Math.max(0, newStats.online - 1);
+              }
+              return newStats;
+            });
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const filteredMachines = useMemo(() => {
     return geocodedData.filter((m) => {
@@ -415,13 +465,13 @@ function MachineMap() {
                   <div className="bg-green-50 px-3 py-1 rounded-full flex items-center gap-2 border border-green-100">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
                     <span className="text-[10px] font-bold text-green-700 uppercase tracking-widest">
-                      {stats.healthy} Healthy
+                      {stats.online} Online
                     </span>
                   </div>
                   <div className="bg-red-50 px-3 py-1 rounded-full flex items-center gap-2 border border-red-100">
                     <div className="w-2 h-2 rounded-full bg-red-500" />
                     <span className="text-[10px] font-bold text-red-700 uppercase tracking-widest">
-                      {stats.needsRepair} Alert
+                      {stats.offline} Offline
                     </span>
                   </div>
                 </div>

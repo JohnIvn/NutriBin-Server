@@ -57,7 +57,7 @@ export class SupportGateway implements OnGatewayInit {
   }
 
   afterInit() {
-    this.startSupabaseRealtimeListener();
+    void this.startSupabaseRealtimeListener();
   }
 
   /**
@@ -85,7 +85,7 @@ export class SupportGateway implements OnGatewayInit {
           console.log('New message detected:', newMessage.message_id);
 
           // Emit only to users in that specific ticket room
-          this.server
+          void this.server
             .to(`ticket_${newMessage.ticket_id}`)
             .emit('new_message_received', newMessage);
         },
@@ -98,7 +98,7 @@ export class SupportGateway implements OnGatewayInit {
           const updatedTicket = payload.new as SupportTicket;
           console.log('Ticket update detected:', updatedTicket.ticket_id);
 
-          this.server
+          void this.server
             .to(`ticket_${updatedTicket.ticket_id}`)
             .emit('ticket_status_updated', updatedTicket);
         },
@@ -120,9 +120,13 @@ export class SupportGateway implements OnGatewayInit {
               await this.supabase.removeChannel(channel);
             }
           } catch (e) {
-            console.warn('Error during channel cleanup:', e.message);
+            const errorMessage =
+              e instanceof Error ? e.message : 'Unknown error';
+            console.warn('Error during channel cleanup:', errorMessage);
           }
-          setTimeout(() => this.startSupabaseRealtimeListener(), 5000);
+          setTimeout(() => {
+            void this.startSupabaseRealtimeListener();
+          }, 5000);
         }
 
         if (status === 'CHANNEL_ERROR') {

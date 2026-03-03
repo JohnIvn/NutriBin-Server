@@ -101,7 +101,7 @@ function Serial() {
     }
   };
 
-  const fetchQRCode = async (serialNumber) => {
+  const fetchQRCode = async (serialNumber, machineId) => {
     try {
       setQrLoading(true);
       const response = await Requests({
@@ -110,7 +110,10 @@ function Serial() {
       });
 
       if (response.data.ok) {
-        setQrData(response.data);
+        setQrData({
+          ...response.data,
+          machineId: machineId,
+        });
         setQrModalOpen(true);
       } else {
         toast.error("Failed to generate QR code");
@@ -566,7 +569,9 @@ function Serial() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => fetchQRCode(serial.serial_number)}
+                          onClick={() =>
+                            fetchQRCode(serial.serial_number, serial.machine_id)
+                          }
                           disabled={qrLoading}
                           className="h-9 w-9 rounded-full text-[#4F6F52] hover:bg-[#4F6F52]/10 transition-colors cursor-pointer"
                           title="Generate QR Code"
@@ -671,7 +676,7 @@ function Serial() {
 
       {/* QR Code Modal */}
       <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-white border-[#4F6F52] border-2">
+        <DialogContent className="sm:max-w-[455px] bg-white border-[#4F6F52] border-2">
           <DialogHeader className="border-b-2 border-[#4F6F52] pb-4 mb-2">
             <DialogTitle className="text-[#4F6F52] text-2xl font-bold flex items-center gap-2">
               <QrCode className="h-6 w-6" />
@@ -679,12 +684,22 @@ function Serial() {
             </DialogTitle>
             <DialogDescription className="text-gray-600">
               {qrData?.serial && (
-                <span>
-                  Serial:{" "}
-                  <span className="font-mono font-bold text-gray-900">
-                    {qrData.serial}
+                <div className="flex flex-col gap-1 mt-1">
+                  <span>
+                    Serial:{" "}
+                    <span className="font-mono font-bold text-gray-900">
+                      {qrData.serial}
+                    </span>
                   </span>
-                </span>
+                  {qrData.machineId && (
+                    <span>
+                      Machine ID:{" "}
+                      <span className="font-mono font-bold text-gray-900">
+                        {qrData.machineId}
+                      </span>
+                    </span>
+                  )}
+                </div>
               )}
             </DialogDescription>
           </DialogHeader>

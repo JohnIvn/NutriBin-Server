@@ -15,6 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Requests from "@/utils/Requests";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useUser } from "@/contexts/UserContext";
 
@@ -35,6 +36,38 @@ function MachinesGrid() {
 
   useEffect(() => {
     fetchMachines();
+  }, []);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    let mounted = true;
+
+    const channel = supabase
+      .channel("machines-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "machines" },
+        () => {
+          if (mounted) {
+            fetchMachines();
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "machine_customers" },
+        () => {
+          if (mounted) {
+            fetchMachines();
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchMachines = async () => {

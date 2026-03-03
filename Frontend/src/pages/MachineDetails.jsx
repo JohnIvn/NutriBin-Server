@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Requests from "@/utils/Requests";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 function MachineDetails() {
@@ -76,6 +77,48 @@ function MachineDetails() {
   useEffect(() => {
     fetchMachineDetails();
   }, [fetchMachineDetails]);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    let mounted = true;
+
+    const channel = supabase
+      .channel(`machine-${machineId}-realtime`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "machines",
+          filter: `machine_id=eq.${machineId}`,
+        },
+        () => {
+          if (mounted) {
+            fetchMachineDetails();
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "fertilizer_analytics",
+          filter: `machine_id=eq.${machineId}`,
+        },
+        () => {
+          if (mounted) {
+            fetchMachineHealth(machineId);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [machineId, fetchMachineHealth]);
 
   const toNumber = (val) => {
     if (val === null || val === undefined) return NaN;

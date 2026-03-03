@@ -105,11 +105,11 @@ export class SupportGateway implements OnGatewayInit {
       )
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Connected to Supabase Realtime');
+          console.log('Connected to Supabase Realtime');
         }
 
         if (status === 'TIMED_OUT') {
-          console.error('❌ Supabase TIMED_OUT. Cleaning up...');
+          console.error('Supabase TIMED_OUT. Cleaning up...');
           // Remove the specific channel before retrying
           try {
             // Check if socket is actually open before trying to remove
@@ -120,7 +120,7 @@ export class SupportGateway implements OnGatewayInit {
               await this.supabase.removeChannel(channel);
             }
           } catch (e) {
-            console.warn('⚠️ Error during channel cleanup:', e.message);
+            console.warn('Error during channel cleanup:', e.message);
           }
           setTimeout(() => this.startSupabaseRealtimeListener(), 5000);
         }
@@ -135,7 +135,7 @@ export class SupportGateway implements OnGatewayInit {
     // Optional: Listen for heartbeat signals specifically
     this.supabase.realtime.onHeartbeat((hbStatus) => {
       if (hbStatus === 'timeout') {
-        console.warn('⚠️ Heartbeat timeout detected. Network may be unstable.');
+        console.warn('Heartbeat timeout detected. Network may be unstable.');
       }
     });
   }
@@ -146,7 +146,7 @@ export class SupportGateway implements OnGatewayInit {
         await this.supabase.removeAllChannels();
       }
     } catch (e) {
-      console.warn('⚠️ Error during cleanup:', e.message);
+      console.warn('Error during cleanup:', e.message);
     }
   }
 }

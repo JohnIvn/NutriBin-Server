@@ -13,10 +13,9 @@ export class MachinesMonitorService {
     this.logger.log('MachinesMonitorService initialized');
   }
 
-  // Run every 10 seconds and mark machines inactive if no data for 20s
-  @Interval(10000)
+  // Run every 1 second and mark machines inactive if no data for 20s
+  @Interval(1000)
   async checkMachines() {
-    this.logger.debug('checkMachines triggered');
     const client = this.databaseService.getClient();
     if (!client) {
       this.logger.warn('Database client not available yet, skipping check');

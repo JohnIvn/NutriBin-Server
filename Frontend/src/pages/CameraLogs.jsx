@@ -38,6 +38,7 @@ import {
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import Requests from "@/utils/Requests";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -152,6 +153,44 @@ export default function CameraLogs() {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    let mounted = true;
+
+    const channel = supabase
+      .channel("camera-logs-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "camera_logs",
+        },
+        (payload) => {
+          if (mounted && payload.new) {
+            const newLog = payload.new;
+            // Prepend new log to the beginning
+            setLogs((prev) => [newLog, ...prev.slice(0, 249)]);
+
+            // Update summary counts
+            setSummary((prev) =>
+              prev.map((item) =>
+                item.classification === newLog.classification
+                  ? { ...item, count: (parseInt(item.count) + 1).toString() }
+                  : item,
+              ),
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const filteredLogs = useMemo(() => {

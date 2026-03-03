@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Requests from "@/utils/Requests";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -191,6 +192,29 @@ export default function Emissions() {
     selectedDeviceName,
     fetchHistory,
   ]);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    let mounted = true;
+
+    const channel = supabase
+      .channel("emissions-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "fertilizer_analytics" },
+        () => {
+          if (mounted) {
+            fetchEmissions(mainDate);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [mainDate, fetchEmissions]);
 
   const toNumber = (val) => {
     if (val === null || val === undefined) return 0;

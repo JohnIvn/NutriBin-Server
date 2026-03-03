@@ -17,9 +17,11 @@ COPY public ./public
 # Build arguments for Railway variables (public backend URL for browser)
 ARG VITE_API_URL=https://nutribin-server-backend-production.up.railway.app
 ARG VITE_GOOGLE_CLIENT_ID
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
 
 # Build the React/Vite app to ./dist
-RUN VITE_API_URL=${VITE_API_URL} VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID} npm run build
+RUN VITE_API_URL=${VITE_API_URL} VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID} VITE_SUPABASE_URL=${VITE_SUPABASE_URL} VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY} npm run build
 
 # ---------- Runtime stage ----------
 FROM node:20-alpine AS runner

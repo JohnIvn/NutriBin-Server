@@ -201,10 +201,60 @@ export default function Emissions() {
       .channel("emissions-realtime")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "fertilizer_analytics" },
-        () => {
-          if (mounted) {
-            fetchEmissions(mainDate);
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "fertilizer_analytics",
+        },
+        (payload) => {
+          if (mounted && payload.new) {
+            const newRecord = payload.new;
+            const recordDate = new Date(newRecord.date_created)
+              .toISOString()
+              .split("T")[0];
+
+            // Only update if the record is from today's selected date
+            if (recordDate === mainDate) {
+              // Update summaryData
+              setSummaryData((prev) => [
+                ...prev,
+                {
+                  time: newRecord.date_created,
+                  methane: newRecord.methane,
+                  air_quality: newRecord.air_quality,
+                  combustible_gases: newRecord.combustible_gases,
+                  carbon_monoxide: newRecord.carbon_monoxide,
+                  nitrogen: newRecord.nitrogen,
+                },
+              ]);
+
+              // Update latest reading
+              setLatestReading({
+                methane: newRecord.methane,
+                air_quality: newRecord.air_quality,
+                combustible_gases: newRecord.combustible_gases,
+                carbon_monoxide: newRecord.carbon_monoxide,
+                nitrogen: newRecord.nitrogen,
+                timestamp: newRecord.date_created,
+              });
+
+              // Update device data
+              setDeviceData((prev) =>
+                prev.map((device) =>
+                  device.machine_id === newRecord.machine_id
+                    ? {
+                        ...device,
+                        methane: newRecord.methane,
+                        air_quality: newRecord.air_quality,
+                        combustible_gases: newRecord.combustible_gases,
+                        carbon_monoxide: newRecord.carbon_monoxide,
+                        nitrogen: newRecord.nitrogen,
+                        timestamp: newRecord.date_created,
+                      }
+                    : device,
+                ),
+              );
+            }
           }
         },
       )
@@ -214,7 +264,7 @@ export default function Emissions() {
       mounted = false;
       supabase.removeChannel(channel);
     };
-  }, [mainDate, fetchEmissions]);
+  }, [mainDate]);
 
   const toNumber = (val) => {
     if (val === null || val === undefined) return 0;

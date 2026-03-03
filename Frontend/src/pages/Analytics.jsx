@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Requests from "@/utils/Requests";
+import { supabase } from "@/lib/supabase";
 import {
   Card,
   CardContent,
@@ -160,7 +161,7 @@ function Analytics() {
   useEffect(() => {
     let mounted = true;
 
-    (async () => {
+    const fetchData = async () => {
       try {
         const [summaryRes, nutrientRes, cameraRes, backupRes] =
           await Promise.all([
@@ -236,10 +237,38 @@ function Analytics() {
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    fetchData();
+
+    // Set up real-time subscriptions
+    const channel = supabase
+      .channel("dashboard-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "sales" },
+        () => fetchData(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "machines" },
+        () => fetchData(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "fertilizer_analytics" },
+        () => fetchData(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_customer" },
+        () => fetchData(),
+      )
+      .subscribe();
 
     return () => {
       mounted = false;
+      supabase.removeChannel(channel);
     };
   }, []);
 

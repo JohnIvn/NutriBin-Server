@@ -108,10 +108,65 @@ function Fertilizer() {
       .channel("fertilizer-realtime")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "fertilizer_analytics" },
-        () => {
-          if (mounted) {
-            fetchData(selectedDate);
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "fertilizer_analytics",
+        },
+        (payload) => {
+          if (mounted && payload.new) {
+            const newRecord = payload.new;
+            const recordDate = new Date(newRecord.date_created)
+              .toISOString()
+              .split("T")[0];
+
+            // Only update if the record is from today's selected date
+            if (recordDate === selectedDate) {
+              // Update logs - append new log
+              setData((prev) => ({
+                ...prev,
+                logs: [
+                  {
+                    fertilizer_analytics_id: newRecord.fertilizer_analytics_id,
+                    machine_id: newRecord.machine_id,
+                    machine_name: newRecord.machine_name || "Unknown",
+                    nitrogen: newRecord.nitrogen,
+                    phosphorus: newRecord.phosphorus,
+                    potassium: newRecord.potassium,
+                    ph: newRecord.ph,
+                    moisture: newRecord.moisture,
+                    temperature: newRecord.temperature,
+                    weight: newRecord.weight_kg,
+                    reed_switch: newRecord.reed_switch,
+                    date_created: newRecord.date_created,
+                  },
+                  ...prev.logs,
+                ],
+              }));
+
+              // Update stats incrementally
+              setData((prev) => ({
+                ...prev,
+                stats: prev.stats
+                  ? {
+                      ...prev.stats,
+                      total_batches: (prev.stats.total_batches || 0) + 1,
+                      active_devices: Math.max(
+                        prev.stats.active_devices || 0,
+                        (prev.stats.active_devices || 0) +
+                          (prev.logs?.some(
+                            (l) => l.machine_id === newRecord.machine_id,
+                          )
+                            ? 0
+                            : 1),
+                      ),
+                      total_weight:
+                        parseFloat(prev.stats.total_weight || 0) +
+                        parseFloat(newRecord.weight_kg || 0),
+                    }
+                  : prev.stats,
+              }));
+            }
           }
         },
       )

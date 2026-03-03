@@ -17,6 +17,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import Requests from "@/utils/Requests";
+import { supabase } from "@/lib/supabase";
 import {
   TrendingUp,
   Activity,
@@ -97,6 +98,29 @@ function Fertilizer() {
 
   useEffect(() => {
     fetchData(selectedDate);
+  }, [selectedDate]);
+
+  // Set up real-time subscriptions
+  useEffect(() => {
+    let mounted = true;
+
+    const channel = supabase
+      .channel("fertilizer-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "fertilizer_analytics" },
+        () => {
+          if (mounted) {
+            fetchData(selectedDate);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
   }, [selectedDate]);
 
   const qualityGrade = useMemo(() => {

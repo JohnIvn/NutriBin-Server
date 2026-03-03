@@ -111,7 +111,17 @@ export class SupportGateway implements OnGatewayInit {
         if (status === 'TIMED_OUT') {
           console.error('❌ Supabase TIMED_OUT. Cleaning up...');
           // Remove the specific channel before retrying
-          await this.supabase.removeChannel(channel);
+          try {
+            // Check if socket is actually open before trying to remove
+            if (
+              this.supabase.realtime &&
+              (this.supabase.realtime as any).socket
+            ) {
+              await this.supabase.removeChannel(channel);
+            }
+          } catch (e) {
+            console.warn('⚠️ Error during channel cleanup:', e.message);
+          }
           setTimeout(() => this.startSupabaseRealtimeListener(), 5000);
         }
 
@@ -131,6 +141,12 @@ export class SupportGateway implements OnGatewayInit {
   }
   async onModuleDestroy() {
     console.log('Cleaning up Supabase Realtime connections...');
-    await this.supabase.removeAllChannels();
+    try {
+      if (this.supabase.realtime && (this.supabase.realtime as any).socket) {
+        await this.supabase.removeAllChannels();
+      }
+    } catch (e) {
+      console.warn('⚠️ Error during cleanup:', e.message);
+    }
   }
 }

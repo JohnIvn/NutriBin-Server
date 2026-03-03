@@ -204,7 +204,10 @@ function MachineMap() {
         m.currentLocation.customer_name
           .toLowerCase()
           .includes(searchQuery.toLowerCase());
-      const matchesStatus = filterStatus === "all" || m.status === filterStatus;
+      const matchesStatus =
+        filterStatus === "all" ||
+        (filterStatus === "online" && m.is_active === true) ||
+        (filterStatus === "offline" && m.is_active !== true);
       return matchesSearch && matchesStatus;
     });
   }, [geocodedData, searchQuery, filterStatus]);
@@ -369,7 +372,7 @@ function MachineMap() {
                 <Marker
                   key={`${marker.machine_id}-${idx}`}
                   position={[marker.lat, marker.lng]}
-                  icon={marker.status === "healthy" ? GreenIcon : RedIcon}
+                  icon={marker.is_active === true ? GreenIcon : RedIcon}
                 >
                   <Popup className="custom-popup" offset={[0, -20]}>
                     <div className="p-1 min-w-[220px]">
@@ -392,12 +395,12 @@ function MachineMap() {
                         </div>
                         <div
                           className={`text-[9px] px-2 py-0.5 rounded-lg font-black uppercase tracking-wider ${
-                            marker.status === "healthy"
+                            marker.is_active === true
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700 font-black"
                           }`}
                         >
-                          {marker.status === "healthy" ? "Healthy" : "Repair"}
+                          {marker.is_active === true ? "Online" : "Offline"}
                         </div>
                       </div>
 
@@ -490,7 +493,7 @@ function MachineMap() {
                   />
                 </div>
                 <div className="flex gap-1 p-1 bg-gray-50 rounded-xl border border-gray-100 min-w-[300px]">
-                  {["all", "healthy", "needs_repair"].map((status) => (
+                  {["all", "online", "offline"].map((status) => (
                     <button
                       key={status}
                       onClick={() => setFilterStatus(status)}
@@ -500,7 +503,7 @@ function MachineMap() {
                           : "text-gray-400 hover:text-gray-600"
                       }`}
                     >
-                      {status.replace("_", " ")}
+                      {status}
                     </button>
                   ))}
                 </div>

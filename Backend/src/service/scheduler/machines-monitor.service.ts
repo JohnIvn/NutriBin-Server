@@ -25,7 +25,7 @@ export class MachinesMonitorService {
       const res = await client.query(
         `UPDATE machines SET is_active = false
          WHERE is_active = true
-           AND (last_seen IS NULL OR last_seen < now() - INTERVAL '20 seconds')
+           AND (last_seen IS NULL OR last_seen < now() - INTERVAL '1 second')
          RETURNING machine_id`,
       );
 

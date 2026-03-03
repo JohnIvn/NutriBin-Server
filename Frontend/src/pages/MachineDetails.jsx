@@ -92,23 +92,44 @@ function MachineDetails() {
           table: "machines",
           filter: `machine_id=eq.${machineId}`,
         },
-        () => {
-          if (mounted) {
-            fetchMachineDetails();
+        (payload) => {
+          if (mounted && payload.new) {
+            // Update machine details with new data
+            setMachineDetails((prev) =>
+              prev ? { ...prev, ...payload.new } : payload.new,
+            );
           }
         },
       )
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "fertilizer_analytics",
           filter: `machine_id=eq.${machineId}`,
         },
-        () => {
-          if (mounted) {
-            fetchMachineHealth(machineId);
+        (payload) => {
+          if (mounted && payload.new) {
+            // Update machine health with latest telemetry
+            const newRecord = payload.new;
+            setMachineHealth((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    methane: newRecord.methane,
+                    air_quality: newRecord.air_quality,
+                    combustible_gases: newRecord.combustible_gases,
+                    carbon_monoxide: newRecord.carbon_monoxide,
+                    nitrogen: newRecord.nitrogen,
+                    temperature: newRecord.temperature,
+                    ph: newRecord.ph,
+                    moisture: newRecord.moisture,
+                    weight_kg: newRecord.weight_kg,
+                    last_reading: newRecord.date_created,
+                  }
+                : null,
+            );
           }
         },
       )
@@ -118,7 +139,7 @@ function MachineDetails() {
       mounted = false;
       supabase.removeChannel(channel);
     };
-  }, [machineId, fetchMachineHealth]);
+  }, [machineId]);
 
   const toNumber = (val) => {
     if (val === null || val === undefined) return NaN;

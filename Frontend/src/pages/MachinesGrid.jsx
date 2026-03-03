@@ -47,9 +47,31 @@ function MachinesGrid() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "machines" },
-        () => {
-          if (mounted) {
-            fetchMachines();
+        (payload) => {
+          if (mounted && payload.new) {
+            // Update machines state with the modified machine
+            setMachines((prev) => {
+              const index = prev.findIndex(
+                (m) => m.machine_id === payload.new.machine_id,
+              );
+              if (index >= 0) {
+                const updated = [...prev];
+                updated[index] = { ...updated[index], ...payload.new };
+                return updated;
+              }
+              // If not found (INSERT), add it
+              if (payload.eventType === "INSERT") {
+                return [...prev, payload.new];
+              }
+              return prev;
+            });
+
+            // Remove deleted machines
+            if (payload.eventType === "DELETE") {
+              setMachines((prev) =>
+                prev.filter((m) => m.machine_id !== payload.old.machine_id),
+              );
+            }
           }
         },
       )
@@ -57,6 +79,7 @@ function MachinesGrid() {
         "postgres_changes",
         { event: "*", schema: "public", table: "machine_customers" },
         () => {
+          // For user assignments, refetch to ensure user list is accurate
           if (mounted) {
             fetchMachines();
           }

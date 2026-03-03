@@ -54,6 +54,7 @@ import {
   Plus,
   Trash2,
   Ban,
+  QrCode,
 } from "lucide-react";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
@@ -65,6 +66,9 @@ function Serial() {
   const [openDialog, setOpenDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionStates, setActionStates] = useState({});
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrData, setQrData] = useState(null);
+  const [qrLoading, setQrLoading] = useState(false);
 
   const filterForm = useForm({
     resolver: zodResolver(serialFilter),
@@ -94,6 +98,28 @@ function Serial() {
       toast.error("An error occurred while fetching serials");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchQRCode = async (serialNumber) => {
+    try {
+      setQrLoading(true);
+      const response = await Requests({
+        url: `/qr/generate/${encodeURIComponent(serialNumber)}`,
+        method: "GET",
+      });
+
+      if (response.data.ok) {
+        setQrData(response.data);
+        setQrModalOpen(true);
+      } else {
+        toast.error("Failed to generate QR code");
+      }
+    } catch (error) {
+      console.error("Error fetching QR code:", error);
+      toast.error("An error occurred while generating QR code");
+    } finally {
+      setQrLoading(false);
     }
   };
 
@@ -454,6 +480,9 @@ function Serial() {
                     USAGE
                   </TableHead>
                   <TableHead className="font-bold text-gray-700">
+                    QR CODE
+                  </TableHead>
+                  <TableHead className="font-bold text-gray-700">
                     DATE CREATED
                   </TableHead>
                   <TableHead className="text-right font-bold text-gray-700 pr-6">
@@ -464,7 +493,7 @@ function Serial() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-64 text-center">
+                    <TableCell colSpan={8} className="h-64 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
                         <p className="text-gray-400 font-medium">
@@ -476,7 +505,7 @@ function Serial() {
                 ) : paginatedSerials.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="h-64 text-center text-gray-400 font-medium"
                     >
                       No serial numbers found.
@@ -532,6 +561,18 @@ function Serial() {
                           />
                           {serial.is_used ? "Used" : "Available"}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => fetchQRCode(serial.serial_number)}
+                          disabled={qrLoading}
+                          className="h-9 w-9 rounded-full text-[#4F6F52] hover:bg-[#4F6F52]/10 transition-colors cursor-pointer"
+                          title="Generate QR Code"
+                        >
+                          <QrCode className="h-5 w-5" />
+                        </Button>
                       </TableCell>
                       <TableCell className="text-gray-600 font-medium italic">
                         {formatDate(serial.date_created)}
@@ -627,6 +668,57 @@ function Serial() {
           )}
         </div>
       </section>
+
+      {/* QR Code Modal */}
+      <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-white border-[#4F6F52] border-2">
+          <DialogHeader className="border-b-2 border-[#4F6F52] pb-4 mb-2">
+            <DialogTitle className="text-[#4F6F52] text-2xl font-bold flex items-center gap-2">
+              <QrCode className="h-6 w-6" />
+              Machine Registration QR Code
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              {qrData?.serial && (
+                <span>
+                  Serial:{" "}
+                  <span className="font-mono font-bold text-gray-900">
+                    {qrData.serial}
+                  </span>
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {qrLoading ? (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+              <p className="text-gray-400 font-medium">Generating QR Code...</p>
+            </div>
+          ) : qrData?.qrCode ? (
+            <div className="flex flex-col items-center gap-4 py-6">
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <img
+                  src={qrData.qrCode}
+                  alt="QR Code"
+                  className="w-64 h-64 object-contain"
+                />
+              </div>
+              <p className="text-xs text-gray-500 text-center">
+                Scan this QR code in the NutriBin app to register this machine
+                or use manual entry with the serial number above.
+              </p>
+            </div>
+          ) : null}
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setQrModalOpen(false)}
+              className="border-[#4F6F52] text-[#4F6F52] hover:bg-[#4F6F52]/10"
+            >
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -34,6 +34,7 @@ import { HardwareController } from './controllers/hardware/hardware.controller';
 import { DataScienceController } from './controllers/data-science.controller';
 import { SupportController } from './controllers/support.controller';
 import { HealthController } from './controllers/health.controller';
+import { QrController } from './controllers/qr/qr.controller';
 
 import { AppService } from './service/app.service';
 import { DatabaseService } from './service/database/database.service';
@@ -87,6 +88,7 @@ import { ThingSpeakService } from './service/thingspeak.service';
     SupportController,
     HealthController,
     FirmwareController,
+    QrController,
   ],
   providers: [
     AppService,

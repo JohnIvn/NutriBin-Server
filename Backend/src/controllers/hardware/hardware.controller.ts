@@ -228,4 +228,44 @@ export class HardwareController {
       throw new InternalServerErrorException('Failed to update machine status');
     }
   }
+
+  @Post('servo-status')
+  async receiveServoStatus(
+    @Body()
+    data: {
+      user_id: string;
+      machine_id: string;
+      state: string;
+      ssr_relay_on: boolean;
+      reed_switch_open: boolean;
+      external_trigger: boolean;
+      red_led_on: boolean;
+      sequences_completed: number;
+      servo1_angle: number;
+      servo2_angle: number;
+      servo3_angle: number;
+      distance_cm: number;
+      object_in_range: boolean;
+    },
+  ) {
+    const client = this.databaseService.getClient();
+    try {
+      this.logger.log(`Received servo status for machine: ${data.machine_id}`);
+      this.logger.debug(`Servo Status Payload: ${JSON.stringify(data)}`);
+
+      // Update machine's last_seen timestamp and ensure it is marked active
+      await client.query(
+        `UPDATE machines SET last_seen = now(), is_active = true WHERE machine_id = $1`,
+        [data.machine_id],
+      );
+
+      return {
+        ok: true,
+        message: 'Servo status updated successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error processing servo status:', error);
+      throw new InternalServerErrorException('Failed to process servo status');
+    }
+  }
 }

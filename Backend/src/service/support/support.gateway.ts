@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-/* eslint-disable @typescript-eslint/no-misused-promises */
+
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import {
   WebSocketGateway,
@@ -69,7 +69,7 @@ export class SupportGateway implements OnGatewayInit {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { ticketId: string },
   ) {
-    client.join(`ticket_${data.ticketId}`);
+    void client.join(`ticket_${data.ticketId}`);
     console.log(`User joined room: ticket_${data.ticketId}`);
   }
 
@@ -103,7 +103,7 @@ export class SupportGateway implements OnGatewayInit {
             .emit('ticket_status_updated', updatedTicket);
         },
       )
-      .subscribe(async (status) => {
+      .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           console.log('Connected to Supabase Realtime');
         }
@@ -111,19 +111,23 @@ export class SupportGateway implements OnGatewayInit {
         if (status === 'TIMED_OUT') {
           console.error('Supabase TIMED_OUT. Cleaning up...');
           // Remove the specific channel before retrying
-          try {
-            // Check if socket is actually open before trying to remove
-            if (
-              this.supabase.realtime &&
-              (this.supabase.realtime as any).socket
-            ) {
-              await this.supabase.removeChannel(channel);
+          (async () => {
+            try {
+              // Check if socket is actually open before trying to remove
+              if (
+                this.supabase.realtime &&
+                (this.supabase.realtime as any).socket
+              ) {
+                await this.supabase.removeChannel(channel);
+              }
+            } catch (e) {
+              const errorMessage =
+                e instanceof Error ? e.message : 'Unknown error';
+              console.warn('Error during channel cleanup:', errorMessage);
             }
-          } catch (e) {
-            const errorMessage =
-              e instanceof Error ? e.message : 'Unknown error';
-            console.warn('Error during channel cleanup:', errorMessage);
-          }
+          })().catch((err) => {
+            console.error('Channel cleanup failed:', err);
+          });
           setTimeout(() => {
             void this.startSupabaseRealtimeListener();
           }, 5000);

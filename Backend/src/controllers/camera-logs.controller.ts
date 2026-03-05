@@ -163,7 +163,9 @@ export class CameraLogsController {
         ORDER BY date ASC
       `);
 
-      const feedCountResult = await client.query(`
+      const feedCountResult = await client.query<{
+        active_feeds: string | number;
+      }>(`
         SELECT COUNT(DISTINCT machine_id) as active_feeds
         FROM camera_logs
         WHERE date_created > NOW() - INTERVAL '5 minutes'
@@ -173,7 +175,10 @@ export class CameraLogsController {
         ok: true,
         summary: summaryResult.rows,
         trends: trendResult.rows,
-        active_feeds: parseInt(feedCountResult.rows[0]?.active_feeds || 0, 10),
+        active_feeds: parseInt(
+          String(feedCountResult.rows[0]?.active_feeds || 0),
+          10,
+        ),
         analysis_confidence: 94.2, // Defaulting if not calculated
       };
     } catch (error) {

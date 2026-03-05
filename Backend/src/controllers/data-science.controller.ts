@@ -91,7 +91,13 @@ export class DataScienceController {
   async getSummary() {
     const client = this.databaseService.getClient();
     try {
-      const summaryQ = await client.query(`
+      const summaryQ = await client.query<{
+        total_machines: string | number;
+        total_batches: string | number;
+        avg_nitrogen: string | number;
+        avg_phosphorus: string | number;
+        avg_potassium: string | number;
+      }>(`
         SELECT 
           (SELECT COUNT(*) FROM machines) as total_machines,
           (SELECT COUNT(*) FROM fertilizer_analytics) as total_batches,
@@ -111,7 +117,7 @@ export class DataScienceController {
 
       return {
         ok: true,
-        summary: summaryQ.rows[0],
+        summary: summaryQ.rows[0] || {},
         predictions: predictionsQ.rows,
       };
     } catch (error) {

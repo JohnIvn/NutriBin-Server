@@ -46,6 +46,7 @@ type HealthDashboardStats = {
   avg_moisture: string | number;
   avg_methane: string | number;
   avg_carbon_monoxide: string | number;
+  efficiency?: string | number;
 };
 
 type MachineSummary = {
@@ -105,7 +106,15 @@ export class DashboardController {
           AVG(NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric) as avg_ph,
           AVG(NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric) as avg_moisture,
           AVG(NULLIF(regexp_replace(methane, '[^0-9.]', '', 'g'), '')::numeric) as avg_methane,
-          AVG(NULLIF(regexp_replace(carbon_monoxide, '[^0-9.]', '', 'g'), '')::numeric) as avg_carbon_monoxide
+          AVG(NULLIF(regexp_replace(carbon_monoxide, '[^0-9.]', '', 'g'), '')::numeric) as avg_carbon_monoxide,
+          AVG(
+            CASE 
+              WHEN (NULLIF(regexp_replace(ph, '[^0-9.]', '', 'g'), '')::numeric BETWEEN 6.0 AND 8.0) 
+               AND (NULLIF(regexp_replace(moisture, '[^0-9.]', '', 'g'), '')::numeric BETWEEN 40 AND 60)
+              THEN 100
+              ELSE 50
+            END
+          ) as efficiency
         FROM fertilizer_analytics
         WHERE date_created > now() - (interval '1 day' * ${days})
       `);
@@ -128,6 +137,7 @@ export class DashboardController {
           avg_moisture: 0,
           avg_methane: 0,
           avg_carbon_monoxide: 0,
+          efficiency: 0,
         },
         recent_sales: recentSalesQ.rows || [],
       };

@@ -156,6 +156,7 @@ function Analytics() {
     avgMoisture: 0,
     avgMethane: 0,
     avgCarbonMonoxide: 0,
+    efficiency: 0,
     trends: [],
   });
   const [announcements, setAnnouncements] = useState([]);
@@ -220,6 +221,7 @@ function Analytics() {
           avgCarbonMonoxide: parseFloat(
             health.avg_carbon_monoxide || 0,
           ).toFixed(1),
+          efficiency: parseFloat(health.efficiency || 0).toFixed(1),
           trends,
           totalAdmins: parseInt(c.total_admins || 0, 10),
           totalStaff: parseInt(c.total_staff || 0, 10),
@@ -495,7 +497,7 @@ function Analytics() {
                       Current Efficiency
                     </p>
                     <div className="text-3xl font-black text-[#3A4D39] text-center">
-                      89.4%
+                      {stats.efficiency}%
                     </div>
                   </div>
                 </div>

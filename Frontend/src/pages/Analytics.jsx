@@ -322,10 +322,18 @@ function Analytics() {
     (_, i) => {
       const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const d = new Date();
+      // Use local date for year, month, date to avoid timezone shifts
+      const today = new Date();
+      d.setFullYear(today.getFullYear(), today.getMonth(), today.getDate());
       d.setHours(0, 0, 0, 0);
       d.setDate(d.getDate() - (parseInt(dateRange, 10) - 1 - i));
 
-      const dateStr = d.toISOString().split("T")[0];
+      // match YYYY-MM-DD
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const dateStr = `${year}-${month}-${day}`;
+
       const trendEntry = stats.trends?.find((t) => t.date.startsWith(dateStr));
 
       return {

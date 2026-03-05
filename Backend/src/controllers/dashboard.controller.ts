@@ -92,7 +92,7 @@ export class DashboardController {
 
       const productionTrendsQ = await client.query<ProductionTrend>(`
         SELECT 
-          date_trunc('day', date_created)::date as date,
+          date_trunc('day', date_created)::date::text as date,
           COUNT(*) as total_batches,
           (COUNT(*) * 0.75) as production_kg
         FROM fertilizer_analytics

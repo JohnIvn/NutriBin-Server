@@ -25,6 +25,7 @@ import { LoginRecordsController } from './controllers/management/login-records.c
 import { MfaRecordsController } from './controllers/management/mfa-records.controller';
 import { SerialManagementController } from './controllers/management/serial-management.controller';
 import { DatabaseExportController } from './controllers/management/database-export.controller';
+import { CodesManagementController } from './controllers/management/codes-management.controller';
 import { IprogSmsController } from './controllers/iprogsms.controller';
 import { BackupController } from './controllers/backup.controller';
 import { EmissionsController } from './controllers/emissions.controller';
@@ -74,6 +75,7 @@ import { ThingSpeakService } from './service/thingspeak.service';
     MfaRecordsController,
     SerialManagementController,
     DatabaseExportController,
+    CodesManagementController,
     CodesController,
     AnnouncementsController,
     SalesController,

@@ -21,6 +21,7 @@ import {
   UserCog,
   Archive,
   Key,
+  ShieldCheck,
   Settings,
   LogOut,
   ChevronDown,
@@ -214,6 +215,13 @@ export default function Sidebar() {
           icon={UsersIcon}
           label="Users"
           active={isActive("/users")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/codes"
+          icon={ShieldCheck}
+          label="Codes"
+          active={isActive("/codes")}
           collapsed={shouldCollapse}
         />
         <NavItem

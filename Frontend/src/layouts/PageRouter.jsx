@@ -16,6 +16,7 @@ import MachineMap from "@/pages/MachineMap";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Staff from "@/pages/Staff";
 import Users from "@/pages/Users";
+import Codes from "@/pages/Codes";
 import Serial from "@/pages/Serial";
 import Archives from "@/pages/Archives";
 import Backup from "@/pages/Backup";
@@ -87,6 +88,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Users />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/codes"
+        element={
+          <ProtectedRoute>
+            <Codes />
           </ProtectedRoute>
         }
       />

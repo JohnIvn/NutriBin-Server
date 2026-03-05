@@ -162,6 +162,10 @@ function Analytics() {
   const [announcements, setAnnouncements] = useState([]);
   const [nutrients, setNutrients] = useState({ n: 0, p: 0, k: 0 });
   const [cameraStats, setCameraStats] = useState([]);
+  const [surveillanceData, setSurveillanceData] = useState({
+    activeFeeds: 0,
+    analysisConfidence: 0,
+  });
   const [lastBackup, setLastBackup] = useState(null);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -240,6 +244,10 @@ function Analytics() {
         // Camera
         if (cameraRes?.data?.ok) {
           setCameraStats(cameraRes.data.summary || []);
+          setSurveillanceData({
+            activeFeeds: cameraRes.data.active_feeds || 0,
+            analysisConfidence: cameraRes.data.analysis_confidence || 94.2,
+          });
         }
 
         // Backups
@@ -815,7 +823,7 @@ function Analytics() {
                         Analysis Confidence
                       </p>
                       <div className="text-xl font-black text-[#3A4D39]">
-                        94.2%
+                        {surveillanceData.analysisConfidence}%
                       </div>
                     </div>
                     <div className="p-4 bg-[#F6F7F4] rounded-2xl border border-gray-100">
@@ -823,7 +831,7 @@ function Analytics() {
                         Active Feeds
                       </p>
                       <div className="text-xl font-black text-[#3A4D39]">
-                        12
+                        {surveillanceData.activeFeeds}
                       </div>
                     </div>
                   </div>

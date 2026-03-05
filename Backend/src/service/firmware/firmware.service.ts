@@ -172,14 +172,16 @@ export class FirmwareService {
           ms.serial_number,
           ms.model as model_no,
           m.firmware_version,
+          m.target_firmware_version,
           m.update_status,
+          m.update_progress as "update progress",
           m.last_update_attempt,
           ARRAY_REMOVE(ARRAY_AGG(uc.first_name || ' ' || uc.last_name), NULL) as user_names
         FROM machines m
         JOIN machine_serial ms ON m.machine_id = ms.machine_serial_id
         LEFT JOIN machine_customers mc ON m.machine_id = mc.machine_id
         LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
-        GROUP BY m.machine_id, ms.serial_number, ms.model, m.firmware_version, m.update_status, m.last_update_attempt
+        GROUP BY m.machine_id, ms.serial_number, ms.model, m.firmware_version, m.target_firmware_version, m.update_status, m.update_progress, m.last_update_attempt
         ORDER BY m.last_update_attempt DESC NULLS LAST
       `);
       return result.rows;

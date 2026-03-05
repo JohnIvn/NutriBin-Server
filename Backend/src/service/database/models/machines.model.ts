@@ -28,6 +28,7 @@ export async function createMachinesTable(client: Client) {
       firmware_version text DEFAULT 'v1.0.0',
       target_firmware_version text,
       update_status text DEFAULT 'success',
+      update_progress text DEFAULT '0',
       last_update_attempt timestamptz,
       last_seen timestamptz,
       date_created timestamptz DEFAULT now()

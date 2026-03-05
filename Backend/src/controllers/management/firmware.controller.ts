@@ -53,6 +53,7 @@ export class FirmwareController {
           m.firmware_version as current,
           m.target_firmware_version as target,
           m.update_status as status,
+          m.update_progress as "update progress",
           m.last_update_attempt as last
         FROM machines m
         JOIN machine_serial ms ON m.machine_id = ms.machine_serial_id

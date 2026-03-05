@@ -2,9 +2,11 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import supabaseService from '../storage/supabase.service';
+import * as crypto from 'crypto';
 
 export interface FirmwareRecord {
   firmware_id: string;
@@ -29,12 +31,39 @@ export class FirmwareService {
     version: string,
     releaseNotes: string,
     targetModels: string[],
-    checksum: string,
     uploadedBy: string,
   ): Promise<FirmwareRecord> {
     const client = this.databaseService.getClient();
     try {
-      // 1. Upload to Supabase Storage
+      // 1. Format version: ensure it starts with 'v' and matches v0.0.0 format
+      let formattedVersion = version;
+      if (!formattedVersion.startsWith('v')) {
+        formattedVersion = 'v' + formattedVersion;
+      }
+
+      const versionRegex = /^v\d+\.\d+\.\d+$/;
+      if (!versionRegex.test(formattedVersion)) {
+        throw new BadRequestException('Version must follow the format v0.0.0');
+      }
+
+      // Check if version already exists
+      const existing = await client.query(
+        'SELECT firmware_id FROM firmware WHERE version = $1',
+        [formattedVersion],
+      );
+      if (existing.rows.length > 0) {
+        throw new BadRequestException(
+          `Version ${formattedVersion} already exists`,
+        );
+      }
+
+      // 2. Auto-generate checksum
+      const checksum = crypto
+        .createHash('sha256')
+        .update(file.buffer)
+        .digest('hex');
+
+      // 3. Upload to Supabase Storage
       const bucket = 'firmware';
       const path = `${Date.now()}-${file.originalname}`;
 
@@ -46,13 +75,13 @@ export class FirmwareService {
       );
       const fileUrl = supabaseService.getPublicUrl(bucket, path);
 
-      // 2. Save record to Database
+      // 4. Save record to Database
       const result = await client.query(
         `INSERT INTO firmware (version, build, release_notes, target_models, checksum, file_url, uploaded_by)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
         [
-          version,
+          formattedVersion,
           checksum.substring(0, 10),
           releaseNotes,
           targetModels,
@@ -65,7 +94,100 @@ export class FirmwareService {
       return result.rows[0] as FirmwareRecord;
     } catch (error) {
       console.error('Error uploading firmware:', error);
+      if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException('Failed to upload firmware');
+    }
+  }
+
+  async createNewVersion(
+    version: string,
+    releaseNotes: string,
+    targetModels: string[],
+    uploadedBy: string,
+  ): Promise<FirmwareRecord> {
+    const client = this.databaseService.getClient();
+    try {
+      // 1. Format version
+      let formattedVersion = version;
+      if (!formattedVersion.startsWith('v')) {
+        formattedVersion = 'v' + formattedVersion;
+      }
+
+      const versionRegex = /^v\d+\.\d+\.\d+$/;
+      if (!versionRegex.test(formattedVersion)) {
+        throw new BadRequestException('Version must follow the format v0.0.0');
+      }
+
+      // Check if version already exists
+      const existing = await client.query(
+        'SELECT firmware_id FROM firmware WHERE version = $1',
+        [formattedVersion],
+      );
+      if (existing.rows.length > 0) {
+        throw new BadRequestException(
+          `Version ${formattedVersion} already exists`,
+        );
+      }
+
+      // 2. Save record to Database (file_url null, checksum auto-generated from metadata if no file)
+      // For a "new version" without file, we might just set checksum to something or leave it null
+      // The user said "checksum auto generate, the file url null"
+      const dummyData = `${formattedVersion}-${Date.now()}`;
+      const checksum = crypto
+        .createHash('sha256')
+        .update(dummyData)
+        .digest('hex');
+
+      const result = await client.query(
+        `INSERT INTO firmware (version, build, release_notes, target_models, checksum, file_url, uploaded_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         RETURNING *`,
+        [
+          formattedVersion,
+          'Draft',
+          releaseNotes,
+          targetModels,
+          checksum,
+          null, // file_url null as requested
+          uploadedBy,
+        ],
+      );
+
+      return result.rows[0] as FirmwareRecord;
+    } catch (error) {
+      console.error('Error creating new firmware version:', error);
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException(
+        'Failed to create new firmware version',
+      );
+    }
+  }
+
+  async getMachineFirmwareStatus(): Promise<any[]> {
+    const client = this.databaseService.getClient();
+    try {
+      const result = await client.query(`
+        SELECT 
+          m.machine_id,
+          ms.serial_number,
+          ms.model as model_no,
+          m.firmware_version,
+          m.update_status,
+          m.last_update_attempt,
+          ARRAY_REMOVE(ARRAY_AGG(uc.first_name || ' ' || uc.last_name), NULL) as user_names
+        FROM machines m
+        JOIN machine_serial ms ON m.machine_id = ms.machine_serial_id
+        LEFT JOIN machine_customers mc ON m.machine_id = mc.machine_id
+        LEFT JOIN user_customer uc ON mc.customer_id = uc.customer_id
+        GROUP BY m.machine_id, ms.serial_number, ms.model, m.firmware_version, m.update_status, m.last_update_attempt
+        ORDER BY m.last_update_attempt DESC NULLS LAST
+      `);
+      return result.rows;
+    } catch (error) {
+      console.error('Error fetching machine firmware status:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch machine firmware status',
+      );
     }
   }
 

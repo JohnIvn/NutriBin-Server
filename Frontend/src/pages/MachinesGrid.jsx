@@ -356,19 +356,15 @@ function MachineCard({ machine, index, navigate }) {
             </span>
             {machine.users.length > 0 && (
               <div className="flex -space-x-2">
-                {machine.users.slice(0, 3).map((u, i) => (
+                {machine.users.map((u, i) => (
                   <div
                     key={i}
-                    className="w-7 h-7 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center text-[10px] font-bold text-[#4F6F52]"
+                    title={`${u.first_name} ${u.last_name}`}
+                    className="w-7 h-7 rounded-full bg-white border-2 border-[#4F6F52]/20 flex items-center justify-center text-[10px] font-black text-[#4F6F52] uppercase ring-1 ring-[#4F6F52]/5"
                   >
                     {u.first_name[0]}
                   </div>
                 ))}
-                {machine.users.length > 3 && (
-                  <div className="w-7 h-7 rounded-full bg-[#4F6F52] border-2 border-white flex items-center justify-center text-[10px] font-bold text-white">
-                    +{machine.users.length - 3}
-                  </div>
-                )}
               </div>
             )}
           </div>

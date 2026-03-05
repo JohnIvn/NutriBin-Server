@@ -36,6 +36,11 @@ export class FirmwareController {
     return this.firmwareService.getLatestFirmware(model);
   }
 
+  @Get('machines')
+  async getMachinesStatus(): Promise<any[]> {
+    return this.firmwareService.getMachineFirmwareStatus();
+  }
+
   @Get('propagation')
   async getPropagation(): Promise<any[]> {
     const client = this.databaseService.getClient();
@@ -63,6 +68,24 @@ export class FirmwareController {
     }
   }
 
+  @Post('create')
+  async createVersion(
+    @Body('version') version: string,
+    @Body('releaseNotes') releaseNotes: string,
+    @Body('targetModels') targetModels: string | string[],
+    @Body('uploadedBy') uploadedBy: string,
+  ): Promise<FirmwareRecord> {
+    const models = (
+      typeof targetModels === 'string' ? JSON.parse(targetModels) : targetModels
+    ) as string[];
+    return this.firmwareService.createNewVersion(
+      version,
+      releaseNotes,
+      models,
+      uploadedBy,
+    );
+  }
+
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFirmware(
@@ -70,7 +93,6 @@ export class FirmwareController {
     @Body('version') version: string,
     @Body('releaseNotes') releaseNotes: string,
     @Body('targetModels') targetModels: string | string[],
-    @Body('checksum') checksum: string,
     @Body('uploadedBy') uploadedBy: string,
   ): Promise<FirmwareRecord> {
     const models = (
@@ -81,7 +103,6 @@ export class FirmwareController {
       version,
       releaseNotes,
       models,
-      checksum,
       uploadedBy,
     );
   }

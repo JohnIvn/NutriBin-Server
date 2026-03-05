@@ -558,7 +558,7 @@ function MachineMap() {
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-2">
                           <div
-                            className={`w-2.5 h-2.5 rounded-full ${machine.status === "healthy" ? "bg-green-500" : "bg-red-500 animate-pulse"}`}
+                            className={`w-2.5 h-2.5 rounded-full ${machine.is_active === true ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"}`}
                           />
                           <span className="font-black text-gray-800 text-sm tracking-tight">
                             {machine.machine_id}

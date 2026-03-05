@@ -199,7 +199,6 @@ export default function Support() {
       socketRef.current.emit("joinTicket", {
         ticketId: selectedTicket.ticket_id,
       });
-      fetchMessages(selectedTicket.ticket_id);
     }
   }, [selectedTicket]);
 
@@ -218,7 +217,11 @@ export default function Support() {
       const res = await Requests({
         url: `/support/tickets/${selectedTicket.ticket_id}/messages`,
         method: "POST",
-        data: { senderId: user?.id || user?.admin_id || user?.staff_id, senderType: 'admin', message: optimistic.message },
+        data: {
+          senderId: user?.id || user?.admin_id || user?.staff_id,
+          senderType: "admin",
+          message: optimistic.message,
+        },
       });
       if (res?.data)
         setMessages((prev) =>

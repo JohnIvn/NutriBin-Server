@@ -4,7 +4,7 @@ export async function createFirmwareTable(client: Client) {
   await client.query(`
     CREATE TABLE IF NOT EXISTS firmware (
       firmware_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      version text NOT NULL,
+      version text NOT NULL UNIQUE,
       build text,
       release_notes text,
       target_models text[] DEFAULT ARRAY[]::text[],

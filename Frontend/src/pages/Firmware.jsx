@@ -9,6 +9,21 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -50,51 +65,45 @@ async function computeSHA256(file) {
 
 export default function Firmware() {
   const [currentFirmware, setCurrentFirmware] = useState({
-    version: "v1.2.3",
-    build: "abcdef1234",
-    releaseDate: "2025-12-10",
-    models: ["NB-100", "NB-200"],
-    status: "Stable",
+    version: "v1.0.0",
+    build: "---",
+    releaseDate: "---",
+    models: [],
+    status: "---",
   });
 
   const [file, setFile] = useState(null);
-  const [checksum, setChecksum] = useState("");
+  const [, setChecksum] = useState("");
   const [version, setVersion] = useState("");
+  const [vMajor, setVMajor] = useState("");
+  const [vMinor, setVMinor] = useState("");
+  const [vPatch, setVPatch] = useState("");
   const [changelog, setChangelog] = useState("");
-  const [targetModel, setTargetModel] = useState("NB-100");
-  const [validating, setValidating] = useState(false);
+  const [targetModels, setTargetModels] = useState([]);
+  const [, setValidating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [devices, setDevices] = useState([
-    {
-      id: "NB-001",
-      name: "Device A",
-      current: "v1.2.0",
-      target: "v1.2.3",
-      status: "notified",
-      last: "2026-01-15 09:12",
-      retry: 0,
-    },
-    {
-      id: "NB-002",
-      name: "Device B",
-      current: "v1.1.9",
-      target: "v1.2.3",
-      status: "pending",
-      last: "2026-01-15 09:15",
-      retry: 1,
-    },
-    {
-      id: "NB-003",
-      name: "Device C",
-      current: "v1.2.0",
-      target: "v1.2.3",
-      status: "failed",
-      last: "2026-01-15 08:58",
-      retry: 3,
-    },
-  ]);
+  useEffect(() => {
+    async function updateChecksum() {
+      if (file) {
+        setValidating(true);
+        const hash = await computeSHA256(file);
+        setChecksum(hash);
+        setValidating(false);
+      } else {
+        setChecksum("");
+      }
+    }
+    updateChecksum();
+  }, [file]);
 
+  useEffect(() => {
+    setVersion(`${vMajor || "0"}.${vMinor || "0"}.${vPatch || "0"}`);
+  }, [vMajor, vMinor, vPatch]);
+
+  const [devices, setDevices] = useState([]);
   const [history, setHistory] = useState([]);
 
   const fetchHistory = async () => {
@@ -114,7 +123,7 @@ export default function Firmware() {
           version: response.data.version,
           build: response.data.build,
           releaseDate: new Date(
-            response.data.release_date,
+            response.data.release_date || response.data.created_at,
           ).toLocaleDateString(),
           models: response.data.target_models || [],
           status: response.data.status,
@@ -125,29 +134,24 @@ export default function Firmware() {
     }
   };
 
-  const fetchPropagation = async () => {
+  const fetchDevices = async () => {
     try {
       const response = await Requests({
-        url: "/management/firmware/propagation",
+        url: "/management/firmware/machines",
       });
       if (response.data) {
-        setDevices(
-          response.data.map((d) => ({
-            ...d,
-            last: d.last ? new Date(d.last).toLocaleString() : "N/A",
-          })),
-        );
+        setDevices(response.data);
       }
     } catch (err) {
-      console.error("Failed to fetch propagation", err);
+      console.error("Failed to fetch machines", err);
     }
   };
 
   useEffect(() => {
     fetchHistory();
     fetchLatest();
-    fetchPropagation();
-    const interval = setInterval(fetchPropagation, 10000);
+    fetchDevices();
+    const interval = setInterval(fetchDevices, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -160,51 +164,62 @@ export default function Firmware() {
     const ext = f.name.split(".").pop()?.toLowerCase();
     if (!allowed.includes("." + ext)) {
       setFile(null);
+      toast.error("Unsupported file type");
       return;
     }
 
-    if (f.size > 10 * 1024 * 1024) {
+    if (f.size > 20 * 1024 * 1024) {
       setFile(null);
+      toast.error("File too large (>20MB)");
       return;
     }
 
     setFile(f);
-    setVersion("");
-    setChangelog("");
-    setTargetModel("NB-100");
   }
 
-  async function handleValidate() {
-    if (!file) return toast.error("No file selected");
-    setValidating(true);
+  async function handleCreateVersion() {
+    if (!version) return toast.error("Version is required (e.g. 1.0.1)");
+    setCreating(true);
     try {
-      const sha = await computeSHA256(file);
-      setChecksum(sha);
-      toast.success("Checksum computed");
-    } catch {
-      // Ignored
+      const response = await Requests({
+        method: "POST",
+        url: "/management/firmware/create",
+        data: {
+          version,
+          releaseNotes: changelog,
+          targetModels: targetModels,
+          uploadedBy: "Admin", // Fallback if no user context
+        },
+      });
+
+      if (response.status === 201) {
+        toast.success("Firmware version created!");
+        setVersion("");
+        setChangelog("");
+        setTargetModels([]);
+        setIsModalOpen(false);
+        fetchHistory();
+        fetchLatest();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to create version");
     } finally {
-      setValidating(false);
+      setCreating(false);
     }
   }
 
   async function handleUpload() {
     if (!file) return toast.error("No file selected");
-    if (!version) return toast.error("Please provide a firmware version");
-    if (!checksum) {
-      toast.info("Computing checksum...");
-      const sha = await computeSHA256(file);
-      setChecksum(sha);
-    }
+    if (!version) return toast.error("Version is required");
 
     setUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("version", version);
-      formData.append("checksum", checksum || (await computeSHA256(file)));
-      formData.append("notes", changelog);
-      formData.append("target_models", targetModel);
+      formData.append("releaseNotes", changelog);
+      formData.append("targetModels", JSON.stringify(targetModels));
+      formData.append("uploadedBy", "Admin");
 
       const response = await Requests({
         method: "POST",
@@ -220,12 +235,12 @@ export default function Firmware() {
         setFile(null);
         setVersion("");
         setChangelog("");
-        setChecksum("");
+        setTargetModels([]);
+        setIsModalOpen(false);
         fetchHistory();
         fetchLatest();
       }
     } catch (err) {
-      console.error(err);
       toast.error(err.response?.data?.message || "Upload failed");
     } finally {
       setUploading(false);
@@ -253,9 +268,224 @@ export default function Firmware() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#3A4D39] hover:bg-[#4F6F52] text-white font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#3A4D39]/20">
+                  <UploadCloud className="h-4 w-4 mr-2" />
+                  New Version
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl">
+                <div className="bg-[#3A4D39] p-6 text-white relative">
+                  <div className="relative z-10">
+                    <DialogTitle className="text-xl font-bold flex items-center gap-3 text-white">
+                      <UploadCloud className="h-5 w-5" />
+                      Provisioning & Versioning
+                    </DialogTitle>
+                    <DialogDescription className="text-[#ECE3CE] text-xs mt-1 opacity-80">
+                      Standardized firmware deployment gateway.
+                    </DialogDescription>
+                  </div>
+                  <div className="absolute top-0 right-0 p-6 opacity-10">
+                    <CloudUpload className="h-16 w-16" />
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-6 bg-white">
+                  {/* Modern File Dropzone */}
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-6 transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+                      file
+                        ? "border-[#4F6F52] bg-[#4F6F52]/5"
+                        : "border-gray-100 hover:border-[#4F6F52]/30 hover:bg-gray-50"
+                    }`}
+                    onClick={() =>
+                      document.getElementById("file-input").click()
+                    }
+                  >
+                    <input
+                      id="file-input"
+                      type="file"
+                      accept=".bin,.hex,.uf2"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    {!file ? (
+                      <>
+                        <div className="bg-[#4F6F52]/10 p-3 rounded-full mb-3">
+                          <HardDrive className="h-6 w-6 text-[#4F6F52]" />
+                        </div>
+                        <p className="font-bold text-sm text-[#3A4D39]">
+                          Click or drag to select binary
+                        </p>
+                        <p className="text-[10px] text-[#6B6F68] mt-1">
+                          Supported: .bin, .hex, .uf2 (Max 20MB)
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bg-emerald-500 p-3 rounded-full mb-3">
+                          <ShieldCheck className="h-6 w-6 text-white" />
+                        </div>
+                        <p className="font-bold text-sm text-[#4F6F52]">
+                          {file.name}
+                        </p>
+                        <p className="text-[10px] text-[#6B6F68] mt-1">
+                          {(file.size / 1024).toFixed(1)} KB • Binary Staged
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-3 h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFile(null);
+                          }}
+                        >
+                          Change File
+                        </Button>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-[#6B6F68] uppercase mb-1.5 block tracking-tight">
+                          Software Version (Major . Minor . Patch)
+                        </label>
+                        <div className="flex gap-2 items-center">
+                          <span className="text-xl font-black text-[#3A4D39]">
+                            v
+                          </span>
+                          <div className="flex items-center gap-1.5 flex-1">
+                            <Input
+                              value={vMajor}
+                              onChange={(e) =>
+                                setVMajor(
+                                  e.target.value.replace(/\D/g, "").slice(0, 3),
+                                )
+                              }
+                              placeholder="0"
+                              className="bg-gray-50/50 border-none shadow-inner h-10 text-center text-base font-bold text-[#3A4D39] p-0"
+                            />
+                            <span className="text-[#3A4D39] font-black">.</span>
+                            <Input
+                              value={vMinor}
+                              onChange={(e) =>
+                                setVMinor(
+                                  e.target.value.replace(/\D/g, "").slice(0, 3),
+                                )
+                              }
+                              placeholder="0"
+                              className="bg-gray-50/50 border-none shadow-inner h-10 text-center text-base font-bold text-[#3A4D39] p-0"
+                            />
+                            <span className="text-[#3A4D39] font-black">.</span>
+                            <Input
+                              value={vPatch}
+                              onChange={(e) =>
+                                setVPatch(
+                                  e.target.value.replace(/\D/g, "").slice(0, 3),
+                                )
+                              }
+                              placeholder="0"
+                              className="bg-gray-50/50 border-none shadow-inner h-10 text-center text-base font-bold text-[#3A4D39] p-0"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-[#6B6F68] uppercase mb-1.5 block tracking-tight">
+                          Target Models
+                        </label>
+                        <Select
+                          value={
+                            targetModels.length === 2
+                              ? "ALL"
+                              : targetModels[0] || ""
+                          }
+                          onValueChange={(val) =>
+                            setTargetModels(
+                              val === "ALL" ? ["NB-100", "NB-200"] : [val],
+                            )
+                          }
+                        >
+                          <SelectTrigger className="bg-gray-50/50 border-none shadow-inner h-10 w-full text-sm text-[#3A4D39] font-medium rounded-xl px-4">
+                            <SelectValue placeholder="Select Model" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border-gray-100 rounded-xl shadow-xl z-[100]">
+                            <SelectItem
+                              value="NB-100"
+                              className="text-sm font-medium text-[#3A4D39] cursor-pointer px-4 py-2 hover:bg-gray-50"
+                            >
+                              NB-100 Series
+                            </SelectItem>
+                            <SelectItem
+                              value="NB-200"
+                              className="text-sm font-medium text-[#3A4D39] cursor-pointer px-4 py-2 hover:bg-gray-50"
+                            >
+                              NB-200 Series
+                            </SelectItem>
+                            <SelectItem
+                              value="ALL"
+                              className="text-sm font-black text-[#4F6F52] cursor-pointer px-4 py-2 border-t border-gray-50 mt-1 hover:bg-emerald-50"
+                            >
+                              Universal (Both)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-[#6B6F68] uppercase block tracking-tight">
+                        Release Intelligence
+                      </label>
+                      <textarea
+                        value={changelog}
+                        onChange={(e) => setChangelog(e.target.value)}
+                        placeholder="Specify patch details..."
+                        className="w-full bg-gray-50/50 border-none rounded-xl p-3 text-xs font-medium shadow-inner"
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-100 flex flex-col md:flex-row items-center justify-end gap-3">
+                    <Button
+                      onClick={handleCreateVersion}
+                      disabled={!version || creating || uploading}
+                      variant="outline"
+                      className="border-2 border-[#3A4D39] text-[#3A4D39] hover:bg-[#3A4D39]/5 font-bold px-6 h-10 rounded-xl text-xs"
+                    >
+                      {creating ? (
+                        <RotateCw className="h-3 w-3 animate-spin mr-2" />
+                      ) : (
+                        <Tag className="h-3 w-3 mr-2" />
+                      )}
+                      Pre-Register
+                    </Button>
+
+                    <Button
+                      onClick={handleUpload}
+                      disabled={!version || !file || uploading || creating}
+                      className="bg-[#3A4D39] hover:bg-[#4F6F52] text-white font-black px-8 h-10 rounded-xl text-sm shadow-lg shadow-[#3A4D39]/20 group"
+                    >
+                      {uploading ? (
+                        <RotateCw className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <CloudUpload className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                      )}
+                      Deploy Binary
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Button
               variant="outline"
-              className="border-[#4F6F52] text-[#4F6F52] hover:bg-[#4F6F52]/5"
+              className="border-[#4F6F52] text-[#4F6F52] hover:bg-[#4F6F52]/5 h-11 px-6 rounded-xl"
               onClick={() => {
                 fetchHistory();
                 fetchLatest();
@@ -268,12 +498,12 @@ export default function Firmware() {
         </div>
 
         {/* Dynamic KPI Dashboard */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
           {[
             {
               label: "Primary Version",
               value: currentFirmware.version,
-              sub: `Build: ${currentFirmware.build}`,
+              sub: `Build ID: ${currentFirmware.build}`,
               icon: ShieldCheck,
               status: currentFirmware.status,
               color: "emerald",
@@ -281,21 +511,21 @@ export default function Firmware() {
             {
               label: "Release Cycle",
               value: currentFirmware.releaseDate,
-              sub: `Target: ${currentFirmware.models.join(", ")}`,
+              sub: `Models: ${currentFirmware.models.join(", ") || "All"}`,
               icon: Calendar,
               color: "blue",
             },
             {
               label: "Network Nodes",
               value: devices.length,
-              sub: "Connected Devices",
+              sub: "Active Machines",
               icon: Server,
               color: "amber",
             },
             {
-              label: "Recent Deploy",
+              label: "Recent Activity",
               value: history[0]?.version || "N/A",
-              sub: history[0] ? `By ${history[0].uploaded_by}` : "No history",
+              sub: history[0] ? `Admin Release` : "No history",
               icon: ArrowUpRight,
               color: "purple",
             },
@@ -305,10 +535,11 @@ export default function Firmware() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
+              className="flex"
             >
-              <Card className="bg-white border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] overflow-hidden relative group transition-all hover:shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start">
+              <Card className="bg-white border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] overflow-hidden relative group transition-all hover:shadow-lg flex-1 flex flex-col justify-between items-stretch">
+                <CardContent className="p-6 h-full flex flex-col">
+                  <div className="flex justify-between items-start mb-auto">
                     <div>
                       <p className="text-xs font-bold text-[#6B6F68] uppercase tracking-wider mb-2">
                         {kpi.label}
@@ -316,18 +547,18 @@ export default function Firmware() {
                       <h3 className="text-2xl font-black text-[#3A4D39]">
                         {kpi.value}
                       </h3>
-                      <p className="text-xs text-[#6B6F68] mt-1 flex items-center gap-1 font-mono">
+                      <p className="text-[10px] text-[#6B6F68] mt-1 flex items-center gap-1 font-mono line-clamp-2">
                         {kpi.sub}
                       </p>
                     </div>
-                    <div className="p-3 bg-[#FAF9F6] rounded-xl group-hover:bg-[#4F6F52]/10 transition-colors">
+                    <div className="p-3 bg-[#FAF9F6] rounded-xl group-hover:bg-[#4F6F52]/10 transition-colors shrink-0">
                       <kpi.icon className="h-5 w-5 text-[#4F6F52]" />
                     </div>
                   </div>
-                  {kpi.status && (
+                  {kpi.status ? (
                     <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
                       <span className="text-[10px] uppercase font-bold text-[#6B6F68]">
-                        System Maturity
+                        Build Status
                       </span>
                       <span
                         className={`text-[10px] leading-none px-2 py-1 rounded-full font-bold ${
@@ -339,6 +570,8 @@ export default function Firmware() {
                         {kpi.status}
                       </span>
                     </div>
+                  ) : (
+                    <div className="mt-4 pt-4 border-t border-transparent" />
                   )}
                 </CardContent>
               </Card>
@@ -347,266 +580,158 @@ export default function Firmware() {
         </div>
 
         {/* Control Interface */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          <div className="lg:col-span-8 flex flex-col">
-            <Card className="bg-white border-none shadow-xl rounded-2xl overflow-hidden flex-1 flex flex-col">
-              <div className="bg-[#3A4D39] p-8 text-white relative">
-                <div className="relative z-10">
-                  <h2 className="text-2xl font-bold flex items-center gap-3">
-                    <UploadCloud className="h-6 w-6" />
-                    Binary Provisioning
-                  </h2>
-                  <p className="text-[#ECE3CE] text-sm mt-1 opacity-80">
-                    Upload firmare binaries to the global edge network.
-                  </p>
-                </div>
-                <div className="absolute top-0 right-0 p-8 opacity-10">
-                  <CloudUpload className="h-24 w-24" />
-                </div>
+        <div className="flex flex-col gap-8">
+          <Card className="bg-white border-none shadow-xl rounded-2xl overflow-hidden">
+            <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+              <div>
+                <h3 className="text-lg font-black text-[#3A4D39]">
+                  Network Propagation
+                </h3>
+                <p className="text-xs text-[#6B6F68]">Active update cycles</p>
               </div>
-
-              <CardContent className="p-8 space-y-8 flex-1">
-                {/* Modern File Dropzone */}
-                <div
-                  className={`border-2 border-dashed rounded-2xl p-10 transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
-                    file
-                      ? "border-[#4F6F52] bg-[#4F6F52]/5"
-                      : "border-gray-100 hover:border-[#4F6F52]/30 hover:bg-gray-50"
-                  }`}
-                  onClick={() => document.getElementById("file-input").click()}
-                >
-                  <input
-                    id="file-input"
-                    type="file"
-                    accept=".bin,.hex,.uf2"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  {!file ? (
-                    <>
-                      <div className="bg-[#4F6F52]/10 p-4 rounded-full mb-4">
-                        <HardDrive className="h-8 w-8 text-[#4F6F52]" />
-                      </div>
-                      <p className="font-bold text-[#3A4D39]">
-                        Click or drag to select binary
-                      </p>
-                      <p className="text-xs text-[#6B6F68] mt-1">
-                        Supported: .bin, .hex, .uf2 (Max 10MB)
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="bg-emerald-500 p-4 rounded-full mb-4">
-                        <ShieldCheck className="h-8 w-8 text-white" />
-                      </div>
-                      <p className="font-bold text-[#4F6F52]">{file.name}</p>
-                      <p className="text-xs text-[#6B6F68] mt-1">
-                        {(file.size / 1024).toFixed(1)} KB • Ready for staging
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="mt-4 text-red-500 hover:text-red-600 hover:bg-red-50"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFile(null);
-                        }}
-                      >
-                        Change File
-                      </Button>
-                    </>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-bold text-[#6B6F68] uppercase mb-2 block tracking-tight">
-                        Software Version
-                      </label>
-                      <Input
-                        value={version}
-                        onChange={(e) => setVersion(e.target.value)}
-                        placeholder="v1.x.x"
-                        className="bg-gray-50/50 border-none shadow-inner h-12 text-lg font-bold text-[#3A4D39]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-[#6B6F68] uppercase mb-2 block tracking-tight">
-                        Target Hardware
-                      </label>
-                      <select
-                        value={targetModel}
-                        onChange={(e) => setTargetModel(e.target.value)}
-                        className="w-full h-12 bg-gray-50/50 border-none rounded-md px-4 text-[#3A4D39] font-medium shadow-inner"
-                      >
-                        <option>NB-100 (Single Bin)</option>
-                        <option>NB-200 (Dual Stack)</option>
-                        <option>Global (All)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <label className="text-xs font-bold text-[#6B6F68] uppercase block tracking-tight">
-                      Deployment Logistics
-                    </label>
-                    <textarea
-                      value={changelog}
-                      onChange={(e) => setChangelog(e.target.value)}
-                      placeholder="Enter commit log or change notes..."
-                      className="w-full bg-gray-50/50 border-none rounded-xl p-4 text-sm font-medium shadow-inner"
-                      rows={5}
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <Button
-                      onClick={handleValidate}
-                      variant="outline"
-                      disabled={!file || validating}
-                      className="border-2 font-bold px-8 h-12 rounded-xl"
-                    >
-                      {validating ? (
-                        <RotateCw className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <ShieldCheck className="h-4 w-4 mr-2" />
-                      )}
-                      Run Integrity Check
-                    </Button>
-                    {checksum && (
-                      <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-lg">
-                        <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-xs font-mono font-bold text-emerald-700">
-                          {checksum.slice(0, 16)}...
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <Button
-                    onClick={handleUpload}
-                    disabled={!version || !file || uploading}
-                    className="bg-[#3A4D39] hover:bg-[#4F6F52] text-white font-black px-12 h-12 rounded-xl text-lg shadow-lg shadow-[#3A4D39]/20 group"
-                  >
-                    {uploading ? (
-                      <RotateCw className="h-5 w-5 animate-spin mr-2" />
-                    ) : (
-                      <CloudUpload className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
-                    )}
-                    Promote to Prod
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="lg:col-span-4 flex flex-col">
-            <Card className="bg-white border-none shadow-xl rounded-2xl overflow-hidden flex-1 flex flex-col">
-              <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                <div>
-                  <h3 className="text-lg font-black text-[#3A4D39]">
-                    Network Propagation
-                  </h3>
-                  <p className="text-xs text-[#6B6F68]">Active update cycles</p>
-                </div>
-                <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-                  <Server className="h-5 w-5 text-[#4F6F52]" />
-                </div>
+              <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <Server className="h-5 w-5 text-[#4F6F52]" />
               </div>
+            </div>
 
-              <CardContent className="p-6 space-y-6 flex-1 overflow-y-auto">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <AnimatePresence>
                   {devices.map((d, idx) => (
                     <motion.div
-                      key={d.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="p-4 bg-gray-50/50 rounded-xl hover:bg-gray-100/50 transition-colors border border-transparent hover:border-[#4F6F52]/20"
+                      key={d.machine_id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="p-5 bg-gray-50/50 rounded-2xl hover:bg-white hover:shadow-lg transition-all border border-transparent hover:border-[#4F6F52]/10 group"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-black text-[#3A4D39] flex items-center gap-2 truncate">
-                            {d.name}
-                            {d.status === "failed" && (
-                              <AlertTriangle className="h-3 w-3 text-red-500" />
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-base font-black text-[#3A4D39] flex items-start gap-2 leading-tight break-all">
+                            <span>{d.machine_id}</span>
+                            {d.update_status === "failed" && (
+                              <AlertTriangle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
                             )}
                           </p>
-                          <p className="text-[10px] text-[#6B6F68] font-mono uppercase">
-                            UID: {d.id}
-                          </p>
+                          <div className="text-[10px] text-[#6B6F68] font-mono font-bold uppercase tracking-tight flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5">
+                            <span>SN: {d.serial_number}</span>
+                            <span className="opacity-30">•</span>
+                            <span className="text-[#4F6F52]">
+                              {d.model_no || "---"}
+                            </span>
+                            <span className="opacity-30">•</span>
+                            <span>{d.firmware_version}</span>
+                          </div>
                         </div>
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase ${
-                            d.status === "success"
+                          className={`text-[10px] px-2.5 py-1 rounded-full font-black uppercase shrink-0 ml-2 ${
+                            d.update_status === "success"
                               ? "bg-emerald-100 text-emerald-700"
-                              : d.status === "failed"
+                              : d.update_status === "failed"
                                 ? "bg-red-100 text-red-700"
                                 : "bg-amber-100 text-amber-700"
                           }`}
                         >
-                          {d.status}
+                          {d.update_status?.replace("_", " ")}
                         </span>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-[10px] font-bold text-[#6B6F68]">
-                          <span>Propagation</span>
-                          <span>
-                            {d.status === "success"
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-end">
+                          <div className="flex -space-x-2 overflow-hidden items-center">
+                            {(d.user_names || []).length > 0 ? (
+                              d.user_names.map((name, i) => (
+                                <div
+                                  key={i}
+                                  title={name}
+                                  className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-white border-2 border-[#4F6F52]/20 text-[8px] font-black text-[#4F6F52] uppercase ring-1 ring-[#4F6F52]/10"
+                                >
+                                  {name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .slice(0, 2)}
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-[10px] font-black text-[#6B6F68] uppercase">
+                                Unassigned
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] font-black text-[#3A4D39]">
+                            {d.update_status === "success"
                               ? "100%"
-                              : d.status === "failed"
-                                ? "Critical"
-                                : "45%"}
+                              : d.update_status === "failed"
+                                ? "0%"
+                                : "Syncing..."}
                           </span>
                         </div>
-                        <div className="h-2 bg-gray-200/50 rounded-full overflow-hidden">
+                        <div className="h-2.5 bg-gray-200/50 rounded-full overflow-hidden relative">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{
                               width:
-                                d.status === "success"
+                                d.update_status === "success"
                                   ? "100%"
-                                  : d.status === "failed"
-                                    ? "10%"
+                                  : d.update_status === "failed"
+                                    ? "100%"
                                     : "45%",
                             }}
-                            className={`h-full rounded-full ${
-                              d.status === "success"
-                                ? "bg-emerald-500"
-                                : d.status === "failed"
-                                  ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
-                                  : "bg-amber-500"
+                            className={`h-full rounded-full transition-colors duration-500 ${
+                              d.update_status === "success"
+                                ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                                : d.update_status === "failed"
+                                  ? "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
+                                  : "bg-amber-500 animate-pulse"
                             }`}
                           />
+                          {d.update_status === "in_progress" && (
+                            <motion.div
+                              initial={{ left: "-100%" }}
+                              animate={{ left: "100%" }}
+                              transition={{
+                                repeat: Infinity,
+                                duration: 1.5,
+                                ease: "linear",
+                              }}
+                              className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                            />
+                          )}
                         </div>
-                        <div className="flex justify-between text-[9px] text-[#6B6F68] pt-1">
-                          <span className="font-mono">
-                            Current: {d.current}
-                          </span>
-                          <span className="font-mono text-[#3A4D39] font-bold">
-                            Target: {d.target}
-                          </span>
+                        <div className="flex flex-col gap-1 pt-2 border-t border-gray-100">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-[#6B6F68] font-bold">
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <Calendar className="h-3 w-3" />
+                              <span className="uppercase tracking-tight">
+                                Last Sync:
+                              </span>
+                            </div>
+                            <span className="text-[#3A4D39]">
+                              {d.last_update_attempt
+                                ? new Date(
+                                    d.last_update_attempt,
+                                  ).toLocaleString()
+                                : "NONE"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
-              </CardContent>
-              <div className="p-4 bg-[#3A4D39]/5 text-center">
-                <Button
-                  variant="ghost"
-                  className="text-xs font-bold text-[#4F6F52] h-auto p-0 hover:bg-transparent"
-                >
-                  View Comprehensive Network Map
-                  <ChevronRight className="h-3 w-3 ml-1" />
-                </Button>
               </div>
-            </Card>
-          </div>
+
+              {devices.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 opacity-30">
+                  <Server className="h-16 w-16 mb-4 text-[#3A4D39]" />
+                  <p className="text-sm font-black uppercase tracking-[0.2em] text-[#3A4D39]">
+                    No Active Infrastructure
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Historical Ledger */}

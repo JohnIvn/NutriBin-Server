@@ -100,11 +100,23 @@ export class FertilizerController {
   }
 
   @Get('averages')
-  async getAverages(@Query('date') date?: string) {
+  async getAverages(
+    @Query('date') date?: string,
+    @Query('range') range?: string,
+  ) {
     const client = this.databaseService.getClient();
     try {
-      const dateFilter = date ? `WHERE DATE(date_created) = $1` : '';
-      const params = date ? [date] : [];
+      let dateFilter = '';
+      const params: any[] = [];
+
+      if (date) {
+        dateFilter = `WHERE DATE(date_created) = $1`;
+        params.push(date);
+      } else if (range) {
+        const days = parseInt(range, 10) || 7;
+        dateFilter = `WHERE date_created > now() - (interval '1 day' * $1)`;
+        params.push(days);
+      }
 
       const result = await client.query<{
         nitrogen: string | null;

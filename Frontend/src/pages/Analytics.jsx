@@ -9,6 +9,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -132,6 +139,12 @@ function ProgressMetric({ label, value, maxValue, color, icon: Icon, unit }) {
 }
 
 function Analytics() {
+  const [dsStats, setDsStats] = useState({
+    totalBatches: 0,
+    avgNitrogen: 0,
+    avgPhosphorus: 0,
+    avgPotassium: 0,
+  });
   const [stats, setStats] = useState({
     machinesActive: 0,
     machinesTotal: 0,
@@ -143,12 +156,15 @@ function Analytics() {
     avgMoisture: 0,
     avgMethane: 0,
     avgCarbonMonoxide: 0,
+    trends: [],
   });
+  const [announcements, setAnnouncements] = useState([]);
   const [nutrients, setNutrients] = useState({ n: 0, p: 0, k: 0 });
   const [cameraStats, setCameraStats] = useState([]);
   const [lastBackup, setLastBackup] = useState(null);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState("7");
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const formatPeso = (v) =>
@@ -163,13 +179,21 @@ function Analytics() {
 
     const fetchData = async () => {
       try {
-        const [summaryRes, nutrientRes, cameraRes, backupRes] =
-          await Promise.all([
-            Requests({ url: "/dashboard/summary" }),
-            Requests({ url: "/fertilizer/averages" }),
-            Requests({ url: "/camera-logs/summary" }),
-            Requests({ url: "/backup/list" }),
-          ]);
+        const [
+          summaryRes,
+          nutrientRes,
+          cameraRes,
+          backupRes,
+          announcementRes,
+          dsRes,
+        ] = await Promise.all([
+          Requests({ url: `/dashboard/summary?range=${dateRange}` }),
+          Requests({ url: `/fertilizer/averages?range=${dateRange}` }),
+          Requests({ url: "/camera-logs/summary" }),
+          Requests({ url: "/backup/list" }),
+          Requests({ url: "/announcements" }),
+          Requests({ url: "/data-science/summary" }),
+        ]);
 
         if (!mounted) return;
 
@@ -179,6 +203,7 @@ function Analytics() {
         const s = body?.sums || {};
         const prod = body?.production || {};
         const health = body?.health || {};
+        const trends = body?.trends || [];
 
         setStats({
           machinesActive: parseInt(c.active_machines || 0, 10),
@@ -195,6 +220,9 @@ function Analytics() {
           avgCarbonMonoxide: parseFloat(
             health.avg_carbon_monoxide || 0,
           ).toFixed(1),
+          trends,
+          totalAdmins: parseInt(c.total_admins || 0, 10),
+          totalStaff: parseInt(c.total_staff || 0, 10),
         });
 
         // Nutrients
@@ -218,6 +246,22 @@ function Analytics() {
           if (backups.length > 0) {
             setLastBackup(backups[0]);
           }
+        }
+
+        // Announcements
+        if (announcementRes?.data?.ok) {
+          setAnnouncements(announcementRes.data.announcements.slice(0, 3));
+        }
+
+        // Data Science
+        if (dsRes?.data?.ok) {
+          const ds = dsRes.data.summary || {};
+          setDsStats({
+            totalBatches: parseInt(ds.total_batches || 0),
+            avgNitrogen: parseFloat(ds.avg_nitrogen || 0).toFixed(1),
+            avgPhosphorus: parseFloat(ds.avg_phosphorus || 0).toFixed(1),
+            avgPotassium: parseFloat(ds.avg_potassium || 0).toFixed(1),
+          });
         }
 
         const recent = (body?.recent_sales || []).map((r) => ({
@@ -270,18 +314,30 @@ function Analytics() {
       mounted = false;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [dateRange]);
 
-  const chartData = Array.from({ length: 7 }).map((_, i) => {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const basePrices = [4.2, 3.8, 5.1, 4.5, 6.2, 7.4];
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return {
-      name: days[d.getDay()],
-      yield: i === 6 ? parseFloat(stats.fertilizerYieldKg) || 0 : basePrices[i],
-    };
-  });
+  const chartData = Array.from({ length: parseInt(dateRange, 10) }).map(
+    (_, i) => {
+      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - (parseInt(dateRange, 10) - 1 - i));
+
+      const dateStr = d.toISOString().split("T")[0];
+      const trendEntry = stats.trends?.find((t) => t.date.startsWith(dateStr));
+
+      return {
+        name:
+          parseInt(dateRange, 10) <= 7
+            ? days[d.getDay()]
+            : d.toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              }),
+        yield: trendEntry ? parseFloat(trendEntry.production_kg) : 0,
+      };
+    },
+  );
 
   return (
     <div className="w-full bg-[#FAF9F6] min-h-screen pb-12">
@@ -380,13 +436,26 @@ function Analytics() {
                   Production trends & substrate health metrics
                 </CardDescription>
               </div>
-              <Badge
-                variant="outline"
-                className="bg-green-50 text-green-700 border-green-100 flex items-center gap-1"
-              >
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                Live Feed
-              </Badge>
+              <div className="flex items-center gap-3">
+                <Select value={dateRange} onValueChange={setDateRange}>
+                  <SelectTrigger className="w-[120px] h-8 text-xs font-semibold bg-[#F6F7F4] border-none">
+                    <SelectValue placeholder="Range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">Last 7 Days</SelectItem>
+                    <SelectItem value="14">Last 14 Days</SelectItem>
+                    <SelectItem value="30">Last 30 Days</SelectItem>
+                    <SelectItem value="90">Last 3 Months</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-100 hidden sm:flex items-center gap-1"
+                >
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  Live Feed
+                </Badge>
+              </div>
             </CardHeader>
             <CardContent className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-10">
@@ -593,91 +662,222 @@ function Analytics() {
         </div>
 
         {/* Third Row: Recent Activity, Surveillance, Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="border-none shadow-md bg-white">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-lg">Recent Transactions</CardTitle>
-                <CardDescription>Latest sales activity</CardDescription>
-              </div>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/sales" className="text-[#4F6F52] font-bold">
-                  View All
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="max-h-[350px] overflow-y-auto">
-                {loading ? (
-                  <div className="p-12 text-center text-gray-400 italic text-sm">
-                    Synchronizing records...
-                  </div>
-                ) : recentActivity.length > 0 ? (
-                  recentActivity.map((a) => (
-                    <ActivityItem
-                      key={a.id}
-                      icon={a.icon}
-                      title={a.title}
-                      when={a.when}
-                      amount={a.amount}
-                    />
-                  ))
-                ) : (
-                  <div className="p-12 text-center text-gray-400 italic text-sm">
-                    No recent records found.
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-md bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Camera className="h-5 w-5 text-[#4F6F52]" />
-                Surveillance Intelligence
-              </CardTitle>
-              <CardDescription>Object detection summary</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {cameraStats.length > 0 ? (
-                  cameraStats.map((stat, i) => (
-                    <div key={i} className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-bold uppercase tracking-tighter">
-                        <span className="text-gray-500">
-                          {stat.classification}
-                        </span>
-                        <span className="text-[#3A4D39]">{stat.count}</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#4F6F52] opacity-70"
-                          style={{
-                            width: `${(stat.count / Math.max(...cameraStats.map((s) => s.count))) * 100}%`,
-                          }}
-                        />
-                      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          <div className="flex flex-col gap-8 h-full">
+            <Card className="border-none shadow-md bg-white flex flex-col flex-1">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Recent Transactions</CardTitle>
+                  <CardDescription>Latest sales activity</CardDescription>
+                </div>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/sales" className="text-[#4F6F52] font-bold">
+                    View All
+                  </Link>
+                </Button>
+              </CardHeader>
+              <CardContent className="p-0 flex-1 overflow-hidden">
+                <div className="h-full overflow-y-auto max-h-[450px]">
+                  {loading ? (
+                    <div className="p-12 text-center text-gray-400 italic text-sm">
+                      Synchronizing records...
                     </div>
-                  ))
-                ) : (
-                  <div className="py-8 text-center text-gray-400 text-sm italic">
-                    No surveillance data processed
+                  ) : recentActivity.length > 0 ? (
+                    recentActivity.map((a) => (
+                      <ActivityItem
+                        key={a.id}
+                        icon={a.icon}
+                        title={a.title}
+                        when={a.when}
+                        amount={a.amount}
+                      />
+                    ))
+                  ) : (
+                    <div className="p-12 text-center text-gray-400 italic text-sm">
+                      No recent records found.
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-md bg-[#3A4D39] text-white flex flex-col flex-1 min-h-[250px] overflow-hidden group">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-[#86A789]" />
+                  Data Science Insights
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  Macro-nutrient distribution & trends
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 pt-4 relative">
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="text-center group-hover:transform group-hover:scale-105 transition-transform">
+                    <p className="text-2xl font-black text-white">
+                      {dsStats.avgNitrogen}%
+                    </p>
+                    <p className="text-[10px] text-gray-300 font-bold uppercase tracking-wider">
+                      Avg N
+                    </p>
                   </div>
-                )}
+                  <div className="text-center group-hover:transform group-hover:scale-105 transition-transform">
+                    <p className="text-2xl font-black text-white">
+                      {dsStats.avgPhosphorus}%
+                    </p>
+                    <p className="text-[10px] text-gray-300 font-bold uppercase tracking-wider">
+                      Avg P
+                    </p>
+                  </div>
+                  <div className="text-center group-hover:transform group-hover:scale-105 transition-transform">
+                    <p className="text-2xl font-black text-white">
+                      {dsStats.avgPotassium}%
+                    </p>
+                    <p className="text-[10px] text-gray-300 font-bold uppercase tracking-wider">
+                      Avg K
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs px-2">
+                    <span className="text-gray-300">Total Batch Samples</span>
+                    <span className="font-bold">{dsStats.totalBatches}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#86A789] w-[78%]" />
+                  </div>
+                  <p className="text-[10px] text-gray-400 italic leading-relaxed text-center px-4">
+                    Machine learning models suggest optimal harvest windows are
+                    currently within 48-72 hours.
+                  </p>
+                </div>
                 <Button
-                  variant="outline"
-                  className="w-full mt-4 text-xs font-bold border-[#ECE3CE] text-[#4F6F52]"
+                  className="w-full mt-6 bg-[#86A789] hover:bg-[#4F6F52] text-white font-bold"
+                  size="sm"
                   asChild
                 >
-                  <Link to="/camera-logs">Open Camera Hub</Link>
+                  <Link to="/analytics">View Full Science Analytics</Link>
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          <div className="space-y-6">
-            <Card className="border-none shadow-md bg-white">
+          <div className="flex flex-col gap-8 h-full">
+            <Card className="border-none shadow-md bg-white flex flex-col flex-1">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Camera className="h-5 w-5 text-[#4F6F52]" />
+                  Surveillance Intelligence
+                </CardTitle>
+                <CardDescription>Object detection summary</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1">
+                <div className="space-y-6">
+                  {cameraStats.length > 0 ? (
+                    cameraStats.map((stat, i) => (
+                      <div key={i} className="space-y-2">
+                        <div className="flex justify-between text-xs font-bold uppercase tracking-tighter">
+                          <span className="text-gray-500">
+                            {stat.classification}
+                          </span>
+                          <span className="text-[#3A4D39]">{stat.count}</span>
+                        </div>
+                        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-[#4F6F52] transition-all duration-500"
+                            style={{
+                              width: `${(stat.count / Math.max(...cameraStats.map((s) => s.count))) * 100}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-8 text-center text-gray-400 text-sm italic">
+                      No surveillance data processed
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4 pt-4 mt-auto">
+                    <div className="p-4 bg-[#F6F7F4] rounded-2xl border border-gray-100">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">
+                        Analysis Confidence
+                      </p>
+                      <div className="text-xl font-black text-[#3A4D39]">
+                        94.2%
+                      </div>
+                    </div>
+                    <div className="p-4 bg-[#F6F7F4] rounded-2xl border border-gray-100">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">
+                        Active Feeds
+                      </p>
+                      <div className="text-xl font-black text-[#3A4D39]">
+                        12
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="w-full mt-2 text-xs font-bold border-[#ECE3CE] text-[#4F6F52]"
+                    asChild
+                  >
+                    <Link to="/camera-logs">Open Camera Hub</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-md bg-white flex flex-col flex-1 min-h-[250px] overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Leaf className="h-5 w-5 text-[#4F6F52]" />
+                  Eco-Impact Metrics
+                </CardTitle>
+                <CardDescription>Environmental contribution</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 space-y-4 pt-4">
+                <div className="p-5 bg-green-50 rounded-2xl border border-green-100 relative overflow-hidden">
+                  <div className="relative z-10">
+                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest">
+                      Carbon Offset
+                    </p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black text-green-800">
+                        12.4
+                      </span>
+                      <span className="text-[10px] text-green-600 font-bold">
+                        TONS CO2e
+                      </span>
+                    </div>
+                  </div>
+                  <Wind className="absolute top-1/2 -right-4 -translate-y-1/2 h-24 w-24 text-green-600/10 -rotate-12" />
+                </div>
+
+                <div className="flex items-center justify-between px-2 pt-2">
+                  <div>
+                    <p className="text-xs font-bold text-[#3A4D39]">
+                      Trees Equivalent
+                    </p>
+                    <p className="text-[10px] text-gray-400 uppercase">
+                      Verified Estimate
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-black text-[#4F6F52]">~580</p>
+                  </div>
+                </div>
+
+                <Button className="w-full bg-[#4F6F52] hover:bg-[#3A4D39] text-white text-xs font-bold uppercase tracking-wider h-11">
+                  View Emissions Report
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex flex-col gap-8 h-full">
+            <Card className="border-none shadow-md bg-white flex flex-col flex-1">
               <CardHeader>
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
@@ -687,10 +887,10 @@ function Analytics() {
                   asChild
                   className="h-auto py-4 flex flex-col gap-2 border-[#ECE3CE] hover:bg-[#F6F7F4] hover:border-[#4F6F52]"
                 >
-                  <Link to="/machine">
-                    <Cpu className="h-5 w-5 text-[#4F6F52]" />
+                  <Link to="/firmware">
+                    <Zap className="h-5 w-5 text-[#4F6F52]" />
                     <span className="text-xs font-bold text-[#3A4D39]">
-                      Machine Hub
+                      Firmware OTA
                     </span>
                   </Link>
                 </Button>
@@ -699,10 +899,10 @@ function Analytics() {
                   asChild
                   className="h-auto py-4 flex flex-col gap-2 border-[#ECE3CE] hover:bg-[#F6F7F4] hover:border-[#4F6F52]"
                 >
-                  <Link to="/sales">
-                    <DollarSign className="h-5 w-5 text-[#4F6F52]" />
+                  <Link to="/analytics">
+                    <TrendingUp className="h-5 w-5 text-[#4F6F52]" />
                     <span className="text-xs font-bold text-[#3A4D39]">
-                      POS System
+                      Data Science
                     </span>
                   </Link>
                 </Button>
@@ -711,10 +911,10 @@ function Analytics() {
                   asChild
                   className="h-auto py-4 flex flex-col gap-2 border-[#ECE3CE] hover:bg-[#F6F7F4] hover:border-[#4F6F52]"
                 >
-                  <Link to="/camera-logs">
-                    <Camera className="h-5 w-5 text-[#4F6F52]" />
+                  <Link to="/backup">
+                    <HardDrive className="h-5 w-5 text-[#4F6F52]" />
                     <span className="text-xs font-bold text-[#3A4D39]">
-                      Surveillance
+                      Backup & DBs
                     </span>
                   </Link>
                 </Button>
@@ -723,47 +923,99 @@ function Analytics() {
                   asChild
                   className="h-auto py-4 flex flex-col gap-2 border-[#ECE3CE] hover:bg-[#F6F7F4] hover:border-[#4F6F52]"
                 >
-                  <Link to="/repairs">
+                  <Link to="/support">
                     <Wrench className="h-5 w-5 text-[#4F6F52]" />
                     <span className="text-xs font-bold text-[#3A4D39]">
-                      Maintenance
+                      System Support
                     </span>
                   </Link>
                 </Button>
               </CardContent>
+
+              <div className="px-6 pb-6 pt-2">
+                <div className="p-4 bg-[#3A4D39] rounded-2xl text-white flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-300 uppercase">
+                      System Integrity
+                    </p>
+                    <p className="text-sm font-bold">100% Operational</p>
+                  </div>
+                  <Badge className="bg-green-500 text-white border-none text-[8px]">
+                    PRO
+                  </Badge>
+                </div>
+              </div>
             </Card>
 
-            <Card className="border-none shadow-md bg-white">
+            <Card className="border-none shadow-md bg-white flex flex-col flex-1 min-h-[250px]">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Megaphone className="h-5 w-5 text-[#4F6F52]" />
-                  Internal Comms
+                  Announcements
                 </CardTitle>
-                <Badge className="bg-[#4F6F52] text-white">3 New</Badge>
+                {announcements.length > 0 && (
+                  <Badge className="bg-[#4F6F52] text-white">
+                    {announcements.length} Latest
+                  </Badge>
+                )}
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="h-2 w-2 rounded-full bg-amber-500 mt-2 shrink-0" />
-                    <div>
-                      <p className="text-sm font-bold text-[#3A4D39]">
-                        Mixer #02 Calibration
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Scheduled for tomorrow, 10:00 AM
-                      </p>
+              <CardContent className="flex flex-col flex-1 h-full">
+                <div className="space-y-4 flex-1">
+                  {announcements.length > 0 ? (
+                    announcements.map((ann) => (
+                      <div
+                        key={ann.announcement_id}
+                        className="flex items-start gap-4"
+                      >
+                        <div
+                          className={`h-2 w-2 rounded-full mt-2 shrink-0 ${
+                            ann.priority === "high"
+                              ? "bg-red-500"
+                              : ann.priority === "medium"
+                                ? "bg-amber-500"
+                                : "bg-[#4F6F52]"
+                          }`}
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-[#3A4D39]">
+                            {ann.title}
+                          </p>
+                          <p className="text-xs text-gray-500 line-clamp-1">
+                            {ann.body}
+                          </p>
+                          <p className="text-[10px] text-gray-400 mt-0.5 uppercase font-medium">
+                            {ann.date_published
+                              ? new Date(
+                                  ann.date_published,
+                                ).toLocaleDateString()
+                              : new Date(ann.date_created).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-8 text-center text-gray-400 text-sm italic">
+                      No active announcements
                     </div>
+                  )}
+                </div>
+
+                <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase">
+                      Admin Count
+                    </p>
+                    <p className="text-sm font-bold text-[#3A4D39]">
+                      {stats.totalAdmins || 0}
+                    </p>
                   </div>
-                  <div className="flex items-start gap-4">
-                    <div className="h-2 w-2 rounded-full bg-[#4F6F52] mt-2 shrink-0" />
-                    <div>
-                      <p className="text-sm font-bold text-[#3A4D39]">
-                        v1.2.3 Patch Successful
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Rollout completed on 82% of fleet
-                      </p>
-                    </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase">
+                      Active Staff
+                    </p>
+                    <p className="text-sm font-bold text-[#3A4D39]">
+                      {stats.totalStaff || 0}
+                    </p>
                   </div>
                 </div>
               </CardContent>

@@ -87,6 +87,41 @@ export class DataScienceController {
     }
   }
 
+  @Get('summary')
+  async getSummary() {
+    const client = this.databaseService.getClient();
+    try {
+      const summaryQ = await client.query(`
+        SELECT 
+          (SELECT COUNT(*) FROM machines) as total_machines,
+          (SELECT COUNT(*) FROM fertilizer_analytics) as total_batches,
+          (SELECT AVG(NULLIF(regexp_replace(nitrogen, '[^0-9.]', '', 'g'), '')::numeric) FROM fertilizer_analytics) as avg_nitrogen,
+          (SELECT AVG(NULLIF(regexp_replace(phosphorus, '[^0-9.]', '', 'g'), '')::numeric) FROM fertilizer_analytics) as avg_phosphorus,
+          (SELECT AVG(NULLIF(regexp_replace(potassium, '[^0-9.]', '', 'g'), '')::numeric) FROM fertilizer_analytics) as avg_potassium
+      `);
+
+      const predictionsQ = await client.query(`
+        SELECT 
+          date_trunc('day', now() + interval '1 day') as predicted_date,
+          (COUNT(*) * 0.85) as estimated_yield_kg
+        FROM fertilizer_analytics
+        WHERE date_created > now() - interval '7 days'
+        GROUP BY 1
+      `);
+
+      return {
+        ok: true,
+        summary: summaryQ.rows[0],
+        predictions: predictionsQ.rows,
+      };
+    } catch (error) {
+      console.error('Data Science Summary Error:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch data science summary',
+      );
+    }
+  }
+
   @Get('analytics')
   async getAnalytics(
     @Query('machine_id') machineId?: string,

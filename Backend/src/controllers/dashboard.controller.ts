@@ -1,4 +1,9 @@
-import { Controller, Get, InternalServerErrorException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { DatabaseService } from '../service/database/database.service';
 
 type DashboardCounts = {
@@ -30,6 +35,12 @@ type GenericDashboardStats = {
   production_kg: string | number;
 };
 
+type ProductionTrend = {
+  date: string;
+  total_batches: number;
+  production_kg: number;
+};
+
 type HealthDashboardStats = {
   avg_ph: string | number;
   avg_moisture: string | number;
@@ -49,8 +60,9 @@ export class DashboardController {
   constructor(private readonly databaseService: DatabaseService) {}
 
   @Get('summary')
-  async summary() {
+  async summary(@Query('range') range: string = '7') {
     const client = this.databaseService.getClient();
+    const days = parseInt(range, 10) || 7;
 
     try {
       const countsQ = await client.query<DashboardCounts>(`
@@ -66,7 +78,7 @@ export class DashboardController {
         SELECT
           COALESCE((SELECT SUM(amount) FROM sales), 0) AS total_sales,
           COALESCE((SELECT SUM(amount) FROM sales WHERE sale_date > now() - INTERVAL '24 hours'), 0) AS sales_last_24h,
-          COALESCE((SELECT SUM(amount) FROM sales WHERE sale_date > now() - INTERVAL '7 days'), 0) AS sales_last_7d
+          COALESCE((SELECT SUM(amount) FROM sales WHERE sale_date > now() - (interval '1 day' * ${days})), 0) AS sales_last_7d
       `);
 
       const fertilizerQ = await client.query<GenericDashboardStats>(`
@@ -74,6 +86,18 @@ export class DashboardController {
           COUNT(*) as total_batches,
           (COUNT(*) * 0.75) as production_kg
         FROM fertilizer_analytics
+        WHERE date_created > now() - (interval '1 day' * ${days})
+      `);
+
+      const productionTrendsQ = await client.query<ProductionTrend>(`
+        SELECT 
+          date_trunc('day', date_created)::date as date,
+          COUNT(*) as total_batches,
+          (COUNT(*) * 0.75) as production_kg
+        FROM fertilizer_analytics
+        WHERE date_created > now() - (interval '1 day' * ${days})
+        GROUP BY 1
+        ORDER BY 1 ASC
       `);
 
       const healthQ = await client.query<HealthDashboardStats>(`
@@ -83,6 +107,7 @@ export class DashboardController {
           AVG(NULLIF(regexp_replace(methane, '[^0-9.]', '', 'g'), '')::numeric) as avg_methane,
           AVG(NULLIF(regexp_replace(carbon_monoxide, '[^0-9.]', '', 'g'), '')::numeric) as avg_carbon_monoxide
         FROM fertilizer_analytics
+        WHERE date_created > now() - (interval '1 day' * ${days})
       `);
 
       const recentSalesQ = await client.query<DashboardSale>(
@@ -97,6 +122,7 @@ export class DashboardController {
           total_batches: 0,
           production_kg: 0,
         },
+        trends: productionTrendsQ.rows || [],
         health: healthQ.rows[0] || {
           avg_ph: 0,
           avg_moisture: 0,

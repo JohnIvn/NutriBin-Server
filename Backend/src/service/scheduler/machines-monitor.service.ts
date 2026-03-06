@@ -14,7 +14,7 @@ export class MachinesMonitorService {
   }
 
   // Run every 1 second and mark machines inactive if no data for 20s
-  @Interval(3000)
+  @Interval(5000)
   async checkMachines() {
     const client = this.databaseService.getClient();
     if (!client) {
@@ -25,7 +25,7 @@ export class MachinesMonitorService {
       const res = await client.query(
         `UPDATE machines SET is_active = false
          WHERE is_active = true
-           AND (last_seen IS NULL OR last_seen < now() - INTERVAL '3 second')
+           AND (last_seen IS NULL OR last_seen < now() - INTERVAL '5 second')
          RETURNING machine_id`,
       );
 

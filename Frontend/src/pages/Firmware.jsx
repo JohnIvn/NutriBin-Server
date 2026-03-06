@@ -662,8 +662,9 @@ export default function Firmware() {
                           <span className="text-[10px] font-black text-[#3A4D39]">
                             {d.update_status === "success"
                               ? "100%"
-                              : d.update_status === "failed"
-                                ? "0%"
+                              : d.update_status === "failed" ||
+                                  d.update_status === "in_progress"
+                                ? `${d["update progress"] || 0}%`
                                 : "Syncing..."}
                           </span>
                         </div>
@@ -674,16 +675,17 @@ export default function Firmware() {
                               width:
                                 d.update_status === "success"
                                   ? "100%"
-                                  : d.update_status === "failed"
-                                    ? "100%"
-                                    : "45%",
+                                  : d.update_status === "failed" ||
+                                      d.update_status === "in_progress"
+                                    ? `${d["update progress"] || 0}%`
+                                    : "0%",
                             }}
                             className={`h-full rounded-full transition-colors duration-500 ${
                               d.update_status === "success"
                                 ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
                                 : d.update_status === "failed"
                                   ? "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
-                                  : "bg-amber-500 animate-pulse"
+                                  : "bg-amber-500"
                             }`}
                           />
                           {d.update_status === "in_progress" && (

@@ -32,6 +32,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   CloudUpload,
   HardDrive,
@@ -47,6 +48,8 @@ import {
   UploadCloud,
   ArrowUpRight,
   History,
+  Bell,
+  Megaphone,
 } from "lucide-react";
 import Requests from "@/utils/Requests";
 import { toast } from "sonner";
@@ -84,6 +87,8 @@ export default function Firmware() {
   const [uploading, setUploading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [notifyMachines, setNotifyMachines] = useState(true);
+  const [createAnnouncement, setCreateAnnouncement] = useState(false);
 
   useEffect(() => {
     async function updateChecksum() {
@@ -189,6 +194,8 @@ export default function Firmware() {
           releaseNotes: changelog,
           targetModels: targetModels,
           uploadedBy: "Admin", // Fallback if no user context
+          notifyMachines,
+          createAnnouncement,
         },
       });
 
@@ -197,6 +204,8 @@ export default function Firmware() {
         setVersion("");
         setChangelog("");
         setTargetModels([]);
+        setNotifyMachines(true);
+        setCreateAnnouncement(false);
         setIsModalOpen(false);
         fetchHistory();
         fetchLatest();
@@ -220,6 +229,8 @@ export default function Firmware() {
       formData.append("releaseNotes", changelog);
       formData.append("targetModels", JSON.stringify(targetModels));
       formData.append("uploadedBy", "Admin");
+      formData.append("notifyMachines", notifyMachines.toString());
+      formData.append("createAnnouncement", createAnnouncement.toString());
 
       const response = await Requests({
         method: "POST",
@@ -236,6 +247,8 @@ export default function Firmware() {
         setVersion("");
         setChangelog("");
         setTargetModels([]);
+        setNotifyMachines(true);
+        setCreateAnnouncement(false);
         setIsModalOpen(false);
         fetchHistory();
         fetchLatest();
@@ -448,6 +461,90 @@ export default function Firmware() {
                         className="w-full bg-gray-50/50 border-none rounded-xl p-3 text-xs font-medium shadow-inner"
                         rows={4}
                       />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2 border-t border-b border-gray-50">
+                    <div
+                      className={`flex items-start gap-3 p-3 rounded-xl transition-all cursor-pointer ${
+                        notifyMachines
+                          ? "bg-emerald-50 border-emerald-100 border"
+                          : "bg-gray-50/50 border-transparent border hover:bg-gray-100"
+                      }`}
+                      onClick={() => setNotifyMachines(!notifyMachines)}
+                    >
+                      <div
+                        className={`mt-0.5 p-2 rounded-lg ${
+                          notifyMachines
+                            ? "bg-emerald-500 text-white"
+                            : "bg-gray-200 text-gray-500"
+                        }`}
+                      >
+                        <Bell className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 space-y-0.5">
+                        <div className="flex items-center justify-between">
+                          <p
+                            className={`text-xs font-bold ${
+                              notifyMachines
+                                ? "text-emerald-700"
+                                : "text-[#3A4D39]"
+                            }`}
+                          >
+                            OTA Notification
+                          </p>
+                          <Checkbox
+                            checked={notifyMachines}
+                            onCheckedChange={setNotifyMachines}
+                            className="border-[#4F6F52] data-[state=checked]:bg-[#4F6F52]"
+                          />
+                        </div>
+                        <p className="text-[10px] text-gray-500 leading-tight">
+                          Notify all online machines about the new firmware
+                          availability immediately.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`flex items-start gap-3 p-3 rounded-xl transition-all cursor-pointer ${
+                        createAnnouncement
+                          ? "bg-amber-50 border-amber-100 border"
+                          : "bg-gray-50/50 border-transparent border hover:bg-gray-100"
+                      }`}
+                      onClick={() => setCreateAnnouncement(!createAnnouncement)}
+                    >
+                      <div
+                        className={`mt-0.5 p-2 rounded-lg ${
+                          createAnnouncement
+                            ? "bg-amber-500 text-white"
+                            : "bg-gray-200 text-gray-500"
+                        }`}
+                      >
+                        <Megaphone className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 space-y-0.5">
+                        <div className="flex items-center justify-between">
+                          <p
+                            className={`text-xs font-bold ${
+                              createAnnouncement
+                                ? "text-amber-700"
+                                : "text-[#3A4D39]"
+                            }`}
+                          >
+                            Global Announcement
+                          </p>
+                          <Checkbox
+                            checked={createAnnouncement}
+                            onCheckedChange={setCreateAnnouncement}
+                            className="border-amber-500 data-[state=checked]:bg-amber-500"
+                          />
+                        </div>
+                        <p className="text-[10px] text-gray-500 leading-tight">
+                          Post to system announcements dashboard for all staff
+                          and admins to see.
+                        </p>
+                      </div>
                     </div>
                   </div>
 

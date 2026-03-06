@@ -32,6 +32,8 @@ export class FirmwareService {
     releaseNotes: string,
     targetModels: string[],
     uploadedBy: string,
+    notifyMachines?: boolean,
+    createAnnouncement?: boolean,
   ): Promise<FirmwareRecord> {
     const client = this.databaseService.getClient();
     try {
@@ -91,7 +93,22 @@ export class FirmwareService {
         ],
       );
 
-      return result.rows[0] as FirmwareRecord;
+      const firmware = result.rows[0] as FirmwareRecord;
+
+      // 5. Post-upload actions
+      if (notifyMachines) {
+        await this.notifyMachinesOfNewVersion(formattedVersion, targetModels);
+      }
+
+      if (createAnnouncement) {
+        await this.createFirmwareAnnouncement(
+          formattedVersion,
+          releaseNotes,
+          uploadedBy,
+        );
+      }
+
+      return firmware;
     } catch (error) {
       console.error('Error uploading firmware:', error);
       if (error instanceof BadRequestException) throw error;
@@ -104,6 +121,8 @@ export class FirmwareService {
     releaseNotes: string,
     targetModels: string[],
     uploadedBy: string,
+    notifyMachines?: boolean,
+    createAnnouncement?: boolean,
   ): Promise<FirmwareRecord> {
     const client = this.databaseService.getClient();
     try {
@@ -153,13 +172,86 @@ export class FirmwareService {
         ],
       );
 
-      return result.rows[0] as FirmwareRecord;
+      const firmware = result.rows[0] as FirmwareRecord;
+
+      // 3. Post-upload actions
+      if (notifyMachines) {
+        await this.notifyMachinesOfNewVersion(formattedVersion, targetModels);
+      }
+
+      if (createAnnouncement) {
+        await this.createFirmwareAnnouncement(
+          formattedVersion,
+          releaseNotes,
+          uploadedBy,
+        );
+      }
+
+      return firmware;
     } catch (error) {
       console.error('Error creating new firmware version:', error);
       if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException(
         'Failed to create new firmware version',
       );
+    }
+  }
+
+  private async notifyMachinesOfNewVersion(
+    version: string,
+    targetModels: string[],
+  ) {
+    const client = this.databaseService.getClient();
+    try {
+      // Find all machines matching target models
+      const machinesResult = await client.query<{ machine_id: string }>(
+        `SELECT m.machine_id FROM machines m 
+         JOIN machine_serial ms ON m.machine_id = ms.machine_serial_id 
+         WHERE ms.model = ANY($1)`,
+        [targetModels],
+      );
+
+      const machineIds = machinesResult.rows.map((r) => r.machine_id);
+
+      for (const machineId of machineIds) {
+        await client.query(
+          `INSERT INTO machine_notifications (machine_id, header, subheader, type, description)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [
+            machineId,
+            'Firmware Update Available',
+            `Version ${version} is now available`,
+            'Update',
+            `A new firmware version (${version}) has been released for your model. Please update when possible.`,
+          ],
+        );
+      }
+    } catch (error) {
+      console.error('Error notifying machines of new firmware:', error);
+      // We don't throw here to avoid failing the whole firmware creation
+    }
+  }
+
+  private async createFirmwareAnnouncement(
+    version: string,
+    notes: string,
+    author: string,
+  ) {
+    const client = this.databaseService.getClient();
+    try {
+      await client.query(
+        `INSERT INTO announcements (title, body, author, priority, date_published)
+         VALUES ($1, $2, $3, $4, CURRENT_DATE)`,
+        [
+          `New Firmware Release: ${version}`,
+          `Firmware version ${version} has been officially deployed. \n\nRelease Notes:\n${notes}`,
+          author,
+          'medium',
+        ],
+      );
+    } catch (error) {
+      console.error('Error creating firmware announcement:', error);
+      // We don't throw here to avoid failing the whole firmware creation
     }
   }
 

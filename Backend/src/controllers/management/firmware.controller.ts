@@ -75,6 +75,8 @@ export class FirmwareController {
     @Body('releaseNotes') releaseNotes: string,
     @Body('targetModels') targetModels: string | string[],
     @Body('uploadedBy') uploadedBy: string,
+    @Body('notifyMachines') notifyMachines?: boolean,
+    @Body('createAnnouncement') createAnnouncement?: boolean,
   ): Promise<FirmwareRecord> {
     const models = (
       typeof targetModels === 'string' ? JSON.parse(targetModels) : targetModels
@@ -84,6 +86,8 @@ export class FirmwareController {
       releaseNotes,
       models,
       uploadedBy,
+      notifyMachines,
+      createAnnouncement,
     );
   }
 
@@ -95,16 +99,30 @@ export class FirmwareController {
     @Body('releaseNotes') releaseNotes: string,
     @Body('targetModels') targetModels: string | string[],
     @Body('uploadedBy') uploadedBy: string,
+    @Body('notifyMachines') notifyMachines?: string | boolean,
+    @Body('createAnnouncement') createAnnouncement?: string | boolean,
   ): Promise<FirmwareRecord> {
     const models = (
       typeof targetModels === 'string' ? JSON.parse(targetModels) : targetModels
     ) as string[];
+
+    const shouldNotify =
+      typeof notifyMachines === 'string'
+        ? notifyMachines === 'true'
+        : !!notifyMachines;
+    const shouldAnnounce =
+      typeof createAnnouncement === 'string'
+        ? createAnnouncement === 'true'
+        : !!createAnnouncement;
+
     return this.firmwareService.uploadFirmware(
       file,
       version,
       releaseNotes,
       models,
       uploadedBy,
+      shouldNotify,
+      shouldAnnounce,
     );
   }
 

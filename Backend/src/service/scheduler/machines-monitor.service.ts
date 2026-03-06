@@ -14,7 +14,7 @@ export class MachinesMonitorService {
   }
 
   // Run every 1 second and mark machines inactive if no data for 20s
-  @Interval(1000)
+  @Interval(3000)
   async checkMachines() {
     const client = this.databaseService.getClient();
     if (!client) {

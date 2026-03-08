@@ -103,9 +103,10 @@ export class HardwareController {
         [data.machine_id],
       );
 
-      // --- ThingSpeak Integration ---
-      // We asynchronously update ThingSpeak to avoid blocking the main data flow.
-      // Replace process.env.THINGSPEAK_WRITE_API_KEY with your actual channel API key in .env.
+      // --- ThingSpeak Integration (DISABLED) ---
+      // ThingSpeak integration has been disabled.
+      // To re-enable, uncomment the code below.
+      /*
       const thingSpeakApiKey = process.env.THINGSPEAK_WRITE_API_KEY;
       if (thingSpeakApiKey) {
         this.thingSpeakService
@@ -124,7 +125,8 @@ export class HardwareController {
             this.logger.error(`ThingSpeak Async Error: ${msg}`);
           });
       }
-      // ------------------------------
+      */
+      // --------------------------------
 
       return {
         ok: true,

@@ -25,6 +25,8 @@ export async function createMachinesTable(client: Client) {
       M3 boolean DEFAULT false,
       M4 boolean DEFAULT false,
       M5 boolean DEFAULT false,
+      wifi_ssid text DEFAULT 'Not Connected',
+      ip_address text DEFAULT '0.0.0.0',
       firmware_version text DEFAULT 'v1.0.0',
       target_firmware_version text,
       update_status text DEFAULT 'success',

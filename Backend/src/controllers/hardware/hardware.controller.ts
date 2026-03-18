@@ -144,6 +144,9 @@ export class HardwareController {
     data: {
       user_id: string;
       machine_id: string;
+      wifi_ssid?: string;
+      ip_address?: string;
+      status_message?: string;
       npk_active?: boolean;
       weight_active?: boolean;
       mq135_active?: boolean;
@@ -189,7 +192,9 @@ export class HardwareController {
            s7 = $7,
            s8 = $8,
            s9 = $9,
-           s10 = $10
+           s10 = $10,
+           wifi_ssid = COALESCE($12, wifi_ssid),
+           ip_address = COALESCE($13, ip_address)
          WHERE machine_id = $11`,
         [
           invert(data.npk_active),
@@ -203,6 +208,8 @@ export class HardwareController {
           invert(data.reed_switch_active),
           invert(data.ph_active),
           data.machine_id,
+          data.wifi_ssid,
+          data.ip_address,
         ],
       );
 

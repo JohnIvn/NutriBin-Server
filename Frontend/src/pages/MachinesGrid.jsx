@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Activity,
   Filter,
+  Wifi,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -118,6 +119,8 @@ function MachinesGrid() {
           machine_id: record.machine_id,
           firmware_version: record.firmware_version,
           update_status: record.update_status,
+          wifi_ssid: record.wifi_ssid,
+          ip_address: record.ip_address,
           // Propagate activity flag from API
           is_active: record.is_active ?? true,
           users: [],
@@ -343,6 +346,25 @@ function MachineCard({ machine, index, navigate }) {
               <p className="text-sm font-mono text-gray-400 group-hover:text-[#4F6F52]/60 transition-colors uppercase">
                 {machine.machine_id}
               </p>
+              {/* Added WiFi and IP info */}
+              <div className="mt-2 space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <Wifi className="h-3 w-3 text-gray-400" />
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider ${machine.wifi_ssid === "Offline" ? "text-rose-500" : "text-gray-500"}`}
+                  >
+                    {machine.wifi_ssid || "Not Connected"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 ml-[1px]">
+                  <Activity className="h-3 w-3 text-gray-400" />
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider ${machine.ip_address === "Offline" ? "text-rose-500" : "text-gray-500"}`}
+                  >
+                    {machine.ip_address || "0.0.0.0"}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

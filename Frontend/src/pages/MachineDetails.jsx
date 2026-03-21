@@ -183,7 +183,7 @@ function MachineDetails() {
               <h1 className="text-4xl font-extrabold text-[#1A1A1A] tracking-tight">
                 NutriBin
               </h1>
-              <p className="text-gray-400 font-mono text-xs mt-1 flex items-center gap-2">
+              <p className="text-gray-400 font-mono text-xs mt-1 flex flex-wrap items-center gap-2">
                 SERIAL: {machineDetails.machine_id.toUpperCase()}
                 <span className="text-[#4F6F52] bg-[#4F6F52]/10 px-2 py-0.5 rounded-md font-bold uppercase tracking-tighter">
                   {machineDetails.firmware_version || "v1.0.0"}
@@ -193,6 +193,19 @@ function MachineDetails() {
                     UPDATE PENDING
                   </span>
                 )}
+                {/* Added WiFi and IP labels */}
+                <span
+                  className={`px-2 py-0.5 rounded-md font-bold uppercase tracking-tighter flex items-center gap-1 ${machineDetails.wifi_ssid === "Offline" ? "bg-rose-100 text-rose-600" : "bg-blue-50 text-blue-600"}`}
+                >
+                  <Wifi className="w-3 h-3" />
+                  {machineDetails.wifi_ssid || "Not Connected"}
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-md font-bold uppercase tracking-tighter flex items-center gap-1 ${machineDetails.ip_address === "Offline" ? "bg-rose-100 text-rose-600" : "bg-gray-100 text-gray-600"}`}
+                >
+                  <Activity className="w-3 h-3" />
+                  {machineDetails.ip_address || "0.0.0.0"}
+                </span>
               </p>
             </div>
           </div>

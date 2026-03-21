@@ -32,6 +32,9 @@ export class MachineManagementController {
           m.firmware_version,
           m.update_status,
           m.is_active,
+          m.wifi_ssid,
+          m.ip_address,
+          m.last_seen,
           uc.customer_id as user_id,
           uc.first_name,
           uc.last_name,
@@ -46,9 +49,26 @@ export class MachineManagementController {
          ORDER BY m.machine_id, uc.first_name`,
       );
 
+      const machines = result.rows.map((machine) => {
+        const lastSeen = machine.last_seen
+          ? new Date(machine.last_seen as string)
+          : null;
+        const now = new Date();
+        const isOffline =
+          !lastSeen || now.getTime() - lastSeen.getTime() > 5 * 60 * 1000; // 5 minutes threshold
+
+        return {
+          ...machine,
+          wifi_ssid: isOffline
+            ? 'Offline'
+            : machine.wifi_ssid || 'Not Connected',
+          ip_address: isOffline ? 'Offline' : machine.ip_address || '0.0.0.0',
+        };
+      });
+
       return {
         ok: true,
-        machines: result.rows,
+        machines: machines,
       };
     } catch {
       throw new InternalServerErrorException('Failed to fetch machines list');
@@ -67,6 +87,8 @@ export class MachineManagementController {
           m.is_active,
           m.last_seen,
           m.firmware_version,
+          m.wifi_ssid,
+          m.ip_address,
           m.update_status,
           mc.customer_id as user_id,
           uc.first_name,
@@ -87,7 +109,21 @@ export class MachineManagementController {
       }
 
       // Extract machine info from the first row and all users
-      const machineInfo = machineResult.rows[0];
+      const machineRow = machineResult.rows[0];
+      const lastSeen = machineRow.last_seen
+        ? new Date(machineRow.last_seen as string)
+        : null;
+      const now = new Date();
+      const isOffline =
+        !lastSeen || now.getTime() - lastSeen.getTime() > 5 * 60 * 1000; // 5 minutes threshold
+
+      const machineInfo = {
+        ...machineRow,
+        wifi_ssid: isOffline
+          ? 'Offline'
+          : machineRow.wifi_ssid || 'Not Connected',
+        ip_address: isOffline ? 'Offline' : machineRow.ip_address || '0.0.0.0',
+      };
       const users = machineResult.rows
         .filter((row) => row.user_id)
         .map((row) => ({

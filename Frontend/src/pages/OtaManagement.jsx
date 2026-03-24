@@ -123,6 +123,7 @@ export default function OtaManagement() {
               <DialogContent
                 className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl bg-white rounded-3xl z-[9999]"
                 onPointerDownOutside={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
               >
                 <div className="bg-[#3A4D39] p-7 text-white relative">
                   <div className="relative z-10">
@@ -300,9 +301,14 @@ export default function OtaManagement() {
                       Cancel
                     </Button>
                     <Button
-                      onClick={handleUpload}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log("Upload triggered");
+                        handleUpload();
+                      }}
                       disabled={uploading}
-                      className="bg-[#3A4D39] hover:bg-[#4F6F52] text-white font-black h-12 px-10 rounded-xl shadow-xl shadow-[#3A4D39]/30 transition-all border-none"
+                      className="bg-[#3A4D39] hover:bg-[#4F6F52] text-white font-black h-12 px-10 rounded-xl shadow-xl shadow-[#3A4D39]/30 transition-all border-none relative z-[10000] pointer-events-auto"
                     >
                       {uploading ? (
                         <RefreshCcw className="h-5 w-5 animate-spin mr-2" />

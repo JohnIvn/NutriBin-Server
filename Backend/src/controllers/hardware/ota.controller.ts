@@ -2,6 +2,8 @@ import {
   Controller,
   Post,
   Get,
+  Delete,
+  Param,
   Query,
   Body,
   UploadedFile,
@@ -29,20 +31,22 @@ export class OtaController {
     @Body('version') version: string,
     @Body('type') type: 'esp32' | 'linux',
     @Body('releaseNotes') releaseNotes: string,
+    @Body('notifyFleet') notifyFleet: string,
+    @Body('createAnnouncement') createAnnouncement: string,
   ) {
     if (!file) throw new BadRequestException('No file uploaded');
 
-    // We reuse the firmware service but might need to distinguish type in DB if not already there
-    // For this advanced task, we'll assume we track 'target_models' or similar to filter by type
-    return this.firmwareService.uploadFirmware(
+    const result = await this.firmwareService.uploadFirmware(
       file,
       version,
       releaseNotes,
       [type], // Using target_models as type for now
       'admin',
-      true,
-      false,
+      notifyFleet === 'true',
+      createAnnouncement === 'true',
     );
+
+    return result;
   }
 
   @Get('check')
@@ -76,5 +80,21 @@ export class OtaController {
     }
 
     return { update: false };
+  }
+
+  @Get('history')
+  async getOtaHistory(): Promise<FirmwareRecord[]> {
+    const client = this.databaseService.getClient();
+    const result = await client.query<FirmwareRecord>(
+      `SELECT * FROM firmware 
+       WHERE 'esp32' = ANY(target_models) OR 'linux' = ANY(target_models)
+       ORDER BY created_at DESC`,
+    );
+    return result.rows;
+  }
+
+  @Delete('history/:id')
+  async deleteFirmware(@Param('id') id: string) {
+    return this.firmwareService.deleteFirmware(id);
   }
 }

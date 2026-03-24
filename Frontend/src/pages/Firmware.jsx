@@ -579,18 +579,6 @@ export default function Firmware() {
                 </div>
               </DialogContent>
             </Dialog>
-
-            <Button
-              variant="outline"
-              className="border-[#4F6F52] text-[#4F6F52] hover:bg-[#4F6F52]/5 h-11 px-6 rounded-xl"
-              onClick={() => {
-                fetchHistory();
-                fetchLatest();
-              }}
-            >
-              <RotateCw className="h-4 w-4 mr-2" />
-              Force Sync
-            </Button>
           </div>
         </div>
 

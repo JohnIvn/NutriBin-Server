@@ -121,7 +121,7 @@ export default function OtaManagement() {
                 </Button>
               </DialogTrigger>
               <DialogContent
-                className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl bg-white rounded-3xl"
+                className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl bg-white rounded-3xl z-[9999]"
                 onPointerDownOutside={(e) => e.preventDefault()}
               >
                 <div className="bg-[#3A4D39] p-7 text-white relative">

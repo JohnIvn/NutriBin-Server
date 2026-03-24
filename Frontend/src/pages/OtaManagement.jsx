@@ -120,7 +120,10 @@ export default function OtaManagement() {
                   Deploy Firmware
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl bg-white rounded-3xl">
+              <DialogContent
+                className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl bg-white rounded-3xl"
+                onPointerDownOutside={(e) => e.preventDefault()}
+              >
                 <div className="bg-[#3A4D39] p-7 text-white relative">
                   <div className="relative z-10">
                     <DialogTitle className="text-2xl font-black flex items-center gap-3 text-white">

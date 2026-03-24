@@ -10,6 +10,7 @@ import {
   Wrench,
   DollarSign,
   HardDrive,
+  UploadCloud,
   Database,
   Beaker,
   Cloud,
@@ -277,6 +278,13 @@ export default function Sidebar() {
               icon={HardDrive}
               label="Firmware"
               active={isActive("/firmware")}
+              collapsed={shouldCollapse}
+            />
+            <NavItem
+              to="/ota"
+              icon={UploadCloud}
+              label="Advanced OTA"
+              active={isActive("/ota")}
               collapsed={shouldCollapse}
             />
             <NavItem

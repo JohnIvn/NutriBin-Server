@@ -4,6 +4,7 @@ import Account from "@/pages/Account";
 import Sales from "@/pages/Sales";
 import Fertilizer from "@/pages/Fertilizer";
 import Firmware from "@/pages/Firmware";
+import OtaManagement from "@/pages/OtaManagement";
 import Login from "@/pages/Login";
 import PasswordReset from "@/pages/PasswordReset";
 import { VerifyMFA } from "@/pages/VerifyMFA";
@@ -216,6 +217,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <Firmware />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ota"
+        element={
+          <ProtectedRoute>
+            <OtaManagement />
           </ProtectedRoute>
         }
       />

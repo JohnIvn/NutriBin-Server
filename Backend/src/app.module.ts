@@ -32,6 +32,7 @@ import { EmissionsController } from './controllers/emissions.controller';
 import { FertilizerController } from './controllers/fertilizer.controller';
 import { CameraLogsController } from './controllers/camera-logs.controller';
 import { HardwareController } from './controllers/hardware/hardware.controller';
+import { OtaController } from './controllers/hardware/ota.controller';
 import { DataScienceController } from './controllers/data-science.controller';
 import { SupportController } from './controllers/support.controller';
 import { HealthController } from './controllers/health.controller';
@@ -86,6 +87,7 @@ import { ThingSpeakService } from './service/thingspeak.service';
     FertilizerController,
     CameraLogsController,
     HardwareController,
+    OtaController,
     DataScienceController,
     SupportController,
     HealthController,

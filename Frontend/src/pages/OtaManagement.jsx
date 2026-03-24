@@ -59,7 +59,7 @@ export default function OtaManagement() {
   const [vMinor, setVMinor] = useState("");
   const [vPatch, setVPatch] = useState("");
   const [type, setType] = useState("esp32");
-  const [targetModels, setTargetModels] = useState("NB-V1");
+  const [targetModels, setTargetModels] = useState(["NB-100"]);
   const [notes, setNotes] = useState("");
   const [uploading, setUploading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -122,7 +122,7 @@ export default function OtaManagement() {
     formData.append("file", file);
     formData.append("version", "v" + version);
     formData.append("type", type);
-    formData.append("targetModels", targetModels);
+    formData.append("targetModels", JSON.stringify(targetModels));
     formData.append("releaseNotes", notes);
     formData.append("notifyFleet", notifyFleet.toString());
     formData.append("createAnnouncement", createAnnouncement.toString());
@@ -346,30 +346,38 @@ export default function OtaManagement() {
                           Target Models
                         </label>
                         <Select
-                          value={targetModels}
-                          onValueChange={setTargetModels}
+                          value={
+                            targetModels.length === 2
+                              ? "ALL"
+                              : targetModels[0] || ""
+                          }
+                          onValueChange={(val) =>
+                            setTargetModels(
+                              val === "ALL" ? ["NB-100", "NB-200"] : [val],
+                            )
+                          }
                         >
                           <SelectTrigger className="bg-gray-50/50 border-none shadow-inner h-10 w-full text-sm text-[#3A4D39] font-medium rounded-xl px-4">
                             <SelectValue placeholder="Select Models" />
                           </SelectTrigger>
                           <SelectContent className="bg-white border-gray-100 rounded-xl shadow-xl z-[100]">
                             <SelectItem
-                              value="NB-V1"
+                              value="NB-100"
                               className="text-sm font-medium text-[#3A4D39] cursor-pointer px-4 py-2 hover:bg-gray-50"
                             >
-                              NB-V1 (Standard)
+                              NB-100 Series
                             </SelectItem>
                             <SelectItem
-                              value="NB-V2"
+                              value="NB-200"
                               className="text-sm font-medium text-[#3A4D39] cursor-pointer px-4 py-2 hover:bg-gray-50"
                             >
-                              NB-V2 (Pro)
+                              NB-200 Series
                             </SelectItem>
                             <SelectItem
                               value="ALL"
-                              className="text-sm font-medium text-[#3A4D39] cursor-pointer px-4 py-2 hover:bg-gray-50"
+                              className="text-sm font-black text-[#4F6F52] cursor-pointer px-4 py-2 border-t border-gray-50 mt-1 hover:bg-emerald-50"
                             >
-                              All Models
+                              Universal (Both)
                             </SelectItem>
                           </SelectContent>
                         </Select>

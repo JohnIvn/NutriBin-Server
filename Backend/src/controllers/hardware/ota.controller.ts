@@ -30,6 +30,7 @@ export class OtaController {
     @UploadedFile() file: Express.Multer.File,
     @Body('version') version: string,
     @Body('type') type: 'esp32' | 'linux',
+    @Body('targetModels') targetModels: string,
     @Body('releaseNotes') releaseNotes: string,
     @Body('notifyFleet') notifyFleet: string,
     @Body('createAnnouncement') createAnnouncement: string,
@@ -40,7 +41,7 @@ export class OtaController {
       file,
       version,
       releaseNotes,
-      [type], // Using target_models as type for now
+      [type, targetModels], // Merging type and target models
       'admin',
       notifyFleet === 'true',
       createAnnouncement === 'true',

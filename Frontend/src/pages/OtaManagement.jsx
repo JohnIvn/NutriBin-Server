@@ -59,6 +59,7 @@ export default function OtaManagement() {
   const [vMinor, setVMinor] = useState("");
   const [vPatch, setVPatch] = useState("");
   const [type, setType] = useState("esp32");
+  const [targetModels, setTargetModels] = useState("NB-V1");
   const [notes, setNotes] = useState("");
   const [uploading, setUploading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -121,6 +122,7 @@ export default function OtaManagement() {
     formData.append("file", file);
     formData.append("version", "v" + version);
     formData.append("type", type);
+    formData.append("targetModels", targetModels);
     formData.append("releaseNotes", notes);
     formData.append("notifyFleet", notifyFleet.toString());
     formData.append("createAnnouncement", createAnnouncement.toString());
@@ -334,6 +336,40 @@ export default function OtaManagement() {
                                 <Terminal className="w-4 h-4 text-orange-500" />
                                 <span>Linux System Board</span>
                               </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-[#6B6F68] uppercase mb-1.5 block tracking-tight">
+                          Target Models
+                        </label>
+                        <Select
+                          value={targetModels}
+                          onValueChange={setTargetModels}
+                        >
+                          <SelectTrigger className="bg-gray-50/50 border-none shadow-inner h-10 w-full text-sm text-[#3A4D39] font-medium rounded-xl px-4">
+                            <SelectValue placeholder="Select Models" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border-gray-100 rounded-xl shadow-xl z-[100]">
+                            <SelectItem
+                              value="NB-V1"
+                              className="text-sm font-medium text-[#3A4D39] cursor-pointer px-4 py-2 hover:bg-gray-50"
+                            >
+                              NB-V1 (Standard)
+                            </SelectItem>
+                            <SelectItem
+                              value="NB-V2"
+                              className="text-sm font-medium text-[#3A4D39] cursor-pointer px-4 py-2 hover:bg-gray-50"
+                            >
+                              NB-V2 (Pro)
+                            </SelectItem>
+                            <SelectItem
+                              value="ALL"
+                              className="text-sm font-medium text-[#3A4D39] cursor-pointer px-4 py-2 hover:bg-gray-50"
+                            >
+                              All Models
                             </SelectItem>
                           </SelectContent>
                         </Select>

@@ -20,6 +20,7 @@ import { createAuthenticationTable } from './models/authentication';
 import { createAuthAttemptsTable } from './models/auth-attempts.model';
 import { createCodesTable } from './models/codes.model';
 import { createMachineNotificationTable } from './models/machine-notification.model';
+import { createUserNotificationTable } from './models/user-notification.model';
 import { createDataScienceTable } from './models/data-science.model';
 import { createSupportTable } from './models/support.model';
 import { createFirmwareTable } from './models/firmware.model';
@@ -76,6 +77,7 @@ export class DatabaseService implements OnModuleInit {
     await createAuthAttemptsTable(this.client);
     await createCodesTable(this.client);
     await createMachineNotificationTable(this.client);
+    await createUserNotificationTable(this.client);
     await createDataScienceTable(this.client);
     await createSupportTable(this.client);
     await createFirmwareTable(this.client);

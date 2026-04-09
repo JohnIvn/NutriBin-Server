@@ -23,6 +23,7 @@ type RepairRow = {
   date_created: string;
   first_name?: string | null;
   last_name?: string | null;
+  address?: string | null;
   description?: string | null;
   c1?: boolean;
   c2?: boolean;
@@ -49,6 +50,7 @@ type RepairRow = {
 type CustomerEmailRow = {
   email: string | null;
   first_name: string | null;
+  address: string | null;
 };
 
 const repairComponentColumns = [
@@ -95,6 +97,7 @@ export class RepairManagementController {
           r.date_created, 
           uc.first_name, 
           uc.last_name, 
+          uc.address,
           r.description
          FROM repair r
          LEFT JOIN user_customer uc ON r.user_id = uc.customer_id
@@ -125,6 +128,7 @@ export class RepairManagementController {
           r.date_created, 
           uc.first_name, 
           uc.last_name, 
+          uc.address,
           r.description, 
           ${repairComponentColumns.map((c) => `m.${c}`).join(', ')}
          FROM repair r
@@ -273,7 +277,7 @@ export class RepairManagementController {
           repair.user_id
         ) {
           const userRes = await client.query<CustomerEmailRow>(
-            'SELECT email, first_name FROM user_customer WHERE customer_id = $1 LIMIT 1',
+            'SELECT email, first_name, address FROM user_customer WHERE customer_id = $1 LIMIT 1',
             [repair.user_id],
           );
           if (userRes.rows.length) {
@@ -282,12 +286,60 @@ export class RepairManagementController {
             const machineId = repair.machine_id || '';
             const issueType = repair.description || 'Repair request';
 
+            let customMessage: string | undefined;
+            let notificationHeader = '';
+            let notificationSubheader = '';
+            let notificationDesc = '';
+
+            const statusLower = status.toLowerCase();
+
+            if (statusLower === 'accepted') {
+              customMessage = `A repair request for Machine <strong>${machineId}</strong> has been accepted. Technicians are on the way!`;
+              notificationHeader = 'Repair Accepted';
+              notificationSubheader = 'Technicians are on the way';
+              notificationDesc = `Repair request ${id} has been accepted and technicians are dispatched.`;
+            } else if (statusLower === 'cancelled') {
+              customMessage = `A repair request for Machine <strong>${machineId}</strong> has been rejected/cancelled.`;
+              notificationHeader = 'Repair Rejected';
+              notificationSubheader = 'Repair request cancelled';
+              notificationDesc = `Repair request ${id} has been rejected or cancelled by the management.`;
+            } else if (statusLower === 'postponed') {
+              customMessage = `A repair request for Machine <strong>${machineId}</strong> has been postponed.`;
+              notificationHeader = 'Repair Postponed';
+              notificationSubheader = 'Schedule updated';
+              notificationDesc = `Repair request ${id} has been postponed. We will update you with a new schedule soon.`;
+            }
+
+            // Add to machine_notifications
+            if (notificationHeader) {
+              try {
+                await client.query(
+                  `INSERT INTO machine_notifications (machine_id, header, subheader, type, description)
+                   VALUES ($1, $2, $3, $4, $5)`,
+                  [
+                    machineId,
+                    notificationHeader,
+                    notificationSubheader,
+                    notificationDesc,
+                    'repair',
+                  ],
+                );
+              } catch (notifErr) {
+                console.error(
+                  'Failed to create machine notification:',
+                  notifErr,
+                );
+              }
+            }
+
             if (to) {
               await this.mailer.sendRepairNotification(to, {
                 machineId,
                 issueType,
                 status: status,
                 description: repair.description ?? undefined,
+                address: user.address ?? undefined,
+                customMessage,
               });
             }
           }

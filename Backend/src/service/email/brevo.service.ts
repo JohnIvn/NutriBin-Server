@@ -364,6 +364,8 @@ export class BrevoService {
       issueType: string;
       status: string;
       description?: string;
+      address?: string;
+      customMessage?: string;
     },
   ) {
     const subject = `Repair Notification - Machine ${repairDetails.machineId}`;
@@ -376,8 +378,8 @@ export class BrevoService {
     const statusColor =
       statusColors[repairDetails.status.toLowerCase()] || '#4F6F52';
     const content = `
-      <h2 style="margin: 0 0 20px 0; color: #4F6F52; font-size: 24px;">Repair Status Update 🔧</h2>
-      <p style="margin: 0 0 20px 0;">A repair request for Machine <strong>${repairDetails.machineId}</strong> has been <strong>${repairDetails.status}</strong>.</p>
+      <h2 style="margin: 0 0 20px 0; color: #4F6F52; font-size: 24px;">Repair Status Update</h2>
+      <p style="margin: 0 0 20px 0;">${repairDetails.customMessage || `A repair request for Machine <strong>${repairDetails.machineId}</strong> has been <strong>${repairDetails.status}</strong>.`}</p>
       <div style="background-color: #F0F7EE; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid ${statusColor};">
         <h3 style="margin: 0 0 15px 0; color: #4F6F52; font-size: 18px;">Repair Details</h3>
         <table width="100%" cellpadding="8" cellspacing="0">
@@ -385,6 +387,15 @@ export class BrevoService {
             <td style="padding: 8px 0; color: #666; font-weight: 600; width: 140px;">Machine ID:</td>
             <td style="padding: 8px 0; color: #333;">${repairDetails.machineId}</td>
           </tr>
+          ${
+            repairDetails.address
+              ? `
+          <tr>
+            <td style="padding: 8px 0; color: #666; font-weight: 600;">Address:</td>
+            <td style="padding: 8px 0; color: #333;">${repairDetails.address}</td>
+          </tr>`
+              : ''
+          }
           <tr>
             <td style="padding: 8px 0; color: #666; font-weight: 600;">Issue Type:</td>
             <td style="padding: 8px 0; color: #333;">${repairDetails.issueType}</td>

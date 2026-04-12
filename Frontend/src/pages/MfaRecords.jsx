@@ -8,10 +8,9 @@ import {
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Users, UserCog } from "lucide-react";
+import { Users, UserCog, ShieldCheck, Search } from "lucide-react";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import Requests from "@/utils/Requests";
 import {
   Pagination,
@@ -116,61 +115,65 @@ export default function MfaRecords() {
   const totalPages = Math.ceil(filtered.length / entriesCount) || 1;
 
   return (
-    <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
+    <div className="w-full bg-[#F6F7F4] min-h-screen pb-10">
       <section className="flex flex-col w-full px-4 md:px-8 pt-6 space-y-6 animate-in fade-in duration-500">
-        <div className="flex items-center justify-between border-l-4 border-[#4F6F52] pl-6">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
-              MFA Records
-            </h1>
-            <p className="text-sm text-muted-foreground italic mt-1">
-              Multi-factor authentication records for all users
-            </p>
+        <div className="flex items-center justify-between pl-2">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#4F6F52] p-3 rounded-2xl shadow-lg shadow-[#4F6F52]/20">
+              <ShieldCheck className="text-white h-8 w-8" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1A1C19]">
+                  Security Audit
+                </h1>
+                <span className="px-3 py-1 bg-[#4F6F52]/10 text-[#4F6F52] text-xs font-bold rounded-full uppercase tracking-wider border border-[#4F6F52]/20">
+                  MFA Registry
+                </span>
+              </div>
+              <p className="text-sm text-[#4F6F52]/60 font-medium mt-1">
+                Multi-factor authentication lifecycle and status monitoring
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-100 shadow-xl overflow-hidden w-full">
-          <div className="flex gap-3 px-5 pt-5">
-            <Button
-              variant={activeTab === "customers" ? "default" : "outline"}
-              onClick={() => {
-                setActiveTab("customers");
-                setCurrentPage(1);
-              }}
-              className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 ${activeTab === "customers" ? "bg-[#4F6F52] text-white" : "bg-white border-gray-200 text-gray-700"}`}
-            >
-              <Users size={16} />
-              <span className="font-semibold">Customers</span>
-            </Button>
-            <Button
-              variant={activeTab === "staff" ? "default" : "outline"}
-              onClick={() => {
-                setActiveTab("staff");
-                setCurrentPage(1);
-              }}
-              className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 ${activeTab === "staff" ? "bg-[#4F6F52] text-white" : "bg-white border-gray-200 text-gray-700"}`}
-            >
-              <UserCog size={16} />
-              <span className="font-semibold">Staff</span>
-            </Button>
-            <Button
-              variant={activeTab === "admins" ? "default" : "outline"}
-              onClick={() => {
-                setActiveTab("admins");
-                setCurrentPage(1);
-              }}
-              className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 ${activeTab === "admins" ? "bg-[#4F6F52] text-white" : "bg-white border-gray-200 text-gray-700"}`}
-            >
-              <UserCog size={16} />
-              <span className="font-semibold">Admins</span>
-            </Button>
+        <div className="bg-white rounded-[2.5rem] border border-[#E9E9E9] shadow-2xl shadow-[#4F6F52]/5 overflow-hidden w-full transition-all duration-300">
+          <div className="flex gap-4 px-8 pt-8 pb-2">
+            {[
+              { id: "customers", label: "Customers", icon: Users },
+              { id: "staff", label: "Staff", icon: UserCog },
+              { id: "admins", label: "Admins", icon: ShieldCheck },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setCurrentPage(1);
+                  }}
+                  className={`flex items-center gap-3 h-12 px-8 rounded-2xl transition-all duration-300 font-bold text-sm ${
+                    isActive
+                      ? "bg-[#4F6F52] text-white shadow-lg shadow-[#4F6F52]/30 scale-105"
+                      : "bg-[#F6F7F4] text-[#4F6F52] hover:bg-[#4F6F52]/5 border border-transparent"
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="p-5 border-b border-gray-50 flex flex-col md:flex-row gap-4 items-center justify-between bg-white">
+          <div className="px-8 py-6 flex flex-col md:flex-row gap-6 items-center justify-between">
             <Form {...filterForm}>
-              <div className="flex flex-col md:flex-row gap-4 items-center w-full">
-                <div className="relative w-full md:w-[450px] group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-200 group-focus-within:text-[#4F6F52] z-10" />
+              <div className="flex flex-col md:flex-row gap-6 items-center w-full">
+                <div className="relative w-full md:w-[500px] group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#4F6F52]/40 transition-colors duration-300 group-focus-within:text-[#4F6F52] z-10">
+                    <Search className="h-full w-full" />
+                  </div>
                   <FormField
                     control={filterForm.control}
                     name="term"
@@ -178,8 +181,8 @@ export default function MfaRecords() {
                       <FormItem className="w-full">
                         <FormControl>
                           <Input
-                            placeholder="Filter by name, email or mfa..."
-                            className="pl-10 border-gray-200 focus-visible:ring-1 focus-visible:ring-[#4F6F52] text-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-11"
+                            placeholder="Search by identity or method..."
+                            className="pl-12 bg-[#F6F7F4]/50 border-[#E9E9E9] focus-visible:ring-2 focus-visible:ring-[#4F6F52]/20 text-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-14 rounded-2xl font-medium transition-all duration-300"
                             {...field}
                           />
                         </FormControl>
@@ -188,9 +191,9 @@ export default function MfaRecords() {
                   />
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-500">
-                    Show
+                <div className="flex items-center gap-3 bg-[#F6F7F4]/50 px-4 py-2 rounded-2xl border border-[#E9E9E9]">
+                  <span className="text-xs font-bold text-[#4F6F52]/60 uppercase tracking-widest">
+                    Showing
                   </span>
                   <FormField
                     control={filterForm.control}
@@ -200,7 +203,7 @@ export default function MfaRecords() {
                         <select
                           onChange={(e) => field.onChange(e.target.value)}
                           value={field.value}
-                          className="w-20 h-11 border-gray-200 text-[#4F6F52] font-bold"
+                          className="bg-transparent border-none text-[#4F6F52] font-black focus:ring-0 cursor-pointer text-sm"
                         >
                           <option value="10">10</option>
                           <option value="25">25</option>
@@ -209,45 +212,50 @@ export default function MfaRecords() {
                       </FormItem>
                     )}
                   />
-                  <span className="text-sm font-medium text-gray-500">
-                    per page
+                  <span className="text-xs font-bold text-[#4F6F52]/60 uppercase tracking-widest">
+                    results
                   </span>
                 </div>
               </div>
             </Form>
           </div>
 
-          <div className="overflow-x-auto w-full">
+          <div className="overflow-x-auto">
             <Table className="w-full">
-              <TableHeader className="bg-gray-50/50">
-                <TableRow className="hover:bg-transparent border-b border-gray-100">
-                  <TableHead className="font-bold text-gray-700 py-4 pl-6">
+              <TableHeader className="bg-[#F6F7F4]/50">
+                <TableRow className="hover:bg-transparent border-b border-[#E9E9E9]">
+                  <TableHead className="font-black text-[#4F6F52]/60 py-5 pl-8 text-xs uppercase tracking-widest">
                     {activeTab === "customers"
-                      ? "CUSTOMER ID"
+                      ? "IDENTITY ID"
                       : activeTab === "staff"
                         ? "STAFF ID"
                         : "ADMIN ID"}
                   </TableHead>
-                  <TableHead className="font-bold text-gray-700">
-                    FULL NAME
+                  <TableHead className="font-black text-[#4F6F52]/60 text-xs uppercase tracking-widest">
+                    INDIVIDUAL
                   </TableHead>
-                  <TableHead className="font-bold text-gray-700">MFA</TableHead>
-                  <TableHead className="font-bold text-gray-700">
-                    ENABLED
+                  <TableHead className="font-black text-[#4F6F52]/60 text-xs uppercase tracking-widest">
+                    METHOD
                   </TableHead>
-                  <TableHead className="text-right font-bold text-gray-700 pr-6">
-                    CREATED
+                  <TableHead className="font-black text-[#4F6F52]/60 text-xs uppercase tracking-widest">
+                    STATUS
+                  </TableHead>
+                  <TableHead className="text-right font-black text-[#4F6F52]/60 pr-8 text-xs uppercase tracking-widest">
+                    ESTABLISHED
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-64 text-center">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
-                        <p className="text-gray-400 font-medium">
-                          Fetching MFA records...
+                    <TableCell colSpan={5} className="h-80 text-center">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="relative">
+                          <div className="w-14 h-14 border-4 border-[#4F6F52]/10 rounded-full" />
+                          <div className="absolute top-0 w-14 h-14 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                        <p className="text-[#4F6F52]/60 font-bold uppercase tracking-widest text-xs">
+                          Syncing MFA Data...
                         </p>
                       </div>
                     </TableCell>
@@ -256,37 +264,50 @@ export default function MfaRecords() {
                   <TableRow>
                     <TableCell
                       colSpan={5}
-                      className="h-64 text-center text-gray-400 font-medium"
+                      className="h-80 text-center text-[#4F6F52]/40 font-bold"
                     >
-                      No records found.
+                      No records found in this segment.
                     </TableCell>
                   </TableRow>
                 ) : (
                   paginated.map((r, idx) => (
                     <TableRow
                       key={`${r.user_type}-${r.identifier}-${idx}`}
-                      className="hover:bg-gray-50/30 transition-all"
+                      className="hover:bg-[#F6F7F4]/30 transition-all border-b border-[#E9E9E9]/50 group"
                     >
-                      <TableCell className="font-mono text-[#4F6F52] font-bold pl-6">
+                      <TableCell className="font-mono text-[#4F6F52] font-black pl-8 text-sm">
                         {r.identifier}
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col py-2">
-                          <span className="font-semibold text-gray-900 leading-none mb-1">
-                            {r.full_name || "-"}
+                        <div className="flex flex-col py-3">
+                          <span className="font-bold text-[#1A1C19] text-base leading-none mb-1.5 group-hover:text-[#4F6F52] transition-colors">
+                            {r.full_name || "N/A"}
                           </span>
-                          <span className="text-xs text-gray-500 font-medium">
+                          <span className="text-xs text-[#4F6F52]/60 font-bold font-mono">
                             {r.email || "—"}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-600">
-                        {formatAuthenticationType(r.authentication_type)}
+                      <TableCell>
+                        <span className="px-3 py-1 bg-[#F6F7F4] text-[#4F6F52] text-[11px] font-black rounded-lg uppercase border border-[#E9E9E9]">
+                          {formatAuthenticationType(r.authentication_type)}
+                        </span>
                       </TableCell>
-                      <TableCell className="text-gray-600">
-                        {r.enabled ? "Yes" : "No"}
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider ${
+                            r.enabled
+                              ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                              : "bg-gray-100 text-gray-600 border border-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${r.enabled ? "bg-emerald-500 animate-pulse" : "bg-gray-400"}`}
+                          />
+                          {r.enabled ? "Verified" : "Inactive"}
+                        </span>
                       </TableCell>
-                      <TableCell className="text-gray-600 text-right pr-6">
+                      <TableCell className="text-[#4F6F52]/60 font-bold text-sm text-right pr-8">
                         {formatDate(r.auth_date_created || r.date_created)}
                       </TableCell>
                     </TableRow>
@@ -296,8 +317,8 @@ export default function MfaRecords() {
             </Table>
           </div>
 
-          <div className="p-5 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-50/30">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+          <div className="px-8 py-6 border-t border-[#E9E9E9] flex flex-col md:flex-row items-center justify-between gap-4 bg-[#F6F7F4]/30">
+            <span className="text-[10px] font-black text-[#4F6F52]/40 uppercase tracking-[0.2em]">
               Total Records: {filtered.length}
             </span>
             <Pagination className="mx-0 w-auto">

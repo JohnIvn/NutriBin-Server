@@ -20,7 +20,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { userFilter } from "@/schema/users";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Search, Archive, Users, UserCog } from "lucide-react";
+import {
+  Search,
+  Archive,
+  Users,
+  UserCog,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -118,60 +125,64 @@ function Archives() {
   };
 
   return (
-    <div className="w-full bg-[#ECE3CE]/10 min-h-screen pb-10">
+    <div className="w-full bg-[#F6F7F4] min-h-screen pb-10 font-sans">
       <section className="flex flex-col w-full px-4 md:px-8 pt-6 space-y-6 animate-in fade-in duration-500">
-        {/* header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-[#4F6F52] pl-6">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
-              Archive Management
-            </h1>
-            <p className="text-sm text-muted-foreground italic mt-1">
-              View archived user and staff records.
-            </p>
+        <div className="flex items-center justify-between pl-2">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#4F6F52] p-3 rounded-2xl shadow-lg shadow-[#4F6F52]/20 text-white">
+              <Archive className="h-8 w-8" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1A1C19]">
+                  Information Archives
+                </h1>
+                <span className="px-3 py-1 bg-[#4F6F52]/10 text-[#4F6F52] text-xs font-bold rounded-full uppercase tracking-wider border border-[#4F6F52]/20">
+                  Cold Storage
+                </span>
+              </div>
+              <p className="text-sm text-[#4F6F52]/60 font-medium mt-1">
+                Legacy user and staff records preserved for audit compliance
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Tab buttons */}
-        <div className="flex gap-3">
-          <Button
-            variant={activeTab === "users" ? "default" : "outline"}
-            onClick={() => {
-              setActiveTab("users");
-              setCurrentPage(1);
-            }}
-            className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 cursor-pointer ${
-              activeTab === "users"
-                ? "bg-[#4F6F52] hover:bg-[#739072] text-white shadow-md"
-                : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            <Users size={18} />
-            <span className="font-semibold">User Archive</span>
-          </Button>
-          <Button
-            variant={activeTab === "staff" ? "default" : "outline"}
-            onClick={() => {
-              setActiveTab("staff");
-              setCurrentPage(1);
-            }}
-            className={`flex items-center gap-2 h-11 px-6 rounded-lg transition-all duration-200 cursor-pointer ${
-              activeTab === "staff"
-                ? "bg-[#4F6F52] hover:bg-[#739072] text-white shadow-md"
-                : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            <UserCog size={18} />
-            <span className="font-semibold">Staff Archive</span>
-          </Button>
-        </div>
+        <div className="bg-white rounded-[2.5rem] border border-[#E9E9E9] shadow-2xl shadow-[#4F6F52]/5 overflow-hidden w-full transition-all duration-300">
+          <div className="flex gap-4 px-8 pt-8 pb-2">
+            {[
+              { id: "users", label: "User Archive", icon: Users },
+              { id: "staff", label: "Staff Archive", icon: UserCog },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setCurrentPage(1);
+                  }}
+                  className={`flex items-center gap-3 h-12 px-8 rounded-2xl transition-all duration-300 font-bold text-sm cursor-pointer ${
+                    isActive
+                      ? "bg-[#4F6F52] text-white shadow-lg shadow-[#4F6F52]/30 scale-105"
+                      : "bg-[#F6F7F4] text-[#4F6F52] hover:bg-[#4F6F52]/5 border border-transparent"
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="bg-white rounded-xl border border-gray-100 shadow-xl overflow-hidden w-full">
-          <div className="p-5 border-b border-gray-50 flex flex-col md:flex-row gap-4 items-center justify-between bg-white">
+          <div className="px-8 py-6 flex flex-col md:flex-row gap-6 items-center justify-between">
             <Form {...filterForm}>
-              <div className="flex flex-col md:flex-row gap-4 items-center w-full">
-                <div className="relative w-full md:w-[450px] group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors duration-200 group-focus-within:text-[#4F6F52] z-10" />
+              <div className="flex flex-col md:flex-row gap-6 items-center w-full">
+                <div className="relative w-full md:w-[500px] group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#4F6F52]/40 transition-colors duration-300 group-focus-within:text-[#4F6F52] z-10">
+                    <Search className="h-full w-full" />
+                  </div>
                   <FormField
                     control={filterForm.control}
                     name="term"
@@ -180,7 +191,7 @@ function Archives() {
                         <FormControl>
                           <Input
                             placeholder="Filter by ID, name, or email..."
-                            className="pl-10 border-gray-200 focus-visible:ring-1 text-[#4F6F52] focus-visible:ring-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-11 transition-all duration-200"
+                            className="pl-12 bg-[#F6F7F4]/50 border-[#E9E9E9] focus-visible:ring-2 focus-visible:ring-[#4F6F52]/20 text-[#4F6F52] focus-visible:border-[#4F6F52] w-full h-14 rounded-2xl font-medium transition-all duration-300"
                             {...field}
                             onChange={(e) => {
                               field.onChange(e);
@@ -193,9 +204,9 @@ function Archives() {
                   />
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-500">
-                    Show
+                <div className="flex items-center gap-3 bg-[#F6F7F4]/50 px-4 py-2 rounded-2xl border border-[#E9E9E9]">
+                  <span className="text-xs font-bold text-[#4F6F52]/60 uppercase tracking-widest">
+                    Showing
                   </span>
                   <FormField
                     control={filterForm.control}
@@ -210,11 +221,11 @@ function Archives() {
                           defaultValue={field.value.toString()}
                         >
                           <FormControl>
-                            <SelectTrigger className="w-20 h-11 border-gray-200 focus:ring-[#4F6F52] font-bold text-[#4F6F52] cursor-pointer">
+                            <SelectTrigger className="bg-transparent border-none text-[#4F6F52] font-black focus:ring-0 cursor-pointer text-sm shadow-none">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="rounded-xl border-[#E9E9E9]">
                             <SelectItem value="10">10</SelectItem>
                             <SelectItem value="25">25</SelectItem>
                             <SelectItem value="50">50</SelectItem>
@@ -223,8 +234,8 @@ function Archives() {
                       </FormItem>
                     )}
                   />
-                  <span className="text-sm font-medium text-gray-500 text-nowrap">
-                    per page
+                  <span className="text-xs font-bold text-[#4F6F52]/60 uppercase tracking-widest text-nowrap">
+                    records
                   </span>
                 </div>
               </div>
@@ -233,38 +244,38 @@ function Archives() {
 
           <div className="overflow-x-auto w-full">
             <Table className="w-full">
-              <TableHeader className="bg-gray-50/50">
-                <TableRow className="hover:bg-transparent border-b border-gray-100">
-                  <TableHead className="font-bold text-gray-700 py-4 pl-6">
-                    {activeTab === "users" ? "USER ID" : "STAFF ID"}
+              <TableHeader className="bg-[#F6F7F4]/50">
+                <TableRow className="hover:bg-transparent border-b border-[#E9E9E9]">
+                  <TableHead className="font-black text-[#4F6F52]/60 py-5 pl-8 text-[11px] uppercase tracking-[0.1em]">
+                    {activeTab === "users" ? "IDENTITY ID" : "STAFF ID"}
                   </TableHead>
-                  <TableHead className="font-bold text-gray-700">
+                  <TableHead className="font-black text-[#4F6F52]/60 text-[11px] uppercase tracking-[0.1em]">
                     FULL NAME
                   </TableHead>
-                  <TableHead className="font-bold text-gray-700">
-                    EMAIL
+                  <TableHead className="font-black text-[#4F6F52]/60 text-[11px] uppercase tracking-[0.1em]">
+                    EMAIL ADDRESS
                   </TableHead>
-                  <TableHead className="font-bold text-gray-700">
+                  <TableHead className="font-black text-[#4F6F52]/60 text-[11px] uppercase tracking-[0.1em]">
                     CONTACT
                   </TableHead>
                   {activeTab === "staff" && (
-                    <TableHead className="font-bold text-gray-700">
+                    <TableHead className="font-black text-[#4F6F52]/60 text-[11px] uppercase tracking-[0.1em]">
                       BIRTHDAY
                     </TableHead>
                   )}
                   {activeTab === "staff" && (
-                    <TableHead className="font-bold text-gray-700">
+                    <TableHead className="font-black text-[#4F6F52]/60 text-[11px] uppercase tracking-[0.1em]">
                       AGE
                     </TableHead>
                   )}
-                  <TableHead className="font-bold text-gray-700">
-                    STATUS
+                  <TableHead className="font-black text-[#4F6F52]/60 text-[11px] uppercase tracking-[0.1em]">
+                    STATE
                   </TableHead>
-                  <TableHead className="font-bold text-gray-700">
-                    ARCHIVED AT
+                  <TableHead className="font-black text-[#4F6F52]/60 text-[11px] uppercase tracking-[0.1em]">
+                    ARCHIVED
                   </TableHead>
-                  <TableHead className="font-bold text-gray-700">
-                    DATE CREATED
+                  <TableHead className="font-black text-[#4F6F52]/60 text-[11px] uppercase tracking-[0.1em] text-right pr-8">
+                    INITIALIZED
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -272,13 +283,16 @@ function Archives() {
                 {loading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={activeTab === "staff" ? 9 : 7}
-                      className="h-64 text-center"
+                      colSpan={activeTab === "staff" ? 9 : 8}
+                      className="h-80 text-center"
                     >
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="w-10 h-10 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
-                        <p className="text-gray-400 font-medium">
-                          Fetching Archive Records...
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="relative">
+                          <div className="w-14 h-14 border-4 border-[#4F6F52]/10 rounded-full" />
+                          <div className="absolute top-0 w-14 h-14 border-4 border-[#4F6F52] border-t-transparent rounded-full animate-spin" />
+                        </div>
+                        <p className="text-[#4F6F52]/60 font-bold uppercase tracking-widest text-xs">
+                          Accessing Vault...
                         </p>
                       </div>
                     </TableCell>
@@ -286,8 +300,8 @@ function Archives() {
                 ) : paginatedData.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={activeTab === "staff" ? 9 : 7}
-                      className="h-64 text-center text-gray-400 font-medium"
+                      colSpan={activeTab === "staff" ? 9 : 8}
+                      className="h-80 text-center text-[#4F6F52]/40 font-bold"
                     >
                       No archived records found.
                     </TableCell>
@@ -299,56 +313,56 @@ function Archives() {
                     return (
                       <TableRow
                         key={id}
-                        className="hover:bg-gray-50/30 transition-all"
+                        className="hover:bg-[#F6F7F4]/30 transition-all border-b border-[#E9E9E9]/50 group"
                       >
-                        <TableCell className="pl-6 font-mono text-xs text-gray-500">
+                        <TableCell className="pl-8 font-mono text-xs text-[#4F6F52] font-black">
                           {id}
                         </TableCell>
-                        <TableCell className="font-semibold text-gray-800">
+                        <TableCell className="font-bold text-[#1A1C19] group-hover:text-[#4F6F52] transition-colors">
                           {item.first_name} {item.last_name}
                         </TableCell>
-                        <TableCell className="text-gray-600">
+                        <TableCell className="text-[#4F6F52]/70 font-medium">
                           {item.email}
                         </TableCell>
-                        <TableCell className="text-gray-600">
+                        <TableCell className="text-[#4F6F52]/70 font-medium font-mono text-xs">
                           {item.contact_number || "N/A"}
                         </TableCell>
                         {activeTab === "staff" && (
-                          <TableCell className="text-gray-600">
+                          <TableCell className="text-[#4F6F52]/70 font-medium">
                             {item.birthday || "N/A"}
                           </TableCell>
                         )}
                         {activeTab === "staff" && (
-                          <TableCell className="text-gray-600">
+                          <TableCell className="text-[#4F6F52]/70 font-medium">
                             {item.age || "N/A"}
                           </TableCell>
                         )}
                         <TableCell>
                           <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tighter ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                               item.status === "active"
-                                ? "bg-green-100 text-green-700"
+                                ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
                                 : item.status === "inactive"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-red-100 text-red-700"
+                                  ? "bg-amber-100 text-amber-700 border border-amber-200"
+                                  : "bg-rose-100 text-rose-700 border border-rose-200"
                             }`}
                           >
-                            <div
+                            <span
                               className={`w-1.5 h-1.5 rounded-full ${
                                 item.status === "active"
-                                  ? "bg-green-500 animate-pulse"
+                                  ? "bg-emerald-500 animate-pulse"
                                   : item.status === "cancelled"
-                                    ? "bg-red-500"
-                                    : "bg-emerald-500"
+                                    ? "bg-rose-500"
+                                    : "bg-amber-500"
                               }`}
                             />
                             {item.status}
                           </span>
                         </TableCell>
-                        <TableCell className="text-gray-600">
+                        <TableCell className="text-[#4F6F52]/60 font-bold text-xs">
                           {formatDate(item.archive_date)}
                         </TableCell>
-                        <TableCell className="text-gray-600">
+                        <TableCell className="text-[#4F6F52]/60 font-bold text-xs text-right pr-8">
                           {formatDate(item.date_created)}
                         </TableCell>
                       </TableRow>
@@ -360,42 +374,37 @@ function Archives() {
           </div>
 
           {/* pagination */}
-          <div className="p-5 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-50/30">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Total {activeTab === "users" ? "Users" : "Staff"}:{" "}
-              {filteredData.length}
+          <div className="px-8 py-6 border-t border-[#E9E9E9] flex flex-col md:flex-row items-center justify-between gap-4 bg-[#F6F7F4]/30">
+            <span className="text-[10px] font-black text-[#4F6F52]/40 uppercase tracking-[0.2em]">
+              Vault Inventory: {filteredData.length}{" "}
+              {activeTab === "users" ? "Users" : "Staff"}
             </span>
-            <Pagination className="mx-0 w-auto">
-              <PaginationContent className="gap-2">
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={`text-[#4F6F52] hover:text-white bg-white hover:bg-[#4F6F52] border-[#4F6F52] transition-colors shadow-sm h-10 px-4 rounded-md flex items-center ${
-                      currentPage === 1
-                        ? "opacity-50 pointer-events-none"
-                        : "cursor-pointer"
-                    }`}
-                  />
-                </PaginationItem>
-                <PaginationItem>
-                  <div className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md text-sm font-bold text-[#4F6F52] shadow-sm">
-                    {currentPage} / {totalPages || 1}
-                  </div>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    className={`text-[#4F6F52] hover:text-white bg-white hover:bg-[#4F6F52] border-[#4F6F52] transition-colors shadow-sm h-10 px-4 rounded-md flex items-center ${
-                      currentPage === (totalPages || 1)
-                        ? "opacity-50 pointer-events-none"
-                        : "cursor-pointer"
-                    }`}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="h-10 w-10 p-0 rounded-xl border-[#E9E9E9] text-[#4F6F52] hover:bg-[#4F6F52] hover:text-white transition-all duration-300 disabled:opacity-30 shadow-sm"
+              >
+                <ChevronLeft size={18} />
+              </Button>
+              <div className="h-10 px-4 flex items-center justify-center bg-white border border-[#E9E9E9] rounded-xl text-xs font-black text-[#4F6F52] shadow-sm min-w-[80px]">
+                {currentPage} <span className="mx-2 text-[#4F6F52]/30">/</span>{" "}
+                {totalPages || 1}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === (totalPages || 1)}
+                className="h-10 w-10 p-0 rounded-xl border-[#E9E9E9] text-[#4F6F52] hover:bg-[#4F6F52] hover:text-white transition-all duration-300 disabled:opacity-30 shadow-sm"
+              >
+                <ChevronRight size={18} />
+              </Button>
+            </div>
           </div>
         </div>
       </section>

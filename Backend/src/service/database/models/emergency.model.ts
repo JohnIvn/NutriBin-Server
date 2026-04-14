@@ -6,6 +6,7 @@ export async function createEmergencyTable(client: Client) {
       emergency_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid REFERENCES user_customer(customer_id) ON DELETE CASCADE,
       machine_id uuid REFERENCES machine_serial(machine_serial_id) ON DELETE CASCADE,
+      is_active boolean DEFAULT true,
       date_created timestamptz DEFAULT now()
     );
   `);

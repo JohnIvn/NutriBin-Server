@@ -15,6 +15,7 @@ type EmergencyRow = {
   emergency_id: string;
   user_id: string;
   machine_id: string;
+  is_active: boolean;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
@@ -35,6 +36,7 @@ export class EmergencyController {
           e.emergency_id,
           e.user_id,
           e.machine_id,
+          e.is_active,
           uc.first_name,
           uc.last_name,
           uc.email,
@@ -64,6 +66,7 @@ export class EmergencyController {
           e.emergency_id,
           e.user_id,
           e.machine_id,
+          e.is_active,
           uc.first_name,
           uc.last_name,
           uc.email,

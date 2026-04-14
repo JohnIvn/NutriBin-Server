@@ -13,20 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  MoreHorizontalIcon,
   Search,
   AlertTriangle,
   RefreshCw,
@@ -34,9 +26,9 @@ import {
   Monitor,
   Trash2,
   Eye,
-  ChevronLeft,
-  ChevronRight,
   ShieldAlert,
+  Activity,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Pagination,
@@ -237,7 +229,7 @@ function Emergency() {
                     Incident Timestamp
                   </TableHead>
                   <TableHead className="text-right font-extrabold text-[#3A4D39] pr-8 uppercase tracking-widest text-[10px]">
-                    Operations
+                    Status
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -302,30 +294,37 @@ function Emergency() {
                         </div>
                       </TableCell>
                       <TableCell className="py-7 pr-8 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-12 w-12 hover:bg-gray-50 rounded-2xl group/btn transition-all duration-300">
-                              <MoreHorizontalIcon size={24} className="text-gray-300 group-hover/btn:text-[#3A4D39]" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56 rounded-2xl border-none shadow-2xl p-2 bg-white/90 backdrop-blur-md">
-                            <DropdownMenuLabel className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-4 py-3">
-                              Incident Management
-                            </DropdownMenuLabel>
-                            <DropdownMenuItem
+                        <div className="flex items-center justify-end gap-3">
+                          {e.is_active ? (
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest border border-red-100 shadow-sm">
+                              <Activity className="h-3 w-3 animate-pulse" />
+                              Active Alert
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-[#4F6F52] text-[10px] font-black uppercase tracking-widest border border-green-100 shadow-sm">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Resolved
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 ml-4">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
                               onClick={() => setSelectedEmergency(e)}
-                              className="gap-3 px-4 py-3.5 cursor-pointer font-black text-[#3A4D39] focus:bg-[#F6F7F4] focus:text-[#4F6F52] rounded-xl transition-all"
+                              className="h-10 w-10 rounded-xl hover:bg-[#3A4D39]/5 text-gray-400 hover:text-[#3A4D39] transition-all"
                             >
-                              <Eye size={20} className="opacity-50" /> View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
+                              <Eye size={18} />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
                               onClick={() => handleDeleteClick(e.emergency_id)}
-                              className="gap-3 px-4 py-3.5 cursor-pointer font-black text-red-500 focus:bg-red-50 focus:text-red-600 rounded-xl transition-all"
+                              className="h-10 w-10 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
                             >
-                              <Trash2 size={20} className="opacity-50" /> Purge Record
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <Trash2 size={18} />
+                            </Button>
+                          </div>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -409,6 +408,21 @@ function Emergency() {
                         {selectedEmergency.first_name || "Unlinked"} {selectedEmergency.last_name || "Account"}
                       </p>
                       <p className="text-sm text-gray-500 font-bold italic opacity-70">{selectedEmergency.email || "No contact info"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-3xl bg-[#F6F7F4] border border-gray-100 shadow-inner group/card">
+                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-4 ml-1">Incident Status</p>
+                  <div className="flex items-center gap-5">
+                    <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shadow-md transition-all ${selectedEmergency.is_active ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                      {selectedEmergency.is_active ? <Activity size={28} className="animate-pulse" /> : <CheckCircle2 size={28} />}
+                    </div>
+                    <div>
+                      <p className="font-black text-[#3A4D39] text-xl leading-none mb-1">
+                        {selectedEmergency.is_active ? "In Progress" : "Resolved"}
+                      </p>
+                      <p className="text-xs text-gray-500 font-black uppercase tracking-widest opacity-70">Current System State</p>
                     </div>
                   </div>
                 </div>

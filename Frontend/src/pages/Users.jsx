@@ -425,15 +425,15 @@ function Users() {
                                   onClick={() =>
                                     displayConfirm(
                                       "Ban",
-                                      "Permanent Suspension",
-                                      "This user will be permanently blacklisted from the NutriBin ecosystem. This action is irreversible and recorded in the security logs.",
+                                      "Ban User",
+                                      "This user will be banned from the NutriBin ecosystem. This action is irreversible and recorded in the security logs.",
                                       user,
                                     )
                                   }
                                   className="group cursor-pointer focus:bg-red-600 focus:text-white rounded-xl py-3 px-3 transition-all font-bold text-red-600"
                                 >
                                   <ShieldAlert className="mr-3 h-5 w-5 text-red-600 group-focus:text-white transition-colors" />{" "}
-                                  Ban Permanent
+                                  Ban User
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuGroup>

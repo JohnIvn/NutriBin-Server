@@ -35,6 +35,7 @@ import {
   UserCog,
   UserCheck,
   ShieldAlert,
+  Trash2,
 } from "lucide-react";
 import {
   Pagination,
@@ -468,14 +469,14 @@ function Staff() {
                                   onClick={() =>
                                     displayConfirm(
                                       "Ban",
-                                      "Permanent Suspension",
-                                      "This staff member will be permanently blacklisted from the system. This action is recorded in the security logs.",
+                                      "Ban Staff Account",
+                                      "This staff member will be banned from the system. This action is recorded in the security logs.",
                                       staff,
                                     )
                                   }
-                                  className="group cursor-pointer focus:bg-red-700 focus:text-white rounded-md py-2 transition-colors"
+                                  className="group cursor-pointer focus:bg-red-700 focus:text-white rounded-xl py-3 px-3 transition-all font-bold text-red-700"
                                 >
-                                  <ShieldAlert className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
+                                  <ShieldAlert className="mr-3 h-5 w-5 text-red-700 group-focus:text-white transition-colors" />{" "}
                                   Ban Account
                                 </DropdownMenuItem>
                               )}
@@ -489,9 +490,9 @@ function Staff() {
                                     staff,
                                   )
                                 }
-                                className="group cursor-pointer focus:bg-red-600 focus:text-white rounded-md py-2 transition-colors"
+                                className="group cursor-pointer focus:bg-red-600 focus:text-white rounded-xl py-3 px-3 transition-all font-bold text-red-600"
                               >
-                                <UserCheck className="mr-2 h-4 w-4 text-gray-500 group-focus:text-white transition-colors" />{" "}
+                                <Trash2 className="mr-3 h-5 w-5 text-red-600 group-focus:text-white transition-colors" />{" "}
                                 Delete Account
                               </DropdownMenuItem>
                             </DropdownMenuGroup>

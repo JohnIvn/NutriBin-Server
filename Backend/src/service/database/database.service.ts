@@ -24,6 +24,7 @@ import { createUserNotificationTable } from './models/user-notification.model';
 import { createDataScienceTable } from './models/data-science.model';
 import { createSupportTable } from './models/support.model';
 import { createFirmwareTable } from './models/firmware.model';
+import { createEmergencyTable } from './models/emergency.model';
 
 dotenv.config();
 
@@ -81,6 +82,7 @@ export class DatabaseService implements OnModuleInit {
     await createDataScienceTable(this.client);
     await createSupportTable(this.client);
     await createFirmwareTable(this.client);
+    await createEmergencyTable(this.client);
 
     console.log(chalk.bgGreen.black('[SUPABASE] All tables are ready!'));
   }

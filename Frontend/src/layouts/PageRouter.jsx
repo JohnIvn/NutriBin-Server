@@ -40,6 +40,7 @@ import CookiePolicy from "@/pages/CookiePolicy";
 import DataScience from "@/pages/DataScience";
 import Support from "@/pages/Support";
 import SystemStatus from "@/pages/SystemStatus";
+import Emergency from "@/pages/Emergency";
 import { useUser } from "@/contexts/UserContext";
 
 function RootRedirect() {
@@ -307,6 +308,14 @@ function PageRouter() {
         element={
           <ProtectedRoute>
             <SystemStatus />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/emergency"
+        element={
+          <ProtectedRoute>
+            <Emergency />
           </ProtectedRoute>
         }
       />

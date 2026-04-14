@@ -29,6 +29,7 @@ import {
   Camera,
   Binary,
   LifeBuoy,
+  AlertTriangle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -258,6 +259,13 @@ export default function Sidebar() {
           icon={Key}
           label="MFA Records"
           active={isActive("/mfa-records")}
+          collapsed={shouldCollapse}
+        />
+        <NavItem
+          to="/emergency"
+          icon={AlertTriangle}
+          label="Emergency"
+          active={isActive("/emergency")}
           collapsed={shouldCollapse}
         />
 

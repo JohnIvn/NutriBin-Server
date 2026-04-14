@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Delete,
+  Patch,
   Body,
   Param,
   InternalServerErrorException,
@@ -115,6 +116,40 @@ export class EmergencyController {
         error instanceof Error ? error.message : 'Unknown error';
       throw new InternalServerErrorException(
         `Failed to create emergency: ${errorMessage}`,
+      );
+    }
+  }
+
+  @Patch(':id')
+  async updateEmergency(
+    @Param('id') id: string,
+    @Body() body: { is_active: boolean },
+  ): Promise<{ ok: boolean; message: string; data: EmergencyRow }> {
+    const client = this.databaseService.getClient();
+
+    try {
+      const result = await client.query<EmergencyRow>(
+        `UPDATE emergency SET is_active = $1 WHERE emergency_id = $2 RETURNING *`,
+        [body.is_active, id],
+      );
+
+      if (result.rowCount === 0) {
+        throw new NotFoundException(`Emergency with ID ${id} not found`);
+      }
+
+      return {
+        ok: true,
+        message: 'Emergency updated successfully',
+        data: result.rows[0],
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      throw new InternalServerErrorException(
+        `Failed to update emergency: ${errorMessage}`,
       );
     }
   }

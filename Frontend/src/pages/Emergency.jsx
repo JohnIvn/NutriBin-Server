@@ -1,4 +1,5 @@
-﻿import {
+﻿//Emergency Page
+import {
   Table,
   TableBody,
   TableCell,

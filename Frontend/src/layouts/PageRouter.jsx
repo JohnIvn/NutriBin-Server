@@ -1,3 +1,4 @@
+//Page Navigation Routes
 import Settings from "@/pages/Settings";
 import Analytics from "@/pages/Analytics";
 import Account from "@/pages/Account";

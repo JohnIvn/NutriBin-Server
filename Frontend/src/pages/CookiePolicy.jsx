@@ -1,3 +1,4 @@
+//Cookie Policy Page
 import React from "react";
 import { Cookie, Info, Settings, Shield } from "lucide-react";
 

@@ -1,3 +1,4 @@
+//Fetilizer Analytics Page
 import {
   Area,
   AreaChart,

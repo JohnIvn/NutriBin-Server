@@ -1,3 +1,4 @@
+//Privacy and Policies Page
 import React from "react";
 import { ShieldCheck, Lock, Eye, Save } from "lucide-react";
 

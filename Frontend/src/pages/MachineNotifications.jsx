@@ -1,3 +1,4 @@
+//Machine Notifications Page
 import { useState, useEffect } from "react";
 import {
   Bell,

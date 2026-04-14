@@ -1,3 +1,4 @@
+//Error Page
 import React from "react";
 
 function Error() {

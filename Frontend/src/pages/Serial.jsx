@@ -1,3 +1,4 @@
+//Machine Serial ID Page
 import React, { useState, useEffect } from "react";
 import {
   Table,

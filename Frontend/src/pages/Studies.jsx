@@ -1,3 +1,4 @@
+//Related Studies Page
 import React from "react";
 import {
   BookOpenIcon,

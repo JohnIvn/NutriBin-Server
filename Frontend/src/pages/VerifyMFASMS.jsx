@@ -1,3 +1,4 @@
+//Multi Factor Authentication Verification Page (SMS)
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Requests from "@/utils/Requests";

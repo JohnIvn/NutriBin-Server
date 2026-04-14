@@ -1,3 +1,4 @@
+//Sales Page
 import {
   Bar,
   BarChart,

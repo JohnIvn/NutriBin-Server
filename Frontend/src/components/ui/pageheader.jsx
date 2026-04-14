@@ -1,3 +1,4 @@
+//Page Header Component
 export default function PageHeader({ title, icon }) {
   return (
     <header className="pt-12 mb-8">

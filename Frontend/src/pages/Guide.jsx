@@ -1,3 +1,4 @@
+//User Guide Page
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";

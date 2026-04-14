@@ -1,3 +1,4 @@
+//Support Page
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 import {

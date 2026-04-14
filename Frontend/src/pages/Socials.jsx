@@ -1,3 +1,4 @@
+//Socials Page
 import React from "react";
 import {
   FaGithub,

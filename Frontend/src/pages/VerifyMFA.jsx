@@ -1,3 +1,4 @@
+//Multi Factor Authentication Verification Page (EMAIL)
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Requests from "@/utils/Requests";

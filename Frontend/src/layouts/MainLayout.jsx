@@ -1,3 +1,4 @@
+//Main Website Layout
 import Sidebar from "@/components/partials/sidebar";
 import PageRouter from "./PageRouter";
 import Footer from "@/components/partials/footer";

@@ -1,3 +1,4 @@
+//Multi Factor Authentication Records Page
 import {
   Table,
   TableBody,

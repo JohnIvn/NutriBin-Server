@@ -1,3 +1,4 @@
+//Accordion Component
 import React, { useState, createContext, useContext } from "react";
 import { ChevronDown } from "lucide-react";
 

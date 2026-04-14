@@ -1,3 +1,4 @@
+//Study Card Component
 import { LightBulbIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";

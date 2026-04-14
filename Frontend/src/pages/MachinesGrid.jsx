@@ -1,3 +1,4 @@
+//Machines Grid Page
 import { useState, useEffect, useMemo } from "react";
 import {
   User,

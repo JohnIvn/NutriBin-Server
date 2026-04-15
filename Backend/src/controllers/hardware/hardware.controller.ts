@@ -36,6 +36,7 @@ export class HardwareController {
       methane?: number | string;
       air_quality?: number | string;
       combustible_gases?: number | string;
+      carbon_monoxide?: number | string;
       ultrasonic?: number | string;
     },
   ) {
@@ -90,7 +91,7 @@ export class HardwareController {
           (data.soil_moisture ?? 0).toString(),
           (data.methane ?? 0).toString(),
           (data.air_quality ?? 0).toString(),
-          (data.mq135 ?? 0).toString(),
+          (data.carbon_monoxide ?? 0).toString(),
           (data.combustible_gases ?? 0).toString(),
           (data.weight_kg ?? 0).toString(),
           (data.reed_switch ?? 0).toString(),

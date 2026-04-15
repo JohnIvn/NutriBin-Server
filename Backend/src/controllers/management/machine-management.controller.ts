@@ -17,6 +17,23 @@ type MachineRow = {
   [key: string]: string | number | boolean | null;
 };
 
+type AnalyticsRow = {
+  nitrogen: number | null;
+  phosphorus: number | null;
+  potassium: number | null;
+  temperature: number | null;
+  ph: number | null;
+  humidity: number | null;
+  moisture: number | null;
+  methane: number | null;
+  air_quality: number | null;
+  carbon_monoxide: number | null;
+  combustible_gases: number | null;
+  weight_kg: number | null;
+  reed_switch: boolean | null;
+  date_created: Date | null;
+};
+
 @Controller('management/machines')
 export class MachineManagementController {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -205,6 +222,53 @@ export class MachineManagementController {
         throw error;
       }
       throw new InternalServerErrorException('Failed to fetch machine details');
+    }
+  }
+
+  @Get(':machineId/latest-analytics')
+  async getMachineLatestAnalytics(@Param('machineId') machineId: string) {
+    const client = this.databaseService.getClient();
+
+    try {
+      // Get the latest fertilizer analytics entry for the machine
+      const result = await client.query<AnalyticsRow>(
+        `SELECT 
+          nitrogen,
+          phosphorus,
+          potassium,
+          temperature,
+          ph,
+          humidity,
+          moisture,
+          methane,
+          air_quality,
+          carbon_monoxide,
+          combustible_gases,
+          weight_kg,
+          reed_switch,
+          date_created
+         FROM fertilizer_analytics
+         WHERE machine_id = $1
+         ORDER BY date_created DESC
+         LIMIT 1`,
+        [machineId],
+      );
+
+      if (result.rows.length === 0) {
+        throw new NotFoundException('No analytics data found for this machine');
+      }
+
+      return {
+        ok: true,
+        data: result.rows[0],
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Failed to fetch latest analytics',
+      );
     }
   }
 }
